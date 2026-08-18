@@ -1,0 +1,111 @@
+import 'package:drift/drift.dart';
+import '../../../core/database/app_database.dart';
+import '../../../core/utils/result.dart';
+import '../domain/transaction_model.dart';
+import '../domain/transaction_repository_interface.dart';
+
+class TransactionRepository implements TransactionRepositoryInterface {
+  final AppDatabase _db;
+
+  TransactionRepository(this._db);
+
+  TransactionModel _toDomain(TransactionEntry entry) {
+    return TransactionModel(
+      id: entry.id,
+      walletId: entry.walletId,
+      categoryId: entry.categoryId,
+      amount: entry.amount,
+      transactionType: TransactionType.fromString(entry.transactionType),
+      title: entry.title,
+      description: entry.description,
+      merchant: entry.merchant,
+      sourceInput: entry.sourceInput,
+      rawInput: entry.rawInput,
+      transferToWalletId: entry.transferToWalletId,
+      transactionDate: entry.transactionDate,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
+    );
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchRecent({int limit = 20}) {
+    return _db.transactionDao.watchRecent(limit: limit).map((list) => list.map(_toDomain).toList());
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByWallet(int walletId) {
+    return _db.transactionDao.watchByWallet(walletId).map((list) => list.map(_toDomain).toList());
+  }
+
+  @override
+  Stream<List<TransactionModel>> watchByDateRange(DateTime start, DateTime end) {
+    return _db.transactionDao.watchByDateRange(start, end).map((list) => list.map(_toDomain).toList());
+  }
+
+  @override
+  Future<Result<List<TransactionModel>, AppError>> getByDateRange(DateTime start, DateTime end) async {
+    try {
+      final list = await _db.transactionDao.getByDateRange(start, end);
+      return Success(list.map(_toDomain).toList());
+    } catch (e) {
+      return Failure(AppError.database(e.toString()));
+    }
+  }
+
+  @override
+  Stream<double> watchTotalIncomeForMonth(DateTime month) {
+    return _db.transactionDao.watchTotalIncomeForMonth(month);
+  }
+
+  @override
+  Stream<double> watchTotalExpenseForMonth(DateTime month) {
+    return _db.transactionDao.watchTotalExpenseForMonth(month);
+  }
+
+  @override
+  Future<Result<int, AppError>> createTransaction({
+    required int walletId,
+    int? categoryId,
+    required double amount,
+    required TransactionType transactionType,
+    required String title,
+    String? description,
+    String? merchant,
+    String sourceInput = 'manual',
+    String? rawInput,
+    int? transferToWalletId,
+    DateTime? transactionDate,
+  }) async {
+    try {
+      final id = await _db.transactionDao.insertTransaction(
+        TransactionsCompanion.insert(
+          walletId: walletId,
+          categoryId: Value(categoryId),
+          amount: amount,
+          transactionType: transactionType.toDbString(),
+          title: title,
+          description: Value(description),
+          merchant: Value(merchant),
+          sourceInput: Value(sourceInput),
+          rawInput: Value(rawInput),
+          transferToWalletId: Value(transferToWalletId),
+          transactionDate: Value(transactionDate ?? DateTime.now()),
+        ),
+      );
+      return Success(id);
+    } catch (e) {
+      return Failure(AppError.database(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<int, AppError>> deleteTransaction(int id) async {
+    try {
+      final count = await _db.transactionDao.deleteTransaction(id);
+      return Success(count);
+    } catch (e) {
+      return Failure(AppError.database(e.toString()));
+    }
+  }
+}

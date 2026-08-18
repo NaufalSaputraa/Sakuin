@@ -1,0 +1,78 @@
+{
+  "app_name": "Sakuin",
+  "app_tagline": "Pencatat Keuangan Pribadi",
+  "nav": {
+    "home": "Beranda",
+    "analytics": "Analisis",
+    "chat": "AI Chat"
+  },
+  "home": {
+    "total_balance": "Total Saldo",
+    "income": "Pemasukan",
+    "expense": "Pengeluaran",
+    "budget": "Anggaran",
+    "on_track": "Terkendali",
+    "over_budget": "Melebihi Batas",
+    "recent_transactions": "Transaksi Terkini",
+    "view_all": "Lihat Semua",
+    "wallets": "Dompet",
+    "manage": "Kelola",
+    "activity": "Aktivitas",
+    "empty_transactions": "Belum ada transaksi",
+    "empty_transactions_cta": "Ketik di bawah untuk mencatat pengeluaran pertamamu"
+  },
+  "input": {
+    "placeholder": "Ketik: beli kopi 25rb gopay...",
+    "confirm": "Simpan Transaksi",
+    "switch_numpad": "Ganti ke Numpad",
+    "switch_text": "Ganti ke Teks Pintar",
+    "amount": "Nominal",
+    "category": "Kategori",
+    "wallet": "Dompet",
+    "title": "Nama Transaksi",
+    "note": "Catatan (opsional)",
+    "type_expense": "Pengeluaran",
+    "type_income": "Pemasukan",
+    "type_transfer": "Transfer"
+  },
+  "wallets": {
+    "physical": "Uang Fisik / Tunai",
+    "digital": "Dompet Digital",
+    "gopay": "GoPay",
+    "ovo": "OVO",
+    "dana": "Dana",
+    "shopeepay": "ShopeePay",
+    "bank": "Rekening Bank",
+    "add_sub_wallet": "Tambah E-Wallet"
+  },
+  "categories": {
+    "food": "Makanan & Minuman",
+    "transport": "Transportasi",
+    "shopping": "Belanja",
+    "pulsa": "Pulsa & Paket Data",
+    "bills": "Tagihan & Utilitas",
+    "health": "Kesehatan",
+    "entertainment": "Hiburan",
+    "education": "Pendidikan",
+    "housing": "Kos & Kontrakan",
+    "warung": "Warung & Jajanan",
+    "fuel": "BBM & Bensin",
+    "other_expense": "Lainnya",
+    "salary": "Gaji",
+    "freelance": "Freelance",
+    "transfer_in": "Transfer Masuk",
+    "other_income": "Lainnya"
+  },
+  "analytics": {
+    "title": "Analisis Keuangan",
+    "total_spent": "Total Pengeluaran",
+    "daily_avg": "Rata-rata Harian",
+    "this_month": "Bulan Ini",
+    "last_month": "Bulan Lalu",
+    "this_year": "Tahun Ini",
+    "all_time": "Semua Waktu",
+    "top_categories": "Kategori Teratas",
+    "top_merchants": "Merchant Teratas",
+    "trends": "Tren Pengeluaran"
+  }
+}

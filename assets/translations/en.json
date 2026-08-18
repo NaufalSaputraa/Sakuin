@@ -1,0 +1,78 @@
+{
+  "app_name": "Sakuin",
+  "app_tagline": "Personal Finance Tracker",
+  "nav": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "chat": "AI Chat"
+  },
+  "home": {
+    "total_balance": "Total Balance",
+    "income": "Income",
+    "expense": "Expense",
+    "budget": "Budget",
+    "on_track": "On Track",
+    "over_budget": "Over Budget",
+    "recent_transactions": "Recent Transactions",
+    "view_all": "View All",
+    "wallets": "Wallets",
+    "manage": "Manage",
+    "activity": "Activity",
+    "empty_transactions": "No transactions yet",
+    "empty_transactions_cta": "Tap input below to record your first expense"
+  },
+  "input": {
+    "placeholder": "Type: coffee 25k gopay...",
+    "confirm": "Confirm Transaction",
+    "switch_numpad": "Switch to Numpad",
+    "switch_text": "Switch to Smart Text",
+    "amount": "Amount",
+    "category": "Category",
+    "wallet": "Wallet",
+    "title": "Title",
+    "note": "Note (optional)",
+    "type_expense": "Expense",
+    "type_income": "Income",
+    "type_transfer": "Transfer"
+  },
+  "wallets": {
+    "physical": "Cash / Physical",
+    "digital": "Digital Root",
+    "gopay": "GoPay",
+    "ovo": "OVO",
+    "dana": "Dana",
+    "shopeepay": "ShopeePay",
+    "bank": "Bank Account",
+    "add_sub_wallet": "Add E-Wallet"
+  },
+  "categories": {
+    "food": "Food & Drinks",
+    "transport": "Transportation",
+    "shopping": "Shopping",
+    "pulsa": "Data & Mobile",
+    "bills": "Bills & Utilities",
+    "health": "Health & Medical",
+    "entertainment": "Entertainment",
+    "education": "Education",
+    "housing": "Rent & Housing",
+    "warung": "Street Food & Snacks",
+    "fuel": "Fuel & Gas",
+    "other_expense": "Other Expense",
+    "salary": "Salary",
+    "freelance": "Freelance",
+    "transfer_in": "Transfer In",
+    "other_income": "Other Income"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "total_spent": "Total Spent",
+    "daily_avg": "Daily Average",
+    "this_month": "This Month",
+    "last_month": "Last Month",
+    "this_year": "This Year",
+    "all_time": "All Time",
+    "top_categories": "Top Categories",
+    "top_merchants": "Top Merchants",
+    "trends": "Spending Trends"
+  }
+}

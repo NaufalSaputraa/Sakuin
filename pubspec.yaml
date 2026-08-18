@@ -1,0 +1,61 @@
+name: sakuin_app
+description: "Sakuin (索引) - Indonesian personal finance tracker with dual-wallet and on-device AI."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Database (Drift / SQLite)
+  drift: ^2.24.2
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.28
+  path_provider: ^2.1.5
+  path: ^1.9.1
+
+  # Navigation & Routing
+  go_router: ^14.8.1
+
+  # UI / Visuals / Charts
+  fl_chart: ^0.70.2
+  flutter_animate: ^4.5.2
+  lottie: ^3.3.1
+  google_fonts: ^6.2.1
+  cupertino_icons: ^1.0.8
+
+  # Localization
+  easy_localization: ^3.0.8
+  intl: ^0.20.2
+
+  # Utility & Storage
+  uuid: ^4.5.1
+  shared_preferences: ^2.3.5
+  flutter_secure_storage: ^9.2.4
+  share_plus: ^10.1.4
+  image_picker: ^1.1.2
+  google_mlkit_text_recognition: ^0.14.0
+  quick_actions: ^1.0.8
+  home_widget: ^0.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  drift_dev: ^2.24.2
+  build_runner: ^2.4.15
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/translations/
+    - assets/animations/
+    - assets/icons/
