@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'transaction_model.g.dart';
+
+@JsonEnum()
 enum TransactionType {
   income,
   expense,
@@ -18,6 +23,7 @@ enum TransactionType {
   String toDbString() => name;
 }
 
+@JsonSerializable()
 class TransactionModel {
   final int id;
   final int walletId;
@@ -60,6 +66,29 @@ class TransactionModel {
     this.categoryIcon,
     this.categoryColor,
   });
+
+  factory TransactionModel.fromJson(Map<String, dynamic> json) => _$TransactionModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TransactionModelToJson(this);
+
+  factory TransactionModel.fromEntry(dynamic entry) {
+    return TransactionModel(
+      id: entry.id,
+      walletId: entry.walletId,
+      categoryId: entry.categoryId,
+      amount: entry.amount,
+      transactionType: TransactionType.fromString(entry.transactionType),
+      title: entry.title,
+      description: entry.description,
+      merchant: entry.merchant,
+      sourceInput: entry.sourceInput,
+      rawInput: entry.rawInput,
+      transferToWalletId: entry.transferToWalletId,
+      transactionDate: entry.transactionDate,
+      createdAt: entry.createdAt,
+      updatedAt: entry.updatedAt,
+    );
+  }
 
   bool get isIncome => transactionType == TransactionType.income;
   bool get isExpense => transactionType == TransactionType.expense;

@@ -1,5 +1,9 @@
+import 'package:json_annotation/json_annotation.dart';
 import '../../../core/database/app_database.dart';
 
+part 'category_model.g.dart';
+
+@JsonSerializable()
 class CategoryModel {
   final int id;
   final String key;
@@ -24,6 +28,10 @@ class CategoryModel {
     this.isIncome = false,
     this.sortOrder = 0,
   });
+
+  factory CategoryModel.fromJson(Map<String, dynamic> json) => _$CategoryModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CategoryModelToJson(this);
 
   factory CategoryModel.fromEntry(CategoryEntry entry) {
     return CategoryModel(

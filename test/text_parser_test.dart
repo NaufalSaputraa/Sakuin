@@ -66,14 +66,14 @@ void main() {
   group('Batch TextParserService Tests', () {
     final parser = TextParserService();
 
-    test('parses multi-line numbered list of expenses', () {
+    test('parses multi-line numbered list of expenses', () async {
       const input = '''
         1. Makan siang 30rb gopay
         2. Parkir 5rb cash
         3. Pulsa 50rb dana
       ''';
 
-      final list = parser.parseBatchText(
+      final list = await parser.parseBatchText(
         text: input,
         availableWallets: [],
         availableCategories: [],

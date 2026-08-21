@@ -7,19 +7,21 @@ import 'daos/category_dao.dart';
 import 'daos/transaction_dao.dart';
 import 'daos/budget_dao.dart';
 import 'daos/chat_dao.dart';
+import 'daos/smart_rule_dao.dart';
+import 'daos/subscription_dao.dart';
 import '../constants/category_defaults.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules],
-  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao],
+  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules, Subscriptions],
+  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao, SmartRuleDao, SubscriptionDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -27,6 +29,11 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (m) async {
         await m.createAll();
         await _seedInitialData();
+      },
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          await m.createTable(subscriptions);
+        }
       },
     );
   }

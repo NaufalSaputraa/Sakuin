@@ -1,3 +1,8 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'budget_model.g.dart';
+
+@JsonEnum()
 enum BudgetType {
   limit, // "Do not spend more than X"
   target, // "Target saving X"
@@ -18,6 +23,7 @@ enum BudgetType {
   String toDbString() => name;
 }
 
+@JsonSerializable()
 class BudgetModel {
   final int id;
   final String name;
@@ -44,6 +50,10 @@ class BudgetModel {
     this.isActive = true,
     required this.createdAt,
   });
+
+  factory BudgetModel.fromJson(Map<String, dynamic> json) => _$BudgetModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$BudgetModelToJson(this);
 
   BudgetModel copyWith({
     int? id,

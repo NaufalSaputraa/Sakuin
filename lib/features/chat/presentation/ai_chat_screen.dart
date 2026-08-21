@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../budget/providers/budget_providers.dart';
+import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
 import '../../transactions/providers/transaction_providers.dart';
+import '../../wallets/domain/wallet_model.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../../../services/ml/text_parser_service.dart';
 import '../providers/chat_providers.dart';
@@ -85,11 +87,11 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     // 2. Action Intent: Record Expenses
     if (_isActionIntent(text)) {
       final parser = ref.read(textParserServiceProvider);
-      final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
-      final categories = ref.read(allCategoriesProvider).asData?.value ?? [];
+      final wallets = ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
+      final categories = ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
       final txRepo = ref.read(transactionRepositoryProvider);
 
-      final batchResults = parser.parseBatchText(
+      final batchResults = await parser.parseBatchText(
         text: text,
         availableWallets: wallets,
         availableCategories: categories,

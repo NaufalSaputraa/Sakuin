@@ -10,6 +10,8 @@ import '../../features/chat/presentation/ai_chat_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/wallets/presentation/wallets_screen.dart';
+import '../../features/smart_rules/presentation/smart_rules_screen.dart';
+import '../../features/subscriptions/presentation/subscriptions_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -19,6 +21,8 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String categories = '/categories';
   static const String wallets = '/wallets';
+  static const String smartRules = '/smart-rules';
+  static const String subscriptions = '/subscriptions';
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -64,6 +68,11 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const WalletsScreen(),
     ),
+    GoRoute(
+      path: AppRoutes.smartRules,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SmartRulesScreen(),
+    ),
     ShellRoute(
       navigatorKey: _shellNavigatorKey,
       builder: (context, state, child) {
@@ -83,6 +92,11 @@ final appRouter = GoRouter(
           builder: (context, state) => const AiChatScreen(),
         ),
       ],
+    ),
+    GoRoute(
+      path: AppRoutes.subscriptions,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SubscriptionsScreen(),
     ),
   ],
 );

@@ -334,7 +334,7 @@ User text → TFLite NLP (Level 3)
 
 ## AG Kit Workflows
 
-Symlink: `.agent/ → D:\Coding\ag-kit\.agent`
+Symlink: `.agent/ → D:\Coding\AG-Kit\.agent` (Junction active)
 
 - `/plan` — Project planning
 - `/verify` — Validate code changes

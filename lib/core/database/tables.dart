@@ -83,3 +83,20 @@ class SmartRules extends Table {
   IntColumn get priority => integer().withDefault(const Constant(0))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
+
+@DataClassName('SubscriptionEntry')
+class Subscriptions extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get merchant => text()();
+  TextColumn get normalizedKey => text()();
+  RealColumn get amount => real()();
+  TextColumn get period => text().withDefault(const Constant('monthly'))();
+  IntColumn get categoryId => integer().nullable().references(Categories, #id)();
+  DateTimeColumn get firstSeen => dateTime()();
+  DateTimeColumn get lastSeen => dateTime()();
+  IntColumn get occurrenceCount => integer().withDefault(const Constant(0))();
+  RealColumn get confidence => real().withDefault(const Constant(0.0))();
+  BoolColumn get isActive => boolean().withDefault(const Constant(true))();
+  BoolColumn get isConfirmed => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}

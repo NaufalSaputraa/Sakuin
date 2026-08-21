@@ -1,9 +1,15 @@
+import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
+import '../../smart_rules/domain/smart_rule_model.dart';
+import '../../smart_rules/providers/smart_rule_providers.dart';
+import '../../wallets/domain/wallet_model.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../domain/transaction_model.dart';
 import '../providers/transaction_providers.dart';
@@ -78,10 +84,14 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     if (text.trim().isEmpty) return;
 
     final parser = ref.read(textParserServiceProvider);
-    final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
-    final categories = ref.read(allCategoriesProvider).asData?.value ?? [];
+    final List<WalletModel> wallets = ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
+    final List<CategoryModel> categories = ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
 
-    final result = parser.parseText(
+    _parseAndUpdate(text, parser, wallets, categories);
+  }
+
+  Future<void> _parseAndUpdate(String text, TextParserService parser, List<WalletModel> wallets, List<CategoryModel> categories) async {
+    final result = await parser.parseText(
       text: text,
       availableWallets: wallets,
       availableCategories: categories,
@@ -130,7 +140,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       return;
     }
 
-    final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
+    final List<WalletModel> wallets = ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
     final walletId = _selectedWalletId ?? (wallets.isNotEmpty ? wallets.first.id : null);
 
     if (walletId == null) {
@@ -140,15 +150,51 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       return;
     }
 
+    // Apply smart rules evaluation for auto-suggestions
+    final merchant = _textController.text.trim();
+    final title = _titleController.text.trim().isEmpty ? 'Transaksi' : _titleController.text.trim();
+    final evaluationAsync = ref.read(
+      smartRuleEvaluationProvider(
+        (merchant: merchant, title: title, amount: amount, categoryId: _selectedCategoryId),
+      ).future,
+    );
+    final evaluation = await evaluationAsync;
+
+    int? finalCategoryId = _selectedCategoryId;
+    int? finalWalletId = walletId;
+
+    if (evaluation.hasMatch && evaluation.action != null) {
+      final action = evaluation.action!;
+      if (action.type == RuleActionType.categorize) {
+        final actionData = _parseActionValue(action.value);
+        final categoryId = actionData['categoryId'] as int?;
+        if (categoryId != null) {
+          finalCategoryId = categoryId;
+        }
+      } else if (action.type == RuleActionType.wallet) {
+        final actionData = _parseActionValue(action.value);
+        final walletProvider = actionData['walletProvider'] as String?;
+        if (walletProvider != null) {
+          final match = wallets.where((w) {
+            if (walletProvider == 'physical') return w.isPhysical;
+            return w.provider == walletProvider;
+          }).firstOrNull;
+          if (match != null) {
+            finalWalletId = match.id;
+          }
+        }
+      }
+    }
+
     setState(() => _isLoading = true);
 
     final repo = ref.read(transactionRepositoryProvider);
     final result = await repo.createTransaction(
-      walletId: walletId,
-      categoryId: _selectedCategoryId,
+      walletId: finalWalletId,
+      categoryId: finalCategoryId,
       amount: amount,
       transactionType: _transactionType,
-      title: _titleController.text.trim().isEmpty ? 'Transaksi' : _titleController.text.trim(),
+      title: title,
       sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
       rawInput: _textController.text.trim(),
     );
@@ -175,6 +221,14 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     }
   }
 
+  Map<String, dynamic> _parseActionValue(String value) {
+    try {
+      return Map<String, dynamic>.from(jsonDecode(value));
+    } catch (_) {
+      return {};
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -187,8 +241,8 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
           : expenseCategoriesProvider,
     );
 
-    final wallets = walletsAsync.asData?.value ?? [];
-    final categories = categoriesAsync.asData?.value ?? [];
+    final List<WalletModel> wallets = walletsAsync.asData?.value ?? <WalletModel>[];
+    final List<CategoryModel> categories = categoriesAsync.asData?.value ?? <CategoryModel>[];
 
     if (_selectedWalletId == null && wallets.isNotEmpty) {
       _selectedWalletId = wallets.first.id;

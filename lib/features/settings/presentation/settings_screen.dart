@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../chat/providers/chat_providers.dart';
+import '../providers/export_import_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -254,6 +256,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
           ),
+          const SizedBox(height: 4),
+
+          ListTile(
+            leading: const Icon(Icons.auto_fix_high_rounded),
+            title: const Text('Aturan Pintar (Smart Rules)'),
+            subtitle: const Text('Otomatisasi kategori & dompet berdasarkan merchant'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onTap: () => context.push('/smart-rules'),
+          ),
+          const SizedBox(height: 4),
+          ListTile(
+            leading: const Icon(Icons.subscriptions_rounded),
+            title: const Text('Langganan Berulang'),
+            subtitle: const Text('Deteksi & kelola subscription bulanan otomatis'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onTap: () => context.push('/subscriptions'),
+          ),
           const SizedBox(height: 24),
 
           // 4. Language & System
@@ -273,7 +294,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 24),
 
-          // 5. About Sakuin
+          // 5. Backup & Restore
+          Text('Backup & Restore', style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+
+          _BackupSection(),
+          const SizedBox(height: 24),
+
+          // 6. About Sakuin
           Text('Tentang Sakuin', style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
@@ -284,6 +312,238 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+}
+
+class _BackupSection extends ConsumerWidget {
+  const _BackupSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final state = ref.watch(exportImportNotifierProvider);
+    final notifier = ref.read(exportImportNotifierProvider.notifier);
+
+    return Column(
+      children: [
+        // Export CSV Button
+        ListTile(
+          leading: Icon(Icons.file_download_outlined, color: theme.colorScheme.primary),
+          title: Text('exportImport.exportCsv'.tr()),
+          subtitle: Text('exportImport.exportCsvDesc'.tr()),
+          trailing: state.isExporting
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                  ),
+                )
+              : const Icon(Icons.chevron_right_rounded),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          onTap: state.isExporting || state.isImporting
+              ? null
+              : () => notifier.pickAndExportCsv(),
+        ).animate().fadeIn(duration: 300.ms).slideX(begin: -0.1, end: 0),
+        const SizedBox(height: 4),
+
+        // Export JSON Button
+        ListTile(
+          leading: Icon(Icons.backup_outlined, color: theme.colorScheme.secondary),
+          title: Text('exportImport.exportJson'.tr()),
+          subtitle: Text('exportImport.exportJsonDesc'.tr()),
+          trailing: state.isExporting
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.secondary),
+                  ),
+                )
+              : const Icon(Icons.chevron_right_rounded),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          onTap: state.isExporting || state.isImporting
+              ? null
+              : () => notifier.pickAndExportJson(),
+        ).animate().fadeIn(duration: 300.ms, delay: 100.ms).slideX(begin: -0.1, end: 0),
+        const SizedBox(height: 4),
+
+        // Import Button
+        ListTile(
+          leading: Icon(Icons.file_upload_outlined, color: theme.colorScheme.tertiary),
+          title: Text('exportImport.import'.tr()),
+          subtitle: Text('exportImport.importDesc'.tr()),
+          trailing: state.isImporting
+              ? SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.tertiary),
+                  ),
+                )
+              : const Icon(Icons.chevron_right_rounded),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          onTap: state.isExporting || state.isImporting
+              ? null
+              : () => _showImportConfirmDialog(context, notifier),
+        ).animate().fadeIn(duration: 300.ms, delay: 200.ms).slideX(begin: -0.1, end: 0),
+
+        // Progress indicator
+        if (state.isExporting || state.isImporting) ...[
+          const SizedBox(height: 12),
+          LinearProgressIndicator(
+            value: state.progress,
+            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+            borderRadius: BorderRadius.circular(8),
+          ).animate().shimmer(duration: 1000.ms),
+          const SizedBox(height: 8),
+          Text(
+            (state.isExporting ? 'exportImport.exporting' : 'exportImport.importing').tr() +
+                ' ${(state.progress * 100).toInt()}%',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+
+        // Result message
+        if (state.lastResult != null && !state.isExporting && !state.isImporting) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: theme.colorScheme.primary, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'exportImport.success'.tr(),
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ...state.lastResult!.insertedCounts.entries.map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: Text(
+                    '• ${e.key}: ${e.value}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                )),
+                if (state.lastResult!.warnings.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'exportImport.warnings'.tr(),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  ...state.lastResult!.warnings.map((w) => Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      '• $w',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  )),
+                ],
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: notifier.clearResult,
+                    child: Text('common.dismiss'.tr()),
+                  ),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
+        ],
+
+        // Error message
+        if (state.error != null && !state.isExporting && !state.isImporting) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    state.error!,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.error,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: notifier.clearError,
+                  child: Text('common.dismiss'.tr()),
+                ),
+              ],
+            ),
+          ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1, end: 0),
+        ],
+      ],
+    );
+  }
+
+  void _showImportConfirmDialog(BuildContext context, ExportImportNotifier notifier) {
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error, size: 28),
+            const SizedBox(width: 12),
+            Expanded(child: Text('exportImport.importConfirmTitle'.tr())),
+          ],
+        ),
+        content: Text('exportImport.importConfirmMessage'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              notifier.pickAndImport();
+            },
+            child: Text('exportImport.importConfirmAction'.tr()),
+          ),
         ],
       ),
     );

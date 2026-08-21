@@ -60,3 +60,47 @@ final currentMonthExpenseProvider = StreamProvider.autoDispose<double>((ref) {
   final repo = ref.watch(transactionRepositoryProvider);
   return repo.watchTotalExpenseForMonth(DateTime.now());
 });
+
+/// Stream of transactions for the last 52 weeks (364 days) for heatmap visualization.
+final heatmapTransactionsProvider = StreamProvider.autoDispose<List<TransactionModel>>((ref) {
+  final repo = ref.watch(transactionRepositoryProvider);
+  final categoriesAsync = ref.watch(allCategoriesProvider);
+  final walletsAsync = ref.watch(allWalletsProvider);
+
+  final now = DateTime.now();
+  final startDate = now.subtract(const Duration(days: 364)); // 52 weeks
+
+  return repo.watchByDateRange(startDate, now).map((transactions) {
+    final categories = categoriesAsync.asData?.value ?? [];
+    final wallets = walletsAsync.asData?.value ?? [];
+
+    final categoryMap = {for (final c in categories) c.id: c};
+    final walletMap = {for (final w in wallets) w.id: w};
+
+    return transactions.map((tx) {
+      final category = tx.categoryId != null ? categoryMap[tx.categoryId] : null;
+      final wallet = walletMap[tx.walletId];
+
+      return TransactionModel(
+        id: tx.id,
+        walletId: tx.walletId,
+        categoryId: tx.categoryId,
+        amount: tx.amount,
+        transactionType: tx.transactionType,
+        title: tx.title,
+        description: tx.description,
+        merchant: tx.merchant,
+        sourceInput: tx.sourceInput,
+        rawInput: tx.rawInput,
+        transferToWalletId: tx.transferToWalletId,
+        transactionDate: tx.transactionDate,
+        createdAt: tx.createdAt,
+        updatedAt: tx.updatedAt,
+        walletName: wallet?.name,
+        categoryName: category?.name,
+        categoryIcon: category?.icon,
+        categoryColor: category?.color,
+      );
+    }).toList();
+  });
+});
