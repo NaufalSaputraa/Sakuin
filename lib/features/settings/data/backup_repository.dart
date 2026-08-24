@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/result.dart';
-import '../../../services/currency/currency_converter_service.dart';
+import '../../../services/currency/currency_rate_source.dart';
 import '../../../services/export/export_model.dart';
 import '../../wallets/domain/wallet_model.dart';
 import '../../categories/domain/category_model.dart';
@@ -201,7 +201,11 @@ class BackupRepository implements BackupRepositoryInterface {
     // (0) so imported rows don't collapse to IDR 0 in monthly totals.
     var amountBase = transaction.amountBase;
     if (amountBase <= 0) {
-      amountBase = await _computeAmountBase(transaction.amount, transaction.currency);
+      amountBase = await CurrencyRateSource.computeAmountBase(
+        transaction.amount,
+        transaction.currency,
+        _db.currencyRatesDao,
+      );
     }
     return TransactionsCompanion.insert(
       id: Value(transaction.id),
@@ -221,23 +225,6 @@ class BackupRepository implements BackupRepositoryInterface {
       createdAt: Value(transaction.createdAt),
       updatedAt: Value(transaction.updatedAt),
     );
-  }
-
-  /// Compute amountBase by reading the rate from the currency DAO.
-  /// Falls back to the static offline default rate if the code is not in
-  /// the DB. Mirrors TransactionRepository._computeAmountBase.
-  Future<double> _computeAmountBase(double amount, String currency) async {
-    if (currency == 'IDR') return amount;
-    try {
-      final entry = await _db.currencyRatesDao.getByCode(currency);
-      if (entry != null) return amount * entry.rateToIdr;
-    } catch (_) {
-      // Fall through to static offline default below.
-    }
-    final match = CurrencyConverterService.defaultRates
-        .where((r) => r.code == currency)
-        .firstOrNull;
-    return match == null ? amount : amount * match.rateToIdr;
   }
 
   BudgetsCompanion _budgetToCompanion(BudgetModel budget) {

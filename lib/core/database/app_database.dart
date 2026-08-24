@@ -141,7 +141,7 @@ class AppDatabase extends _$AppDatabase {
     // 4. Seed Initial Welcome Chat Message
     await into(chatMessages).insert(
       ChatMessagesCompanion.insert(
-        content: 'Halo! Saya asisten keuangan Google Gemma AI di Sakuin. Saya bisa menganalisis anggaranmu, memberikan saran hemat, dan kamu juga bisa langsung menyuruh saya mencatat pengeluaran (baik satu per satu maupun berupa daftar/list pengeluaran sekaligus)!',
+        content: 'Halo! Saya asisten keuangan AI di Sakuin. Saya bisa menganalisis anggaranmu, memberikan saran hemat, dan kamu juga bisa langsung menyuruh saya mencatat pengeluaran (baik satu per satu maupun berupa daftar/list pengeluaran sekaligus)!',
         isUser: false,
       ),
     );

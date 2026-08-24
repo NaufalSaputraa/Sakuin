@@ -2,22 +2,21 @@
 ///
 /// The model is NOT bundled in `assets/` (keeps APK < 100 MB). It is
 /// downloaded at runtime to external app files. To swap the model
-/// (e.g. Qwen2.5-1.5B -> Gemma 4 E2B), only the fields below need to
-/// change — no inference or repository code changes required, because
-/// both are `.litertlm` files consumed by the same LiteRT `Engine`.
+/// (e.g. Gemma 4 E2B -> another `.litertlm` model), only the fields below
+/// need to change — no inference or repository code changes required,
+/// because both are `.litertlm` files consumed by the same LiteRT `Engine`.
 class ModelDownloadConfig {
   const ModelDownloadConfig._();
 
   /// Direct download URL — HuggingFace (free, no card) for Gemma 4 E2B.
-  /// Swappable: change only this URL + Sha256 to swap model (Qwen ↔ Gemma).
+  /// Swappable: change only this URL + Sha256 to swap model.
   static const String modelUrl =
       'https://huggingface.co/soniqo/Gemma-4-E2B-LiteRT-LM/resolve/main/model.litertlm';
 
   /// SHA-256 of the model file. Pinned for integrity verification.
-  /// TODO: Replace with real SHA-256 from HuggingFace Files → model.litertlm → copy SHA256.
-  /// While placeholder is present, ModelRepository.verifyModelIntegrity accepts download in dev mode.
+  /// Computed from the local copy of model.litertlm (~2.39 GB).
   static const String modelSha256 =
-      'PLACEHOLDER_REPLACE_WITH_REAL_SHA256_GEMMA_4_E2B_LITERTLM';
+      '3adf576e432f6417003f0a84a758945958581b22a030ba392affa172d6755a8c';
 
   /// Storage guard: require at least 2x the model size before downloading
   /// (~2.39 GB model -> 5 GB free recommended).

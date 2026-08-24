@@ -73,11 +73,7 @@ void main() {
         3. Pulsa 50rb dana
       ''';
 
-      final list = await parser.parseBatchText(
-        text: input,
-        availableWallets: [],
-        availableCategories: [],
-      );
+      final list = await parser.parseBatchText(text: input);
 
       expect(list.length, 3);
       expect(list[0].amount, 30000);

@@ -77,7 +77,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void _showEditBudgetDialog() {
     final budget = ref.read(primaryBudgetProvider).asData?.value;
     final currentAmount = budget?.amount ?? 3000000.0;
-    final controller = TextEditingController(text: currentAmount.toInt().toString());
+    final controller = TextEditingController(
+      text: currentAmount.toInt().toString(),
+    );
 
     showDialog(
       context: context,
@@ -127,194 +129,208 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final budgetAsync = ref.watch(primaryBudgetProvider);
     final budgetAmount = budgetAsync.asData?.value?.amount ?? 3000000.0;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('settings.title'.tr()),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        children: [
-          // 1. Profile Header Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 28,
-                    backgroundColor: theme.colorScheme.primaryContainer,
-                    child: Text(
-                      _userName.isNotEmpty ? _userName[0].toUpperCase() : 'S',
-                      style: TextStyle(
-                        fontSize: 24,
+    final sections = <Widget>[
+      // 1. Profile Header Card
+      Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: theme.colorScheme.primaryContainer,
+                child: Text(
+                  _userName.isNotEmpty ? _userName[0].toUpperCase() : 'S',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _userName,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.primary,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _userName,
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'settings.data_local_subtitle'.tr(),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 2),
+                    Text(
+                      'settings.data_local_subtitle'.tr(),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.primary,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, size: 20),
-                    onPressed: _showEditNameDialog,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              IconButton(
+                icon: const Icon(Icons.edit_outlined, size: 20),
+                onPressed: _showEditNameDialog,
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
+        ),
+      ),
+      const SizedBox(height: 24),
 
-          // 2. Financial Management Section
-          Text('settings.section_financial'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
+      // 2. Financial Management Section
+      Text(
+        'settings.section_financial'.tr(),
+        style: theme.textTheme.titleSmall,
+      ),
+      const SizedBox(height: 8),
 
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: Text('settings.manage_wallets'.tr()),
-            subtitle: Text('settings.manage_wallets_desc'.tr()),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () => context.push('/wallets'),
+      ListTile(
+        leading: const Icon(Icons.account_balance_wallet_outlined),
+        title: Text('settings.manage_wallets'.tr()),
+        subtitle: Text('settings.manage_wallets_desc'.tr()),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () => context.push('/wallets'),
+      ),
+      const SizedBox(height: 4),
+
+      ListTile(
+        leading: const Icon(Icons.category_outlined),
+        title: Text('settings.manage_categories'.tr()),
+        subtitle: Text('settings.manage_categories_desc'.tr()),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () => context.push('/categories'),
+      ),
+      const SizedBox(height: 4),
+
+      ListTile(
+        leading: const Icon(Icons.track_changes_outlined),
+        title: Text('settings.monthly_budget_limit'.tr()),
+        subtitle: Text(
+          'settings.budget_limit_per_month'.tr(
+            namedArgs: {'amount': RupiahFormatter.format(budgetAmount)},
           ),
-          const SizedBox(height: 4),
+        ),
+        trailing: const Icon(Icons.edit_outlined, size: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: _showEditBudgetDialog,
+      ),
+      const SizedBox(height: 24),
 
-          ListTile(
-            leading: const Icon(Icons.category_outlined),
-            title: Text('settings.manage_categories'.tr()),
-            subtitle: Text('settings.manage_categories_desc'.tr()),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () => context.push('/categories'),
-          ),
-          const SizedBox(height: 4),
+      // 2b. Currency & Offline Rates Section
+      Text('currency.section_title'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
+      const _CurrencyRatesSection(),
+      const SizedBox(height: 24),
 
-          ListTile(
-            leading: const Icon(Icons.track_changes_outlined),
-            title: Text('settings.monthly_budget_limit'.tr()),
-            subtitle: Text('settings.budget_limit_per_month'.tr(namedArgs: {'amount': RupiahFormatter.format(budgetAmount)})),
-            trailing: const Icon(Icons.edit_outlined, size: 20),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: _showEditBudgetDialog,
-          ),
-          const SizedBox(height: 24),
+      // 3. AI & OCR Engine Section
+      Text('settings.section_ai'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
 
-          // 2b. Currency & Offline Rates Section
-          Text('currency.section_title'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          const _CurrencyRatesSection(),
-          const SizedBox(height: 24),
+      const AiModelSection(),
+      const SizedBox(height: 4),
 
-          // 3. AI & OCR Engine Section
-          Text('settings.section_ai'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
+      ListTile(
+        leading: const Icon(Icons.document_scanner_outlined),
+        title: Text('settings.ocr_engine'.tr()),
+        subtitle: Text('settings.ocr_engine_desc'.tr()),
+        trailing: Chip(
+          label: Text('ocr.ready'.tr(), style: const TextStyle(fontSize: 11)),
+          backgroundColor: theme.colorScheme.secondaryContainer,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      const SizedBox(height: 4),
 
-          const AiModelSection(),
-          const SizedBox(height: 4),
+      ListTile(
+        leading: const Icon(Icons.cleaning_services_outlined),
+        title: Text('settings.clear_chat_history'.tr()),
+        subtitle: Text('settings.clear_chat_history_desc'.tr()),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () async {
+          final chatRepo = ref.read(chatRepositoryProvider);
+          await chatRepo.clearHistory();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('settings.chat_cleared_snackbar'.tr())),
+            );
+          }
+        },
+      ),
+      const SizedBox(height: 4),
 
-          ListTile(
-            leading: const Icon(Icons.document_scanner_outlined),
-            title: Text('settings.ocr_engine'.tr()),
-            subtitle: Text('settings.ocr_engine_desc'.tr()),
-            trailing: Chip(
-              label: Text('ocr.ready'.tr(), style: const TextStyle(fontSize: 11)),
-              backgroundColor: theme.colorScheme.secondaryContainer,
-            ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          const SizedBox(height: 4),
+      ListTile(
+        leading: const Icon(Icons.auto_fix_high_rounded),
+        title: Text('settings.smart_rules'.tr()),
+        subtitle: Text('settings.smart_rules_desc'.tr()),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () => context.push('/smart-rules'),
+      ),
+      const SizedBox(height: 4),
+      ListTile(
+        leading: const Icon(Icons.subscriptions_rounded),
+        title: Text('settings.subscriptions'.tr()),
+        subtitle: Text('settings.subscriptions_desc'.tr()),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () => context.push('/subscriptions'),
+      ),
+      const SizedBox(height: 24),
 
-          ListTile(
-            leading: const Icon(Icons.cleaning_services_outlined),
-            title: Text('settings.clear_chat_history'.tr()),
-            subtitle: Text('settings.clear_chat_history_desc'.tr()),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () async {
-              final chatRepo = ref.read(chatRepositoryProvider);
-              await chatRepo.clearHistory();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('settings.chat_cleared_snackbar'.tr())),
-                );
-              }
-            },
-          ),
-          const SizedBox(height: 4),
+      // 4. Language & System
+      Text('settings.section_language'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
 
-          ListTile(
-            leading: const Icon(Icons.auto_fix_high_rounded),
-            title: Text('settings.smart_rules'.tr()),
-            subtitle: Text('settings.smart_rules_desc'.tr()),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () => context.push('/smart-rules'),
-          ),
-          const SizedBox(height: 4),
-          ListTile(
-            leading: const Icon(Icons.subscriptions_rounded),
-            title: Text('settings.subscriptions'.tr()),
-            subtitle: Text('settings.subscriptions_desc'.tr()),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () => context.push('/subscriptions'),
-          ),
-          const SizedBox(height: 24),
+      ListTile(
+        leading: const Icon(Icons.language_rounded),
+        title: Text('settings.app_language'.tr()),
+        subtitle: Text(
+          context.locale.languageCode == 'id'
+              ? 'settings.lang_indonesian'.tr()
+              : 'settings.lang_english'.tr(),
+        ),
+        trailing: const Icon(Icons.swap_horiz_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () {
+          final cur = context.locale.languageCode;
+          context.setLocale(
+            cur == 'id' ? const Locale('en') : const Locale('id'),
+          );
+        },
+      ),
+      const SizedBox(height: 24),
 
-          // 4. Language & System
-          Text('settings.section_language'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
+      // 5. Backup & Restore
+      Text('settings.section_backup'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
 
-          ListTile(
-            leading: const Icon(Icons.language_rounded),
-            title: Text('settings.app_language'.tr()),
-            subtitle: Text(context.locale.languageCode == 'id'
-                ? 'settings.lang_indonesian'.tr()
-                : 'settings.lang_english'.tr()),
-            trailing: const Icon(Icons.swap_horiz_rounded),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onTap: () {
-              final cur = context.locale.languageCode;
-              context.setLocale(cur == 'id' ? const Locale('en') : const Locale('id'));
-            },
-          ),
-          const SizedBox(height: 24),
+      const _BackupSection(),
+      const SizedBox(height: 24),
 
-          // 5. Backup & Restore
-          Text('settings.section_backup'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
+      // 6. About Sakuin
+      Text('settings.section_about'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
 
-          const _BackupSection(),
-          const SizedBox(height: 24),
+      ListTile(
+        leading: const Icon(Icons.info_outline_rounded),
+        title: Text('settings.version'.tr()),
+        subtitle: Text('settings.version_desc'.tr()),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      const SizedBox(height: 40),
+    ];
 
-          // 6. About Sakuin
-          Text('settings.section_about'.tr(), style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-
-          ListTile(
-            leading: const Icon(Icons.info_outline_rounded),
-            title: Text('settings.version'.tr()),
-            subtitle: Text('settings.version_desc'.tr()),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          ),
-          const SizedBox(height: 40),
-        ],
+    return Scaffold(
+      appBar: AppBar(title: Text('settings.title'.tr())),
+      body: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        itemCount: sections.length,
+        itemBuilder: (context, index) => sections[index],
       ),
     );
   }
@@ -333,7 +349,10 @@ class _BackupSection extends ConsumerWidget {
       children: [
         // Export CSV Button
         ListTile(
-          leading: Icon(Icons.file_download_outlined, color: theme.colorScheme.primary),
+          leading: Icon(
+            Icons.file_download_outlined,
+            color: theme.colorScheme.primary,
+          ),
           title: Text('exportImport.exportCsv'.tr()),
           subtitle: Text('exportImport.exportCsvDesc'.tr()),
           trailing: state.isExporting
@@ -342,11 +361,15 @@ class _BackupSection extends ConsumerWidget {
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                    valueColor: AlwaysStoppedAnimation(
+                      theme.colorScheme.primary,
+                    ),
                   ),
                 )
               : const Icon(Icons.chevron_right_rounded),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           onTap: state.isExporting || state.isImporting
               ? null
               : () => notifier.pickAndExportCsv(),
@@ -355,46 +378,66 @@ class _BackupSection extends ConsumerWidget {
 
         // Export JSON Button
         ListTile(
-          leading: Icon(Icons.backup_outlined, color: theme.colorScheme.secondary),
-          title: Text('exportImport.exportJson'.tr()),
-          subtitle: Text('exportImport.exportJsonDesc'.tr()),
-          trailing: state.isExporting
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.secondary),
-                  ),
-                )
-              : const Icon(Icons.chevron_right_rounded),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          onTap: state.isExporting || state.isImporting
-              ? null
-              : () => notifier.pickAndExportJson(),
-        ).animate().fadeIn(duration: 300.ms, delay: 100.ms).slideX(begin: -0.1, end: 0),
+              leading: Icon(
+                Icons.backup_outlined,
+                color: theme.colorScheme.secondary,
+              ),
+              title: Text('exportImport.exportJson'.tr()),
+              subtitle: Text('exportImport.exportJsonDesc'.tr()),
+              trailing: state.isExporting
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(
+                          theme.colorScheme.secondary,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.chevron_right_rounded),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onTap: state.isExporting || state.isImporting
+                  ? null
+                  : () => notifier.pickAndExportJson(),
+            )
+            .animate()
+            .fadeIn(duration: 300.ms, delay: 100.ms)
+            .slideX(begin: -0.1, end: 0),
         const SizedBox(height: 4),
 
         // Import Button
         ListTile(
-          leading: Icon(Icons.file_upload_outlined, color: theme.colorScheme.tertiary),
-          title: Text('exportImport.import'.tr()),
-          subtitle: Text('exportImport.importDesc'.tr()),
-          trailing: state.isImporting
-              ? SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation(theme.colorScheme.tertiary),
-                  ),
-                )
-              : const Icon(Icons.chevron_right_rounded),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          onTap: state.isExporting || state.isImporting
-              ? null
-              : () => _showImportConfirmDialog(context, notifier),
-        ).animate().fadeIn(duration: 300.ms, delay: 200.ms).slideX(begin: -0.1, end: 0),
+              leading: Icon(
+                Icons.file_upload_outlined,
+                color: theme.colorScheme.tertiary,
+              ),
+              title: Text('exportImport.import'.tr()),
+              subtitle: Text('exportImport.importDesc'.tr()),
+              trailing: state.isImporting
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(
+                          theme.colorScheme.tertiary,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.chevron_right_rounded),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onTap: state.isExporting || state.isImporting
+                  ? null
+                  : () => _showImportConfirmDialog(context, notifier),
+            )
+            .animate()
+            .fadeIn(duration: 300.ms, delay: 200.ms)
+            .slideX(begin: -0.1, end: 0),
 
         // Progress indicator
         if (state.isExporting || state.isImporting) ...[
@@ -415,21 +458,29 @@ class _BackupSection extends ConsumerWidget {
         ],
 
         // Result message
-        if (state.lastResult != null && !state.isExporting && !state.isImporting) ...[
+        if (state.lastResult != null &&
+            !state.isExporting &&
+            !state.isImporting) ...[
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.3),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.check_circle_outline, color: theme.colorScheme.primary, size: 20),
+                    Icon(
+                      Icons.check_circle_outline,
+                      color: theme.colorScheme.primary,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'exportImport.success'.tr(),
@@ -441,13 +492,15 @@ class _BackupSection extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                ...state.lastResult!.insertedCounts.entries.map((e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 2),
-                  child: Text(
-                    '• ${e.key}: ${e.value}',
-                    style: theme.textTheme.bodySmall,
+                ...state.lastResult!.insertedCounts.entries.map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 2),
+                    child: Text(
+                      '• ${e.key}: ${e.value}',
+                      style: theme.textTheme.bodySmall,
+                    ),
                   ),
-                )),
+                ),
                 if (state.lastResult!.warnings.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
@@ -457,15 +510,17 @@ class _BackupSection extends ConsumerWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  ...state.lastResult!.warnings.map((w) => Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(
-                      '• $w',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.error,
+                  ...state.lastResult!.warnings.map(
+                    (w) => Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        '• $w',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
                       ),
                     ),
-                  )),
+                  ),
                 ],
                 const SizedBox(height: 8),
                 Align(
@@ -481,18 +536,26 @@ class _BackupSection extends ConsumerWidget {
         ],
 
         // Error message
-        if (state.error != null && !state.isExporting && !state.isImporting) ...[
+        if (state.error != null &&
+            !state.isExporting &&
+            !state.isImporting) ...[
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: theme.colorScheme.errorContainer.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.colorScheme.error.withValues(alpha: 0.3)),
+              border: Border.all(
+                color: theme.colorScheme.error.withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               children: [
-                Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
+                Icon(
+                  Icons.error_outline,
+                  color: theme.colorScheme.error,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -514,7 +577,10 @@ class _BackupSection extends ConsumerWidget {
     );
   }
 
-  void _showImportConfirmDialog(BuildContext context, ExportImportNotifier notifier) {
+  void _showImportConfirmDialog(
+    BuildContext context,
+    ExportImportNotifier notifier,
+  ) {
     final theme = Theme.of(context);
 
     showDialog(
@@ -523,7 +589,11 @@ class _BackupSection extends ConsumerWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: theme.colorScheme.error, size: 28),
+            Icon(
+              Icons.warning_amber_rounded,
+              color: theme.colorScheme.error,
+              size: 28,
+            ),
             const SizedBox(width: 12),
             Expanded(child: Text('exportImport.importConfirmTitle'.tr())),
           ],
@@ -567,14 +637,18 @@ class _CurrencyRatesSection extends ConsumerWidget {
             title: Text('${rate.code} — ${rate.name}'),
             subtitle: rate.isBase
                 ? Text('currency.base_currency'.tr())
-                : Text('1 ${rate.code} = ${CurrencyFormatter.format(rate.rateToIdr, 'IDR')}'),
+                : Text(
+                    '1 ${rate.code} = ${CurrencyFormatter.format(rate.rateToIdr, 'IDR')}',
+                  ),
             trailing: rate.isBase
                 ? Chip(
                     label: Text('currency.base'.tr()),
                     backgroundColor: theme.colorScheme.secondaryContainer,
                   )
                 : const Icon(Icons.edit_outlined, size: 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
             onTap: rate.isBase
                 ? null
                 : () => _showEditRateDialog(context, ref, rate),
@@ -591,7 +665,9 @@ class _CurrencyRatesSection extends ConsumerWidget {
     WidgetRef ref,
     CurrencyRateModel rate,
   ) {
-    final controller = TextEditingController(text: rate.rateToIdr.toStringAsFixed(2));
+    final controller = TextEditingController(
+      text: rate.rateToIdr.toStringAsFixed(2),
+    );
 
     showDialog(
       context: context,
@@ -613,7 +689,9 @@ class _CurrencyRatesSection extends ConsumerWidget {
           ),
           FilledButton(
             onPressed: () async {
-              final parsed = double.tryParse(controller.text.trim().replaceAll('.', '').replaceAll(',', '.'));
+              final parsed = double.tryParse(
+                controller.text.trim().replaceAll('.', '').replaceAll(',', '.'),
+              );
               if (parsed != null && parsed > 0) {
                 final repo = ref.read(currencyRepositoryProvider);
                 await repo.upsertRate(

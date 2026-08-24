@@ -5,10 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/ml/parsed_transaction.dart';
 import '../../../services/ml/text_parser_service.dart';
 import '../../../services/share/share_import_service.dart';
-import '../../categories/domain/category_model.dart';
-import '../../categories/providers/category_providers.dart';
-import '../../wallets/domain/wallet_model.dart';
-import '../../wallets/providers/wallet_providers.dart';
 
 /// State for the Share Import feature.
 ///
@@ -70,16 +66,8 @@ class ShareImportNotifier extends Notifier<ShareImportState> {
     if (state.sharedText == trimmed) return; // duplicate guard
 
     final parser = ref.read(textParserServiceProvider);
-    final wallets =
-        ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
-    final categories =
-        ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
 
-    final parsed = await parser.parseText(
-      text: trimmed,
-      availableWallets: wallets,
-      availableCategories: categories,
-    );
+    final parsed = await parser.parseText(text: trimmed);
 
     state = ShareImportState(sharedText: trimmed, parsed: parsed);
   }

@@ -15,7 +15,9 @@ class WalletsScreen extends ConsumerStatefulWidget {
 
 class _WalletsScreenState extends ConsumerState<WalletsScreen> {
   void _showAdjustBalanceDialog(BuildContext context, WalletModel wallet) {
-    final controller = TextEditingController(text: wallet.balance.toInt().toString());
+    final controller = TextEditingController(
+      text: wallet.balance.toInt().toString(),
+    );
     String selectedCurrency = wallet.currency;
 
     showDialog(
@@ -61,7 +63,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               final newBal = double.tryParse(controller.text.trim());
               if (newBal != null) {
                 final repo = ref.read(walletRepositoryProvider);
-                await repo.updateWallet(wallet.copyWith(balance: newBal, currency: selectedCurrency));
+                await repo.updateWallet(
+                  wallet.copyWith(balance: newBal, currency: selectedCurrency),
+                );
               }
               if (context.mounted) Navigator.of(ctx).pop();
             },
@@ -80,8 +84,14 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
     String selectedIcon = '📱';
 
     final List<String> colorList = [
-      '#3498DB', '#9B59B6', '#1ABC9C', '#E67E22',
-      '#E74C3C', '#2ECC71', '#00AED6', '#118EEA',
+      '#3498DB',
+      '#9B59B6',
+      '#1ABC9C',
+      '#E67E22',
+      '#E74C3C',
+      '#2ECC71',
+      '#00AED6',
+      '#118EEA',
     ];
 
     showModalBottomSheet(
@@ -118,18 +128,24 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         width: 36,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.2,
+                          ),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text('Tambah E-Wallet / Rekening Baru', style: theme.textTheme.headlineMedium),
+                    Text(
+                      'Tambah E-Wallet / Rekening Baru',
+                      style: theme.textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Nama Dompet (Contoh: Bank BCA / LinkAja / Jago)',
+                        labelText:
+                            'Nama Dompet (Contoh: Bank BCA / LinkAja / Jago)',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -152,15 +168,21 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       items: currencyCodes.map((code) {
                         return DropdownMenuItem(
                           value: code,
-                          child: Text('$code (${CurrencyFormatter.symbol(code)})'),
+                          child: Text(
+                            '$code (${CurrencyFormatter.symbol(code)})',
+                          ),
                         );
                       }).toList(),
                       onChanged: (val) {
-                        if (val != null) setSheetState(() => selectedCurrency = val);
+                        if (val != null)
+                          setSheetState(() => selectedCurrency = val);
                       },
                     ),
                     const SizedBox(height: 16),
-                    Text('Pilih Warna Badge', style: theme.textTheme.titleSmall),
+                    Text(
+                      'Pilih Warna Badge',
+                      style: theme.textTheme.titleSmall,
+                    ),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 40,
@@ -171,13 +193,22 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         itemBuilder: (context, idx) {
                           final hex = colorList[idx];
                           final isSelected = hex == selectedColor;
-                          final color = Color(int.parse(hex.replaceAll('#', '0xFF')));
+                          final color = Color(
+                            int.parse(hex.replaceAll('#', '0xFF')),
+                          );
                           return GestureDetector(
-                            onTap: () => setSheetState(() => selectedColor = hex),
+                            onTap: () =>
+                                setSheetState(() => selectedColor = hex),
                             child: CircleAvatar(
                               radius: 16,
                               backgroundColor: color,
-                              child: isSelected ? Icon(Icons.check, color: theme.colorScheme.onPrimary, size: 16) : null,
+                              child: isSelected
+                                  ? Icon(
+                                      Icons.check,
+                                      color: theme.colorScheme.onPrimary,
+                                      size: 16,
+                                    )
+                                  : null,
                             ),
                           );
                         },
@@ -189,10 +220,15 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       child: FilledButton(
                         onPressed: () async {
                           final name = nameController.text.trim();
-                          final bal = double.tryParse(balanceController.text.trim()) ?? 0.0;
+                          final bal =
+                              double.tryParse(balanceController.text.trim()) ??
+                              0.0;
                           if (name.isEmpty) return;
 
-                          final provider = name.toLowerCase().replaceAll(RegExp(r'\s+'), '_');
+                          final provider = name.toLowerCase().replaceAll(
+                            RegExp(r'\s+'),
+                            '_',
+                          );
                           final repo = ref.read(walletRepositoryProvider);
 
                           await repo.createWallet(
@@ -255,13 +291,18 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.2,
+                        ),
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Transfer Antar Dompet', style: theme.textTheme.headlineMedium),
+                  Text(
+                    'Transfer Antar Dompet',
+                    style: theme.textTheme.headlineMedium,
+                  ),
                   const SizedBox(height: 16),
 
                   // From Wallet
@@ -272,7 +313,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     items: wallets.map((w) {
                       return DropdownMenuItem(
                         value: w.id,
-                        child: Text('${w.name} (${RupiahFormatter.format(w.balance)})'),
+                        child: Text(
+                          '${w.name} (${RupiahFormatter.format(w.balance)})',
+                        ),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -291,7 +334,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     items: wallets.map((w) {
                       return DropdownMenuItem(
                         value: w.id,
-                        child: Text('${w.name} (${RupiahFormatter.format(w.balance)})'),
+                        child: Text(
+                          '${w.name} (${RupiahFormatter.format(w.balance)})',
+                        ),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -317,13 +362,26 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () async {
-                        final amount = double.tryParse(amountController.text.trim());
-                        if (amount == null || amount <= 0 || sourceWallet.id == targetWallet.id) return;
+                        final amount = double.tryParse(
+                          amountController.text.trim(),
+                        );
+                        if (amount == null ||
+                            amount <= 0 ||
+                            sourceWallet.id == targetWallet.id)
+                          return;
 
                         final repo = ref.read(walletRepositoryProvider);
                         // Update balances
-                        await repo.updateWallet(sourceWallet.copyWith(balance: sourceWallet.balance - amount));
-                        await repo.updateWallet(targetWallet.copyWith(balance: targetWallet.balance + amount));
+                        await repo.updateWallet(
+                          sourceWallet.copyWith(
+                            balance: sourceWallet.balance - amount,
+                          ),
+                        );
+                        await repo.updateWallet(
+                          targetWallet.copyWith(
+                            balance: targetWallet.balance + amount,
+                          ),
+                        );
 
                         if (context.mounted) Navigator.of(context).pop();
                       },
@@ -347,6 +405,114 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
     final subWalletsAsync = ref.watch(digitalSubWalletsProvider);
     final allWalletsAsync = ref.watch(allWalletsProvider);
 
+    final sections = <Widget>[
+      // 1. Dompet Fisik Section
+      Text('Dompet Fisik (Tunai)', style: theme.textTheme.titleMedium),
+      const SizedBox(height: 10),
+      physicalWalletAsync.when(
+        data: (wallet) {
+          if (wallet == null) return const SizedBox.shrink();
+          return Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.brightness == Brightness.dark
+                    ? SakuinColors.darkIncome
+                    : SakuinColors.lightIncome,
+                child: const Text('💵', style: TextStyle(fontSize: 18)),
+              ),
+              title: Text(
+                wallet.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Uang tunai fisik / cash on hand'),
+              trailing: Text(
+                RupiahFormatter.format(wallet.balance),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+              onTap: () => _showAdjustBalanceDialog(context, wallet),
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Text('Error: $e'),
+      ),
+      const SizedBox(height: 24),
+
+      // 2. Dompet Digital Section
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Dompet Digital (E-Wallet & Bank)',
+            style: theme.textTheme.titleMedium,
+          ),
+          TextButton.icon(
+            onPressed: () {
+              final root = digitalRootAsync.asData?.value;
+              _showAddWalletSheet(context, root?.id);
+            },
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Tambah'),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+
+      subWalletsAsync.when(
+        data: (subWallets) {
+          if (subWallets.isEmpty) {
+            return const Card(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Belum ada e-wallet terdaftar'),
+              ),
+            );
+          }
+          return Column(
+            children: subWallets.map((wallet) {
+              final color = wallet.color != null
+                  ? Color(int.parse(wallet.color!.replaceAll('#', '0xFF')))
+                  : theme.colorScheme.primary;
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: color.withValues(alpha: 0.15),
+                    child: Text(
+                      wallet.icon ?? '📱',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+                  title: Text(
+                    wallet.name,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    'Provider: ${wallet.provider ?? "Custom"}',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                  trailing: Text(
+                    RupiahFormatter.format(wallet.balance),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  onTap: () => _showAdjustBalanceDialog(context, wallet),
+                ),
+              );
+            }).toList(),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Text('Error: $e'),
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Kelola Dompet & Saldo'),
@@ -361,94 +527,10 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
           ),
         ],
       ),
-      body: ListView(
+      body: ListView.builder(
         padding: const EdgeInsets.all(20),
-        children: [
-          // 1. Dompet Fisik Section
-          Text('Dompet Fisik (Tunai)', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 10),
-          physicalWalletAsync.when(
-            data: (wallet) {
-              if (wallet == null) return const SizedBox.shrink();
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: theme.brightness == Brightness.dark
-                        ? SakuinColors.darkIncome
-                        : SakuinColors.lightIncome,
-                    child: const Text('💵', style: TextStyle(fontSize: 18)),
-                  ),
-                  title: Text(wallet.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text('Uang tunai fisik / cash on hand'),
-                  trailing: Text(
-                    RupiahFormatter.format(wallet.balance),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  onTap: () => _showAdjustBalanceDialog(context, wallet),
-                ),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('Error: $e'),
-          ),
-          const SizedBox(height: 24),
-
-          // 2. Dompet Digital Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Dompet Digital (E-Wallet & Bank)', style: theme.textTheme.titleMedium),
-              TextButton.icon(
-                onPressed: () {
-                  final root = digitalRootAsync.asData?.value;
-                  _showAddWalletSheet(context, root?.id);
-                },
-                icon: const Icon(Icons.add, size: 16),
-                label: const Text('Tambah'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          subWalletsAsync.when(
-            data: (subWallets) {
-              if (subWallets.isEmpty) {
-                return const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: Text('Belum ada e-wallet terdaftar'),
-                  ),
-                );
-              }
-              return Column(
-                children: subWallets.map((wallet) {
-                  final color = wallet.color != null
-                      ? Color(int.parse(wallet.color!.replaceAll('#', '0xFF')))
-                      : theme.colorScheme.primary;
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: color.withValues(alpha: 0.15),
-                        child: Text(wallet.icon ?? '📱', style: const TextStyle(fontSize: 18)),
-                      ),
-                      title: Text(wallet.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                      subtitle: Text('Provider: ${wallet.provider ?? "Custom"}', style: theme.textTheme.bodySmall),
-                      trailing: Text(
-                        RupiahFormatter.format(wallet.balance),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
-                      onTap: () => _showAdjustBalanceDialog(context, wallet),
-                    ),
-                  );
-                }).toList(),
-              );
-            },
-            loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, _) => Text('Error: $e'),
-          ),
-        ],
+        itemCount: sections.length,
+        itemBuilder: (context, index) => sections[index],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {

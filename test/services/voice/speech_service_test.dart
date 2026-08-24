@@ -11,11 +11,7 @@ void main() {
       // Simulates a transcript produced by on-device STT being fed into the
       // shared text-parser pipeline (no microphone required for this unit test).
       const transcript = 'beli kopi 25rb gopay';
-      final parsed = await parser.parseText(
-        text: transcript,
-        availableWallets: [],
-        availableCategories: [],
-      );
+      final parsed = await parser.parseText(text: transcript);
 
       expect(parsed.amount, 25000);
       expect(parsed.categoryKey, 'food');
@@ -27,11 +23,7 @@ void main() {
     test('maps spoken income "gaji bulanan 7.5jt" to income ParsedTransaction',
         () async {
       const transcript = 'gaji bulanan 7.5jt';
-      final parsed = await parser.parseText(
-        text: transcript,
-        availableWallets: [],
-        availableCategories: [],
-      );
+      final parsed = await parser.parseText(text: transcript);
 
       expect(parsed.amount, 7500000);
       expect(parsed.transactionType, TransactionType.income);
@@ -40,11 +32,7 @@ void main() {
     test('maps spoken "bayar kos 1.5jt via dana" to housing/dana expense',
         () async {
       const transcript = 'bayar kos 1.5jt via dana';
-      final parsed = await parser.parseText(
-        text: transcript,
-        availableWallets: [],
-        availableCategories: [],
-      );
+      final parsed = await parser.parseText(text: transcript);
 
       expect(parsed.amount, 1500000);
       expect(parsed.categoryKey, 'housing');

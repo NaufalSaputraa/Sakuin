@@ -1,10 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/categories/domain/category_model.dart';
-import '../../features/wallets/domain/wallet_model.dart';
 import 'indonesian_regex_parser.dart';
 import 'naive_bayes_classifier.dart';
 import 'parsed_transaction.dart';
 
+/// Transaction text parser pipeline (Regex -> Naive Bayes):
+///
+/// 1. Level 1: [IndonesianRegexParser] — deterministic Indonesian
+///    amount/wallet/category keyword rules.
+/// 2. Level 2: [NaiveBayesClassifier] — fallback used only when the regex
+///    finds no category. Its training labels match category keys exactly,
+///    so results map 1:1 onto seeded categories.
 class TextParserService {
   final NaiveBayesClassifier _mlClassifier = NaiveBayesClassifier();
 
@@ -12,8 +17,6 @@ class TextParserService {
 
   Future<ParsedTransaction> parseText({
     required String text,
-    required List<WalletModel> availableWallets,
-    required List<CategoryModel> availableCategories,
     String? merchant,
   }) async {
     // 1. Level 1: Indonesian Regex & Rule Matcher
@@ -25,8 +28,8 @@ class TextParserService {
       result = result.copyWith(merchant: merchant.trim());
     }
 
-    // 2. Level 2: Machine Learning Naive Bayes NLP Fallback
-    if (result.categoryKey == null || result.categoryKey == 'other_expense') {
+    // 2. Level 2: Naive Bayes fallback when regex found no category.
+    if (result.categoryKey == null) {
       final mlCategory = _mlClassifier.classify(text);
       if (mlCategory != null) {
         result = result.copyWith(
@@ -41,11 +44,7 @@ class TextParserService {
 
   /// Parses multiple transactions if user inputs a list or multi-line text
   /// e.g. "1. Makan siang 30rb gopay\n2. Parkir 5rb cash\n3. Pulsa 50rb dana"
-  Future<List<ParsedTransaction>> parseBatchText({
-    required String text,
-    required List<WalletModel> availableWallets,
-    required List<CategoryModel> availableCategories,
-  }) async {
+  Future<List<ParsedTransaction>> parseBatchText({required String text}) async {
     final rawLines = text
         .split(RegExp(r'[\r\n;]+|\b(?:dan lalu|kemudian|serta)\b', caseSensitive: false))
         .map((l) => l.replaceAll(RegExp(r'^\s*(?:\d+[\.\)]\s*|[-*•]\s*)'), '').trim())
@@ -53,24 +52,18 @@ class TextParserService {
         .toList();
 
     if (rawLines.isEmpty) {
-      return [await parseText(text: text, availableWallets: availableWallets, availableCategories: availableCategories)];
+      return [await parseText(text: text)];
     }
 
     final results = <ParsedTransaction>[];
     for (final line in rawLines) {
-      final parsed = await parseText(
-        text: line,
-        availableWallets: availableWallets,
-        availableCategories: availableCategories,
-      );
+      final parsed = await parseText(text: line);
       if (parsed.hasAmount) {
         results.add(parsed);
       }
     }
 
-    return results.isNotEmpty
-        ? results
-        : [await parseText(text: text, availableWallets: availableWallets, availableCategories: availableCategories)];
+    return results.isNotEmpty ? results : [await parseText(text: text)];
   }
 }
 

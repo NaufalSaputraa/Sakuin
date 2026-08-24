@@ -15,7 +15,7 @@ import '../../wallets/providers/wallet_providers.dart';
 import '../../../services/ml/text_parser_service.dart';
 import '../../../services/llm/model_repository.dart';
 import '../providers/chat_providers.dart';
-import '../providers/qwen_chat_provider.dart';
+import '../providers/gemma_chat_provider.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
@@ -94,11 +94,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       final categories = ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
       final txRepo = ref.read(transactionRepositoryProvider);
 
-      final batchResults = await parser.parseBatchText(
-        text: text,
-        availableWallets: wallets,
-        availableCategories: categories,
-      );
+      final batchResults = await parser.parseBatchText(text: text);
 
       final createdTitles = <String>[];
       double totalBatch = 0.0;
@@ -157,9 +153,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       }
     }
 
-    // 3. Conversational: use on-device Qwen if READY, else rule-based fallback.
+    // 3. Conversational: use on-device Gemma if READY, else rule-based fallback.
     String response;
-    final modelState = ref.read(qwenChatNotifierProvider).modelState;
+    final modelState = ref.read(gemmaChatNotifierProvider).modelState;
     if (modelState == ModelState.ready) {
       final financialContext = _buildFinancialContext(
         totalBalance: totalBalance,
@@ -168,8 +164,8 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
         limit: limit,
         remainingBudget: remainingBudget,
       );
-      final qwen = ref.read(qwenChatNotifierProvider.notifier);
-      final reply = await qwen.generate(userPrompt: text, financialContext: financialContext);
+      final gemma = ref.read(gemmaChatNotifierProvider.notifier);
+      final reply = await gemma.generate(userPrompt: text, financialContext: financialContext);
       response = reply.isNotEmpty
           ? reply
           : _ruleBasedResponse(
@@ -292,7 +288,7 @@ Financial facts (absolute, do not contradict):
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final messagesAsync = ref.watch(chatMessagesStreamProvider);
-    final modelState = ref.watch(qwenChatNotifierProvider).modelState;
+    final modelState = ref.watch(gemmaChatNotifierProvider).modelState;
 
     return Scaffold(
       appBar: AppBar(

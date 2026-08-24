@@ -110,11 +110,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
   }
 
   Future<void> _parseAndUpdate(String text, TextParserService parser, List<WalletModel> wallets, List<CategoryModel> categories) async {
-    final result = await parser.parseText(
-      text: text,
-      availableWallets: wallets,
-      availableCategories: categories,
-    );
+    final result = await parser.parseText(text: text);
 
     setState(() {
       _transactionType = result.transactionType;

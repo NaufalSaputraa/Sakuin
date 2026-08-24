@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/model_download_constants.dart';
 import '../../../services/llm/model_repository.dart';
-import '../../chat/providers/qwen_chat_provider.dart';
+import '../../chat/providers/gemma_chat_provider.dart';
 
 /// Settings section that drives the on-device LLM model download/status.
 /// Single source of truth for download UI (progress, retry, insufficient
@@ -16,8 +16,8 @@ class AiModelSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final state = ref.watch(qwenChatNotifierProvider);
-    final notifier = ref.read(qwenChatNotifierProvider.notifier);
+    final state = ref.watch(gemmaChatNotifierProvider);
+    final notifier = ref.read(gemmaChatNotifierProvider.notifier);
 
     return Card(
       child: Padding(
@@ -60,7 +60,7 @@ class AiModelSection extends ConsumerWidget {
     );
   }
 
-  Widget _body(BuildContext context, QwenChatState state, QwenChatNotifier notifier) {
+  Widget _body(BuildContext context, GemmaChatState state, GemmaChatNotifier notifier) {
     final theme = Theme.of(context);
     switch (state.modelState) {
       case ModelState.notDownloaded:

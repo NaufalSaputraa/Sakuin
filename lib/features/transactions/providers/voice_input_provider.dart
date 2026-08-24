@@ -4,10 +4,6 @@ import '../../../core/utils/result.dart';
 import '../../../services/voice/speech_service.dart';
 import '../../../services/ml/parsed_transaction.dart';
 import '../../../services/ml/text_parser_service.dart';
-import '../../categories/domain/category_model.dart';
-import '../../wallets/domain/wallet_model.dart';
-import '../../categories/providers/category_providers.dart';
-import '../../wallets/providers/wallet_providers.dart';
 
 class VoiceInputState {
   final bool isListening;
@@ -88,16 +84,8 @@ class VoiceInputNotifier extends Notifier<VoiceInputState> {
 
   Future<void> _parseTranscript(String transcript) async {
     final parser = ref.read(textParserServiceProvider);
-    final wallets =
-        ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
-    final categories =
-        ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
 
-    final parsed = await parser.parseText(
-      text: transcript,
-      availableWallets: wallets,
-      availableCategories: categories,
-    );
+    final parsed = await parser.parseText(text: transcript);
 
     // Ignore stale parses if a newer transcript has since arrived.
     if (state.transcript != transcript) return;

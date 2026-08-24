@@ -13,11 +13,7 @@ void main() {
     test('BCA transfer text parses amount, wallet and type', () async {
       const sharedText = 'Transfer Rp 50.000 ke BCA';
 
-      final result = await parser.parseText(
-        text: sharedText,
-        availableWallets: const [],
-        availableCategories: [],
-      );
+      final result = await parser.parseText(text: sharedText);
 
       expect(result, isA<ParsedTransaction>());
       expect(result.amount, 50000);
@@ -30,11 +26,7 @@ void main() {
     test('GoPay shorthand text parses amount and wallet', () async {
       const sharedText = 'Kirim 50rb ke GoPay';
 
-      final result = await parser.parseText(
-        text: sharedText,
-        availableWallets: const [],
-        availableCategories: [],
-      );
+      final result = await parser.parseText(text: sharedText);
 
       expect(result.amount, 50000);
       expect(result.walletProvider, 'gopay');
@@ -48,11 +40,7 @@ void main() {
     test('BRI transfer text parses amount, bank wallet and type', () async {
       const sharedText = 'Transfer Rp 75.000 ke BRI';
 
-      final result = await parser.parseText(
-        text: sharedText,
-        availableWallets: const [],
-        availableCategories: [],
-      );
+      final result = await parser.parseText(text: sharedText);
 
       expect(result, isA<ParsedTransaction>());
       expect(result.amount, 75000);
@@ -67,11 +55,7 @@ void main() {
     test('ShopeePay shorthand text parses amount and wallet', () async {
       const sharedText = 'Kirim 35rb ke ShopeePay';
 
-      final result = await parser.parseText(
-        text: sharedText,
-        availableWallets: const [],
-        availableCategories: [],
-      );
+      final result = await parser.parseText(text: sharedText);
 
       expect(result.amount, 35000);
       expect(result.walletProvider, 'shopeepay');
@@ -84,11 +68,7 @@ void main() {
     test('parsed result exposes helpers for sheet auto-fill', () async {
       const sharedText = 'Transfer Rp 50.000 ke BCA';
 
-      final result = await parser.parseText(
-        text: sharedText,
-        availableWallets: const [],
-        availableCategories: [],
-      );
+      final result = await parser.parseText(text: sharedText);
 
       expect(result.hasAmount, isTrue);
       expect(result.hasWallet, isTrue);

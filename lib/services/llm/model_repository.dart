@@ -21,8 +21,8 @@ enum ModelState {
 
 /// Repository responsible for downloading, verifying, and tracking the
 /// on-device `.litertlm` model. It is intentionally model-agnostic: it only
-/// consumes [ModelDownloadConfig], so swapping Qwen -> Gemma 4 E2B requires
-/// no changes here.
+/// consumes [ModelDownloadConfig], so swapping Gemma 4 E2B -> another model
+/// requires no changes here.
 class ModelRepository {
   ModelRepository({Dio? dio}) : _dio = dio ?? Dio() {
     _emit(_currentState = ModelState.notDownloaded);

@@ -16,9 +16,17 @@ final currencyRatesProvider = StreamProvider.autoDispose<List<CurrencyRateModel>
   return repo.watchRates();
 });
 
-/// Offline converter service (static default rates).
+/// Offline converter service built from the DB rates (single rate source).
+///
+/// Watching [currencyRatesProvider] keeps the service in sync with
+/// user-edited rates so consumers (e.g. quick entry) see edits immediately.
+/// Falls back to static offline defaults while the DB is loading or empty.
 final converterProvider = Provider<CurrencyConverterService>((ref) {
-  return CurrencyConverterService();
+  final rates = ref.watch(currencyRatesProvider).value;
+  if (rates == null || rates.isEmpty) {
+    return CurrencyConverterService();
+  }
+  return CurrencyConverterService(rates);
 });
 
 /// Currently selected currency for new transactions (quick entry sheet).
