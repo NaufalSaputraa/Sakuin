@@ -25,11 +25,15 @@ class SmartRuleLearningService {
     final merchantCount = <String, int>{};
 
     for (final tx in transactions) {
-      if (tx.merchant == null || tx.merchant!.isEmpty) continue;
+      // Fall back to title for legacy rows created before merchant
+      // propagation was added.
+      final rawMerchant =
+          (tx.merchant != null && tx.merchant!.trim().isNotEmpty) ? tx.merchant! : tx.title;
+      if (rawMerchant.trim().isEmpty) continue;
       if (tx.categoryId == null) continue;
       if (tx.transactionType != 'expense') continue;
 
-      final merchant = tx.merchant!.toLowerCase().trim();
+      final merchant = rawMerchant.toLowerCase().trim();
       merchantCount[merchant] = (merchantCount[merchant] ?? 0) + 1;
 
       merchantCategoryMap[merchant] ??= {};

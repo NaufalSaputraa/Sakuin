@@ -60,6 +60,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
   int? _selectedWalletId;
   int? _selectedCategoryId;
   double _parsedAmount = 0.0;
+  String? _parsedMerchant; // From parser/OCR/voice/share; feeds subscriptions & smart rules
   bool _isLoading = false;
   String _selectedCurrency = 'IDR';
 
@@ -117,6 +118,9 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     setState(() {
       _transactionType = result.transactionType;
       _titleController.text = result.title;
+      _parsedMerchant = (result.merchant?.trim().isNotEmpty ?? false)
+          ? result.merchant!.trim()
+          : result.title;
 
       if (result.amount != null && result.amount! > 0) {
         _parsedAmount = result.amount!;
@@ -209,12 +213,16 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     ref.read(selectedCurrencyProvider.notifier).set(_selectedCurrency);
 
     final repo = ref.read(transactionRepositoryProvider);
+    final merchantForTx = (_parsedMerchant?.trim().isNotEmpty ?? false)
+        ? _parsedMerchant!.trim()
+        : title;
     final result = await repo.createTransaction(
       walletId: finalWalletId,
       categoryId: finalCategoryId,
       amount: amount,
       transactionType: _transactionType,
       title: title,
+      merchant: merchantForTx,
       sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
       rawInput: _textController.text.trim(),
       currency: _selectedCurrency,
@@ -273,6 +281,9 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     setState(() {
       _transactionType = parsed.transactionType;
       _titleController.text = parsed.title;
+      _parsedMerchant = (parsed.merchant?.trim().isNotEmpty ?? false)
+          ? parsed.merchant!.trim()
+          : parsed.title;
 
       if (parsed.amount != null && parsed.amount! > 0) {
         _parsedAmount = parsed.amount!;

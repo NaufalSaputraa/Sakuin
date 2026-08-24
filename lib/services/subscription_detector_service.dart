@@ -33,17 +33,19 @@ class SubscriptionDetectorService {
   static const int _intervalToleranceDays = 5;
 
   List<DetectedSubscription> detect(List<TransactionModel> transactions) {
-    // Filter expense transactions with merchant
-    final expenseTxs = transactions
-        .where((tx) => tx.isExpense && tx.merchant != null && tx.merchant!.trim().isNotEmpty)
-        .toList();
+    // Filter expense transactions with merchant (fall back to title for
+    // legacy rows created before merchant propagation).
+    final expenseTxs = transactions.where((tx) {
+      final merchant = tx.merchant ?? tx.title;
+      return tx.isExpense && merchant.trim().isNotEmpty;
+    }).toList();
 
     if (expenseTxs.length < _minOccurrences) return [];
 
     // Group by normalized merchant key
     final groups = <String, List<TransactionModel>>{};
     for (final tx in expenseTxs) {
-      final key = _normalizeMerchantKey(tx.merchant!);
+      final key = _normalizeMerchantKey(tx.merchant ?? tx.title);
       groups.putIfAbsent(key, () => []).add(tx);
     }
 
@@ -92,7 +94,7 @@ class SubscriptionDetectorService {
       final nextCharge = txs.last.transactionDate.add(const Duration(days: _expectedIntervalDays));
 
       detected.add(DetectedSubscription(
-        merchant: txs.first.merchant!,
+        merchant: txs.first.merchant ?? txs.first.title,
         normalizedKey: key,
         amount: avgAmount,
         period: 'monthly',

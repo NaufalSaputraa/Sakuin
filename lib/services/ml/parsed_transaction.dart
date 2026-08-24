@@ -6,6 +6,7 @@ class ParsedTransaction {
   final String? walletProvider; // 'gopay', 'ovo', 'dana', 'shopeepay', 'physical', etc.
   final TransactionType transactionType;
   final String title;
+  final String? merchant; // Merchant/store name when extractable; feeds subscriptions & smart rules
   final double confidence; // 0.0 to 1.0
   final String rawInput;
 
@@ -15,6 +16,7 @@ class ParsedTransaction {
     this.walletProvider,
     this.transactionType = TransactionType.expense,
     required this.title,
+    this.merchant,
     this.confidence = 0.0,
     required this.rawInput,
   });
@@ -29,6 +31,7 @@ class ParsedTransaction {
     String? walletProvider,
     TransactionType? transactionType,
     String? title,
+    String? merchant,
     double? confidence,
     String? rawInput,
   }) {
@@ -38,6 +41,7 @@ class ParsedTransaction {
       walletProvider: walletProvider ?? this.walletProvider,
       transactionType: transactionType ?? this.transactionType,
       title: title ?? this.title,
+      merchant: merchant ?? this.merchant,
       confidence: confidence ?? this.confidence,
       rawInput: rawInput ?? this.rawInput,
     );

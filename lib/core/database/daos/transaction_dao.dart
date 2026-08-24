@@ -36,23 +36,38 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
         .get();
   }
 
-  Future<int> insertTransaction(TransactionsCompanion companion) async {
+  /// Inserts a transaction row.
+  ///
+  /// By default this also applies wallet balance deltas (expense/income/
+  /// transfer). Pass [skipBalanceUpdate] = true ONLY for restore/import flows
+  /// where wallet balances were already restored as-is from the backup bundle;
+  /// re-running the deltas there would double-count them.
+  Future<int> insertTransaction(
+    TransactionsCompanion companion, {
+    bool skipBalanceUpdate = false,
+  }) async {
     return db.transaction(() async {
       final txId = await into(transactions).insert(companion);
 
-      final walletId = companion.walletId.value;
-      final amount = companion.amount.value;
-      final type = companion.transactionType.value;
+      if (!skipBalanceUpdate) {
+        final walletId = companion.walletId.value;
+        // Balance deltas use the base-currency (IDR) amount so multi-currency
+        // transactions adjust balances correctly (wallets are IDR-based).
+        final amount = companion.amountBase.present && companion.amountBase.value != 0
+            ? companion.amountBase.value
+            : companion.amount.value;
+        final type = companion.transactionType.value;
 
-      if (type == 'expense') {
-        await db.walletDao.updateBalance(walletId, -amount);
-      } else if (type == 'income') {
-        await db.walletDao.updateBalance(walletId, amount);
-      } else if (type == 'transfer' && companion.transferToWalletId.present) {
-        final toWalletId = companion.transferToWalletId.value;
-        if (toWalletId != null) {
+        if (type == 'expense') {
           await db.walletDao.updateBalance(walletId, -amount);
-          await db.walletDao.updateBalance(toWalletId, amount);
+        } else if (type == 'income') {
+          await db.walletDao.updateBalance(walletId, amount);
+        } else if (type == 'transfer' && companion.transferToWalletId.present) {
+          final toWalletId = companion.transferToWalletId.value;
+          if (toWalletId != null) {
+            await db.walletDao.updateBalance(walletId, -amount);
+            await db.walletDao.updateBalance(toWalletId, amount);
+          }
         }
       }
 
@@ -65,14 +80,14 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
       final tx = await (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
       if (tx == null) return 0;
 
-      // Revert wallet balances
+      // Revert wallet balances (amountBase = IDR-equivalent amount)
       if (tx.transactionType == 'expense') {
-        await db.walletDao.updateBalance(tx.walletId, tx.amount);
+        await db.walletDao.updateBalance(tx.walletId, tx.amountBase);
       } else if (tx.transactionType == 'income') {
-        await db.walletDao.updateBalance(tx.walletId, -tx.amount);
+        await db.walletDao.updateBalance(tx.walletId, -tx.amountBase);
       } else if (tx.transactionType == 'transfer' && tx.transferToWalletId != null) {
-        await db.walletDao.updateBalance(tx.walletId, tx.amount);
-        await db.walletDao.updateBalance(tx.transferToWalletId!, -tx.amount);
+        await db.walletDao.updateBalance(tx.walletId, tx.amountBase);
+        await db.walletDao.updateBalance(tx.transferToWalletId!, -tx.amountBase);
       }
 
       return (delete(transactions)..where((t) => t.id.equals(id))).go();

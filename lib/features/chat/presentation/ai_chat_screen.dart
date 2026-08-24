@@ -127,6 +127,9 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           amount: item.amount!,
           transactionType: item.transactionType,
           title: item.title,
+          merchant: (item.merchant?.trim().isNotEmpty ?? false)
+              ? item.merchant!.trim()
+              : item.title,
           sourceInput: 'ai_chat',
           rawInput: item.rawInput,
         );

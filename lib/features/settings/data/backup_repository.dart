@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/result.dart';
+import '../../../services/currency/currency_converter_service.dart';
 import '../../../services/export/export_model.dart';
 import '../../wallets/domain/wallet_model.dart';
 import '../../categories/domain/category_model.dart';
@@ -107,7 +108,14 @@ class BackupRepository implements BackupRepositoryInterface {
             continue;
           }
 
-          await _db.transactionDao.insertTransaction(_transactionToCompanion(transaction));
+          // Restore strategy: wallet balances were already inserted as-is
+          // from the bundle above (reconciled by wallet id), so insert
+          // transactions WITHOUT re-applying balance deltas to avoid
+          // double-counting on re-import / different device.
+          await _db.transactionDao.insertTransaction(
+            await _transactionToCompanion(transaction),
+            skipBalanceUpdate: true,
+          );
           existingTransactionIds.add(transaction.id);
           insertedCounts['transactions'] = insertedCounts['transactions']! + 1;
         }
@@ -187,7 +195,14 @@ class BackupRepository implements BackupRepositoryInterface {
     );
   }
 
-  TransactionsCompanion _transactionToCompanion(TransactionModel transaction) {
+  Future<TransactionsCompanion> _transactionToCompanion(
+      TransactionModel transaction) async {
+    // Preserve the exported amountBase; recompute only when it is missing
+    // (0) so imported rows don't collapse to IDR 0 in monthly totals.
+    var amountBase = transaction.amountBase;
+    if (amountBase <= 0) {
+      amountBase = await _computeAmountBase(transaction.amount, transaction.currency);
+    }
     return TransactionsCompanion.insert(
       id: Value(transaction.id),
       walletId: transaction.walletId,
@@ -200,10 +215,29 @@ class BackupRepository implements BackupRepositoryInterface {
       sourceInput: Value(transaction.sourceInput),
       rawInput: Value(transaction.rawInput),
       transferToWalletId: Value(transaction.transferToWalletId),
+      currency: Value(transaction.currency),
+      amountBase: Value(amountBase),
       transactionDate: Value(transaction.transactionDate),
       createdAt: Value(transaction.createdAt),
       updatedAt: Value(transaction.updatedAt),
     );
+  }
+
+  /// Compute amountBase by reading the rate from the currency DAO.
+  /// Falls back to the static offline default rate if the code is not in
+  /// the DB. Mirrors TransactionRepository._computeAmountBase.
+  Future<double> _computeAmountBase(double amount, String currency) async {
+    if (currency == 'IDR') return amount;
+    try {
+      final entry = await _db.currencyRatesDao.getByCode(currency);
+      if (entry != null) return amount * entry.rateToIdr;
+    } catch (_) {
+      // Fall through to static offline default below.
+    }
+    final match = CurrencyConverterService.defaultRates
+        .where((r) => r.code == currency)
+        .firstOrNull;
+    return match == null ? amount : amount * match.rateToIdr;
   }
 
   BudgetsCompanion _budgetToCompanion(BudgetModel budget) {

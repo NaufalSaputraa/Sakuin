@@ -133,6 +133,7 @@ class ReceiptScannerService {
       walletProvider: walletProvider ?? 'physical',
       transactionType: TransactionType.expense,
       title: merchant,
+      merchant: merchant,
       confidence: totalAmount != null ? 0.85 : 0.4,
       rawInput: rawText,
     );

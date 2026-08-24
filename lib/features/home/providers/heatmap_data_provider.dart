@@ -62,7 +62,11 @@ Map<DateTime, HeatmapDay> aggregateHeatmap(
     if (day.isBefore(startDate) || day.isAfter(today)) continue;
 
     dailyAggregates.putIfAbsent(day, () => _DayAggregate());
-    dailyAggregates[day]!.add(tx.amount);
+    // Use amountBase (IDR-equivalent) to stay consistent with monthly totals
+    // in TransactionDao. Fallback to raw amount for legacy IDR rows where
+    // amountBase was never populated (defaults to 0).
+    final effectiveAmount = tx.amountBase != 0 ? tx.amountBase : tx.amount;
+    dailyAggregates[day]!.add(effectiveAmount);
   }
 
   // Convert aggregates to HeatmapDay with intensity buckets

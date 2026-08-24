@@ -1,31 +1,29 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/categories/domain/category_model.dart';
 import '../../features/wallets/domain/wallet_model.dart';
-import '../../features/smart_rules/domain/smart_rule_model.dart';
-import '../../features/smart_rules/providers/smart_rule_providers.dart';
 import 'indonesian_regex_parser.dart';
 import 'naive_bayes_classifier.dart';
 import 'parsed_transaction.dart';
-import 'smart_rule_evaluator_service.dart';
 
 class TextParserService {
   final NaiveBayesClassifier _mlClassifier = NaiveBayesClassifier();
-  final SmartRuleEvaluatorService? _ruleEvaluator;
 
-  TextParserService({SmartRuleEvaluatorService? ruleEvaluator})
-      : _ruleEvaluator = ruleEvaluator;
+  TextParserService();
 
   Future<ParsedTransaction> parseText({
     required String text,
     required List<WalletModel> availableWallets,
     required List<CategoryModel> availableCategories,
     String? merchant,
-    double? amount,
-    int? categoryId,
   }) async {
     // 1. Level 1: Indonesian Regex & Rule Matcher
     var result = IndonesianRegexParser.parse(text);
+
+    // Merchant propagation: an explicitly provided merchant wins over the
+    // parser-extracted one so callers (OCR, share import) can inject it.
+    if (merchant != null && merchant.trim().isNotEmpty) {
+      result = result.copyWith(merchant: merchant.trim());
+    }
 
     // 2. Level 2: Machine Learning Naive Bayes NLP Fallback
     if (result.categoryKey == null || result.categoryKey == 'other_expense') {
@@ -38,51 +36,7 @@ class TextParserService {
       }
     }
 
-    // 3. Level 3: Smart Rules Engine (if available)
-    if (_ruleEvaluator != null && merchant != null && amount != null) {
-      final evaluator = _ruleEvaluator!;
-      final evaluation = await evaluator.evaluate(
-        merchant: merchant,
-        title: text,
-        amount: amount,
-        categoryId: categoryId,
-      );
-
-      if (evaluation.hasMatch && evaluation.action != null) {
-        final action = evaluation.action!;
-        if (action.type == RuleActionType.categorize) {
-          final actionData = _parseActionValue(action.value);
-          final categoryId = actionData['categoryId'] as int?;
-          if (categoryId != null) {
-            final category = availableCategories
-                .where((c) => c.id == categoryId)
-                .firstOrNull;
-            if (category != null) {
-              result = result.copyWith(
-                categoryKey: category.key,
-                confidence: (result.confidence + 0.3).clamp(0.0, 1.0),
-              );
-            }
-          }
-        } else if (action.type == RuleActionType.wallet) {
-          final actionData = _parseActionValue(action.value);
-          final walletProvider = actionData['walletProvider'] as String?;
-          if (walletProvider != null) {
-            result = result.copyWith(walletProvider: walletProvider);
-          }
-        }
-      }
-    }
-
     return result;
-  }
-
-  Map<String, dynamic> _parseActionValue(String value) {
-    try {
-      return Map<String, dynamic>.from(jsonDecode(value));
-    } catch (_) {
-      return {};
-    }
   }
 
   /// Parses multiple transactions if user inputs a list or multi-line text
@@ -121,6 +75,5 @@ class TextParserService {
 }
 
 final textParserServiceProvider = Provider<TextParserService>((ref) {
-  final evaluator = ref.watch(smartRuleEvaluatorServiceProvider);
-  return TextParserService(ruleEvaluator: evaluator);
+  return TextParserService();
 });

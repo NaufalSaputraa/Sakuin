@@ -142,6 +142,8 @@ class IndonesianRegexParser {
       walletProvider: matchedWallet,
       transactionType: type,
       title: title,
+      // Best available merchant proxy at regex level: the cleaned subject.
+      merchant: title,
       confidence: confidence.clamp(0.0, 1.0),
       rawInput: clean,
     );
