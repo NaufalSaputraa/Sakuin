@@ -300,7 +300,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Text('settings.section_backup'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
-          _BackupSection(),
+          const _BackupSection(),
           const SizedBox(height: 24),
 
           // 6. About Sakuin
@@ -407,8 +407,7 @@ class _BackupSection extends ConsumerWidget {
           ).animate().shimmer(duration: 1000.ms),
           const SizedBox(height: 8),
           Text(
-            (state.isExporting ? 'exportImport.exporting' : 'exportImport.importing').tr() +
-                ' ${(state.progress * 100).toInt()}%',
+            '${(state.isExporting ? 'exportImport.exporting' : 'exportImport.importing').tr()} ${(state.progress * 100).toInt()}%',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -559,7 +558,6 @@ class _CurrencyRatesSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final ratesAsync = ref.watch(currencyRatesProvider);
-    final repo = ref.read(currencyRepositoryProvider);
 
     return ratesAsync.when(
       data: (rates) => Column(
@@ -594,7 +592,6 @@ class _CurrencyRatesSection extends ConsumerWidget {
     CurrencyRateModel rate,
   ) {
     final controller = TextEditingController(text: rate.rateToIdr.toStringAsFixed(2));
-    final theme = Theme.of(context);
 
     showDialog(
       context: context,

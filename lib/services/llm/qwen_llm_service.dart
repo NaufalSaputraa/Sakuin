@@ -52,7 +52,7 @@ You are Sakuin AI, an on-device personal finance assistant for Indonesian users.
         _engine = Engine(
           engineConfig: EngineConfig(
             modelPath: path,
-            backend: Backend.gpu(),
+            backend: const Backend.gpu(),
             maxNumTokens: 1024,
           ),
         );
@@ -63,7 +63,7 @@ You are Sakuin AI, an on-device personal finance assistant for Indonesian users.
           _engine = Engine(
             engineConfig: EngineConfig(
               modelPath: path,
-              backend: Backend.cpu(),
+              backend: const Backend.cpu(),
               maxNumTokens: 1024,
             ),
           );

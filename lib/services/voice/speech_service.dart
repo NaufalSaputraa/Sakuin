@@ -82,12 +82,14 @@ class SpeechService {
             _emit(onResult);
           });
         },
-        listenFor: const Duration(seconds: 60),
-        pauseFor: const Duration(seconds: 5),
-        partialResults: true,
-        localeId: 'id_ID',
-        cancelOnError: true,
-        onDevice: true,
+        listenOptions: stt.SpeechListenOptions(
+          listenFor: const Duration(seconds: 60),
+          pauseFor: const Duration(seconds: 5),
+          partialResults: true,
+          localeId: 'id_ID',
+          cancelOnError: true,
+          onDevice: true,
+        ),
       );
       return const Success('listening');
     } on Exception catch (e) {

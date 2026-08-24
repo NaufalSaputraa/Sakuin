@@ -7,19 +7,19 @@ part of 'wallet_model.dart';
 // **************************************************************************
 
 WalletModel _$WalletModelFromJson(Map<String, dynamic> json) => WalletModel(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      walletType: json['walletType'] as String,
-      parentId: (json['parentId'] as num?)?.toInt(),
-      provider: json['provider'] as String?,
-      balance: (json['balance'] as num).toDouble(),
-      currency: json['currency'] as String? ?? 'IDR',
-      icon: json['icon'] as String?,
-      color: json['color'] as String?,
-      isActive: json['isActive'] as bool? ?? true,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  walletType: json['walletType'] as String,
+  parentId: (json['parentId'] as num?)?.toInt(),
+  provider: json['provider'] as String?,
+  balance: (json['balance'] as num).toDouble(),
+  currency: json['currency'] as String? ?? 'IDR',
+  icon: json['icon'] as String?,
+  color: json['color'] as String?,
+  isActive: json['isActive'] as bool? ?? true,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+  updatedAt: DateTime.parse(json['updatedAt'] as String),
+);
 
 Map<String, dynamic> _$WalletModelToJson(WalletModel instance) =>
     <String, dynamic>{

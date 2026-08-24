@@ -12,8 +12,10 @@ TransactionModel _$TransactionModelFromJson(Map<String, dynamic> json) =>
       walletId: (json['walletId'] as num).toInt(),
       categoryId: (json['categoryId'] as num?)?.toInt(),
       amount: (json['amount'] as num).toDouble(),
-      transactionType:
-          $enumDecode(_$TransactionTypeEnumMap, json['transactionType']),
+      transactionType: $enumDecode(
+        _$TransactionTypeEnumMap,
+        json['transactionType'],
+      ),
       title: json['title'] as String,
       description: json['description'] as String?,
       merchant: json['merchant'] as String?,

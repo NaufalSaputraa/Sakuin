@@ -19,6 +19,6 @@ final primaryBudgetProvider = StreamProvider.autoDispose<BudgetModel?>((ref) {
   return budgetsAsync.when(
     data: (list) => Stream.value(list.isNotEmpty ? list.first : null),
     loading: () => Stream.value(null),
-    error: (_, __) => Stream.value(null),
+    error: (_, _) => Stream.value(null),
   );
 });

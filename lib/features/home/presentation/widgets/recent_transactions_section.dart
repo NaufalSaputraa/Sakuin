@@ -86,7 +86,7 @@ class RecentTransactionsSection extends ConsumerWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: transactions.length > 5 ? 5 : transactions.length,
-                separatorBuilder: (_, __) => Divider(
+                separatorBuilder: (_, _) => Divider(
                   height: 1,
                   indent: 64,
                   color: theme.colorScheme.outlineVariant,

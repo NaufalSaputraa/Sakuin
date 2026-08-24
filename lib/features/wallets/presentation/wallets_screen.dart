@@ -99,7 +99,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
             final currencyCodes = ratesAsync.when(
               data: (rates) => rates.map((r) => r.code).toList(),
               loading: () => <String>['IDR'],
-              error: (_, __) => <String>['IDR'],
+              error: (_, _) => <String>['IDR'],
             );
             return Padding(
               padding: EdgeInsets.only(
@@ -167,7 +167,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: colorList.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (context, idx) {
                           final hex = colorList[idx];
                           final isSelected = hex == selectedColor;

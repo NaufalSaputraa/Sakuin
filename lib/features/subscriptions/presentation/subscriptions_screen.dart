@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../domain/subscription_model.dart';
@@ -58,7 +57,7 @@ class SubscriptionsScreen extends ConsumerWidget {
               return ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: allSubscriptions.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final sub = allSubscriptions[index];
                   final isDetected = sub.id == 0;

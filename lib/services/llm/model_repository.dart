@@ -90,7 +90,7 @@ class ModelRepository {
       if (bytes.isEmpty) {
         return Failure(AppError.validation('Model file is empty'));
       }
-      final expected = ModelDownloadConfig.modelSha256;
+      const expected = ModelDownloadConfig.modelSha256;
       if (expected.startsWith('PLACEHOLDER')) {
         // No pinned hash yet — accept (dev mode).
         return const Success(true);

@@ -117,7 +117,7 @@ class _MonthLabelsRow extends StatelessWidget {
         );
       },
       loading: () => const SizedBox(height: 18),
-      error: (_, __) => const SizedBox(height: 18),
+      error: (_, _) => const SizedBox(height: 18),
     );
   }
 
@@ -191,9 +191,6 @@ class _HeatmapGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     if (heatmap.isEmpty) {
       return const SizedBox(height: 105);
     }
@@ -224,7 +221,7 @@ class _HeatmapGrid extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 52,
-              separatorBuilder: (_, __) => const SizedBox(width: 4),
+              separatorBuilder: (_, _) => const SizedBox(width: 4),
               itemBuilder: (context, colIndex) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -239,7 +236,6 @@ class _HeatmapGrid extends StatelessWidget {
                     return _HeatmapCell(
                       heatmapDay: heatmapDay,
                       primaryColor: primaryColor,
-                      isDark: isDark,
                     );
                   }),
                 );
@@ -290,12 +286,10 @@ class _EmptyCell extends StatelessWidget {
 class _HeatmapCell extends ConsumerWidget {
   final HeatmapDay heatmapDay;
   final Color primaryColor;
-  final bool isDark;
 
   const _HeatmapCell({
     required this.heatmapDay,
     required this.primaryColor,
-    required this.isDark,
   });
 
   @override
@@ -304,7 +298,7 @@ class _HeatmapCell extends ConsumerWidget {
 
     Color cellColor;
     if (heatmapDay.isEmpty) {
-      cellColor = isDark ? const Color(0xFF232338) : const Color(0xFFF0E5DA);
+      cellColor = theme.colorScheme.outlineVariant;
     } else {
       // Intensity 1-4 maps to alpha 0.25, 0.5, 0.75, 1.0
       final alpha = heatmapDay.intensity / 4.0;
@@ -342,8 +336,7 @@ class _HeatmapSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final baseColor = isDark ? const Color(0xFF232338) : const Color(0xFFF0E5DA);
+    final baseColor = theme.colorScheme.outlineVariant;
 
     return SizedBox(
       height: 105,
@@ -366,7 +359,7 @@ class _HeatmapSkeleton extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: 52,
-              separatorBuilder: (_, __) => const SizedBox(width: 4),
+              separatorBuilder: (_, _) => const SizedBox(width: 4),
               itemBuilder: (context, colIndex) {
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,

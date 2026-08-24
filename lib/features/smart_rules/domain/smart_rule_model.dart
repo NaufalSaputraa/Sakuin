@@ -85,7 +85,6 @@ enum RuleActionType {
   String toDbString() => name;
 }
 
-@JsonSerializable()
 class RuleCondition {
   final RuleField field;
   final RuleOperator operator;
@@ -141,7 +140,6 @@ class RuleCondition {
   String toString() => 'RuleCondition(field: $field, operator: $operator, value: $value)';
 }
 
-@JsonSerializable()
 class RuleAction {
   final RuleActionType type;
   final String value; // JSON string for structured data

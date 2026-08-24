@@ -180,7 +180,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: _colorPalette.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 8),
+                        separatorBuilder: (_, _) => const SizedBox(width: 8),
                         itemBuilder: (context, idx) {
                           final hex = _colorPalette[idx];
                           final isSelected = hex == selectedColor;
@@ -311,7 +311,7 @@ class _CategoryList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: categories.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final cat = categories[index];
         final color = Color(int.parse(cat.color.replaceAll('#', '0xFF')));

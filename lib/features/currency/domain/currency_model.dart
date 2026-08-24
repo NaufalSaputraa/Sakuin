@@ -3,6 +3,8 @@
 /// [CurrencyModel] describes a supported currency (code, name, symbol).
 /// [CurrencyRateModel] holds an offline exchange rate relative to IDR.
 
+library;
+
 class CurrencyModel {
   final String code; // 'IDR', 'USD', 'SGD', ...
   final String name; // 'Indonesian Rupiah'

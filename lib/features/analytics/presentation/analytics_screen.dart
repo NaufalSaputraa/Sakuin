@@ -116,7 +116,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                     child: ListView.separated(
                       scrollDirection: Axis.horizontal,
                       itemCount: TimeFilter.values.length,
-                      separatorBuilder: (_, __) => const SizedBox(width: 8),
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
                       itemBuilder: (context, index) {
                         final filter = TimeFilter.values[index];
                         final isSelected = _selectedFilter == filter;
@@ -273,7 +273,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: categoryList.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
+                            separatorBuilder: (_, _) => const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final cat = categoryList[index];
                               final percentage = (cat.amount / totalSpent).clamp(0.0, 1.0);

@@ -7,20 +7,20 @@ part of 'budget_model.dart';
 // **************************************************************************
 
 BudgetModel _$BudgetModelFromJson(Map<String, dynamic> json) => BudgetModel(
-      id: (json['id'] as num).toInt(),
-      name: json['name'] as String,
-      budgetType: $enumDecode(_$BudgetTypeEnumMap, json['budgetType']),
-      amount: (json['amount'] as num).toDouble(),
-      period: json['period'] as String? ?? 'monthly',
-      categoryId: (json['categoryId'] as num?)?.toInt(),
-      walletId: (json['walletId'] as num?)?.toInt(),
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] == null
-          ? null
-          : DateTime.parse(json['endDate'] as String),
-      isActive: json['isActive'] as bool? ?? true,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-    );
+  id: (json['id'] as num).toInt(),
+  name: json['name'] as String,
+  budgetType: $enumDecode(_$BudgetTypeEnumMap, json['budgetType']),
+  amount: (json['amount'] as num).toDouble(),
+  period: json['period'] as String? ?? 'monthly',
+  categoryId: (json['categoryId'] as num?)?.toInt(),
+  walletId: (json['walletId'] as num?)?.toInt(),
+  startDate: DateTime.parse(json['startDate'] as String),
+  endDate: json['endDate'] == null
+      ? null
+      : DateTime.parse(json['endDate'] as String),
+  isActive: json['isActive'] as bool? ?? true,
+  createdAt: DateTime.parse(json['createdAt'] as String),
+);
 
 Map<String, dynamic> _$BudgetModelToJson(BudgetModel instance) =>
     <String, dynamic>{

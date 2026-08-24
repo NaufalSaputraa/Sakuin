@@ -38,7 +38,7 @@ class WalletListSection extends ConsumerWidget {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: wallets.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final w = wallets[index];
                   return _WalletCard(wallet: w);

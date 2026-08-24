@@ -39,7 +39,7 @@ class ExportService {
       buffer.write('${tx.amount},');
       buffer.write('${tx.transactionType.name},');
       buffer.write('$escapedTitle,');
-      buffer.write('${tx.transactionDate.toIso8601String()}');
+      buffer.write(tx.transactionDate.toIso8601String());
 
       // Add optional fields as extra columns for completeness
       buffer.write(',$escapedDesc');

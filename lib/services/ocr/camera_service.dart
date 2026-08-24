@@ -67,7 +67,7 @@ class CameraService {
         );
       }
 
-      return cropImage(picked.path);
+      return await cropImage(picked.path);
     } on Exception catch (e) {
       final message = e.toString().toLowerCase();
       if (message.contains('permission')) {

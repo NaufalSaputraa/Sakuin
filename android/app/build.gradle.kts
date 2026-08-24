@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.sakuin.sakuin_app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -30,6 +30,9 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            // R8 minify disabled for beta: ML Kit keep rules need broader testing
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

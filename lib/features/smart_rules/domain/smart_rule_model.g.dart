@@ -6,53 +6,6 @@ part of 'smart_rule_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-RuleCondition _$RuleConditionFromJson(Map<String, dynamic> json) =>
-    RuleCondition(
-      field: $enumDecode(_$RuleFieldEnumMap, json['field']),
-      operator: $enumDecode(_$RuleOperatorEnumMap, json['operator']),
-      value: json['value'] as String,
-    );
-
-Map<String, dynamic> _$RuleConditionToJson(RuleCondition instance) =>
-    <String, dynamic>{
-      'field': _$RuleFieldEnumMap[instance.field]!,
-      'operator': _$RuleOperatorEnumMap[instance.operator]!,
-      'value': instance.value,
-    };
-
-const _$RuleFieldEnumMap = {
-  RuleField.merchant: 'merchant',
-  RuleField.title: 'title',
-  RuleField.amount: 'amount',
-  RuleField.categoryId: 'categoryId',
-};
-
-const _$RuleOperatorEnumMap = {
-  RuleOperator.contains: 'contains',
-  RuleOperator.equals: 'equals',
-  RuleOperator.gt: 'gt',
-  RuleOperator.lt: 'lt',
-  RuleOperator.gte: 'gte',
-  RuleOperator.lte: 'lte',
-};
-
-RuleAction _$RuleActionFromJson(Map<String, dynamic> json) => RuleAction(
-      type: $enumDecode(_$RuleActionTypeEnumMap, json['type']),
-      value: json['value'] as String,
-    );
-
-Map<String, dynamic> _$RuleActionToJson(RuleAction instance) =>
-    <String, dynamic>{
-      'type': _$RuleActionTypeEnumMap[instance.type]!,
-      'value': instance.value,
-    };
-
-const _$RuleActionTypeEnumMap = {
-  RuleActionType.categorize: 'categorize',
-  RuleActionType.tag: 'tag',
-  RuleActionType.wallet: 'wallet',
-};
-
 SmartRuleModel _$SmartRuleModelFromJson(Map<String, dynamic> json) =>
     SmartRuleModel(
       id: (json['id'] as num).toInt(),

@@ -555,7 +555,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: wallets.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final w = wallets[index];
                   final isSelected = _selectedWalletId == w.id;
@@ -582,7 +582,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: categories.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final c = categories[index];
                   final isSelected = _selectedCategoryId == c.id;
@@ -695,7 +695,7 @@ class _CurrencyPicker extends ConsumerWidget {
     final codes = ratesAsync.when(
       data: (rates) => rates.map((r) => r.code).toList(),
       loading: () => <String>['IDR'],
-      error: (_, __) => <String>['IDR'],
+      error: (_, _) => <String>['IDR'],
     );
 
     if (!codes.contains(value)) codes.add(value);

@@ -49,7 +49,7 @@ class BudgetProgressWidget extends ConsumerWidget {
                   value: progress,
                   strokeWidth: 8,
                   backgroundColor: isDark
-                      ? const Color(0xFF2D2D44)
+                      ? theme.colorScheme.outline
                       : theme.colorScheme.primary.withValues(alpha: 0.12),
                   valueColor: AlwaysStoppedAnimation<Color>(
                     isOverBudget
