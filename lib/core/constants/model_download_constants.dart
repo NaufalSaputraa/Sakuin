@@ -8,28 +8,27 @@
 class ModelDownloadConfig {
   const ModelDownloadConfig._();
 
-  /// Direct download URL (Cloudflare R2, PennywiseAI pattern).
+  /// Direct download URL — HuggingFace (free, no card) for Gemma 4 E2B.
+  /// Swappable: change only this URL + Sha256 to swap model (Qwen ↔ Gemma).
   static const String modelUrl =
-      'https://pub-fcfb3ffddb184540a758a7fe68249908.r2.dev/models/v1/Qwen2.5-1.5B-Instruct-q8-ekv4096.litertlm';
+      'https://huggingface.co/soniqo/Gemma-4-E2B-LiteRT-LM/resolve/main/model.litertlm';
 
   /// SHA-256 of the model file. Pinned for integrity verification.
-  /// TODO: Replace with the real hash from Pennywise Constants.kt once available.
-  /// While this placeholder is present, [ModelRepository.verifyModelIntegrity]
-  /// accepts the download (dev mode) but still performs size/existence checks.
+  /// TODO: Replace with real SHA-256 from HuggingFace Files → model.litertlm → copy SHA256.
+  /// While placeholder is present, ModelRepository.verifyModelIntegrity accepts download in dev mode.
   static const String modelSha256 =
-      'PLACEHOLDER_REPLACE_WITH_REAL_SHA256_QWEN2_5_1_5B_INSTRUCT';
+      'PLACEHOLDER_REPLACE_WITH_REAL_SHA256_GEMMA_4_E2B_LITERTLM';
 
   /// Storage guard: require at least 2x the model size before downloading
-  /// (~1.5 GB model -> 3 GB free recommended).
-  static const int requiredSpaceBytes = 3 * 1024 * 1024 * 1024;
+  /// (~2.39 GB model -> 5 GB free recommended).
+  static const int requiredSpaceBytes = 5 * 1024 * 1024 * 1024;
 
   /// File name used on device (under `<externalFiles>/models/`).
-  static const String modelFileName =
-      'Qwen2.5-1.5B-Instruct-q8-ekv4096.litertlm';
+  static const String modelFileName = 'gemma-4-e2b.litertlm';
 
   /// Human-readable name shown in the UI.
-  static const String displayName = 'Qwen2.5-1.5B-Instruct (On-Device)';
+  static const String displayName = 'Gemma 4 E2B (On-Device)';
 
   /// Approximate download size shown to the user.
-  static const String displaySize = '~1.5 GB';
+  static const String displaySize = '~2.39 GB';
 }

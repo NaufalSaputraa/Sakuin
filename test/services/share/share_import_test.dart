@@ -45,6 +45,42 @@ void main() {
       expect(result.title, isNotEmpty);
     });
 
+    test('BRI transfer text parses amount, bank wallet and type', () async {
+      const sharedText = 'Transfer Rp 75.000 ke BRI';
+
+      final result = await parser.parseText(
+        text: sharedText,
+        availableWallets: const [],
+        availableCategories: [],
+      );
+
+      expect(result, isA<ParsedTransaction>());
+      expect(result.amount, 75000);
+      // "bri" is a keyword inside the 'bank' wallet entry
+      // (indonesian_regex_parser), so the detected provider is 'bank'.
+      expect(result.walletProvider, 'bank');
+      expect(result.transactionType, TransactionType.transfer);
+      expect(result.rawInput, sharedText);
+      expect(result.title, contains('BRI'));
+    });
+
+    test('ShopeePay shorthand text parses amount and wallet', () async {
+      const sharedText = 'Kirim 35rb ke ShopeePay';
+
+      final result = await parser.parseText(
+        text: sharedText,
+        availableWallets: const [],
+        availableCategories: [],
+      );
+
+      expect(result.amount, 35000);
+      expect(result.walletProvider, 'shopeepay');
+      // Same as GoPay: bare "kirim" falls back to expense.
+      expect(result.transactionType, TransactionType.expense);
+      expect(result.rawInput, sharedText);
+      expect(result.title, isNotEmpty);
+    });
+
     test('parsed result exposes helpers for sheet auto-fill', () async {
       const sharedText = 'Transfer Rp 50.000 ke BCA';
 
