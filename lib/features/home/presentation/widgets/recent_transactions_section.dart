@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/theme/color_schemes.dart';
 import '../../../transactions/domain/transaction_model.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 
@@ -126,9 +127,12 @@ class _TransactionTile extends ConsumerWidget {
     final isIncome = tx.isIncome;
     final isTransfer = tx.isTransfer;
 
+    final isDark = theme.brightness == Brightness.dark;
     final amountColor = isIncome
-        ? const Color(0xFF2ECC71)
-        : (isTransfer ? const Color(0xFF3B82C4) : const Color(0xFFE74C3C));
+        ? (isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome)
+        : (isTransfer
+            ? (isDark ? SakuinColors.darkSecondary : SakuinColors.lightSecondary)
+            : (isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense));
 
     final prefix = isIncome ? '+' : (isTransfer ? '' : '-');
 
@@ -138,7 +142,7 @@ class _TransactionTile extends ConsumerWidget {
       background: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        color: const Color(0xFFE74C3C),
+        color: theme.colorScheme.error,
         child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
       ),
       onDismissed: (_) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/theme/color_schemes.dart';
 import '../../../budget/providers/budget_providers.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 
@@ -51,7 +52,9 @@ class BudgetProgressWidget extends ConsumerWidget {
                       ? const Color(0xFF2D2D44)
                       : theme.colorScheme.primary.withValues(alpha: 0.12),
                   valueColor: AlwaysStoppedAnimation<Color>(
-                    isOverBudget ? const Color(0xFFE74C3C) : theme.colorScheme.primary,
+                    isOverBudget
+                        ? (isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense)
+                        : theme.colorScheme.primary,
                   ),
                   strokeCap: StrokeCap.round,
                 ),
@@ -81,7 +84,9 @@ class BudgetProgressWidget extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: (isOverBudget ? const Color(0xFFE74C3C) : const Color(0xFF2ECC71))
+                        color: (isOverBudget
+                                ? (isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense)
+                                : (isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome))
                             .withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -89,8 +94,8 @@ class BudgetProgressWidget extends ConsumerWidget {
                         isOverBudget ? 'home.over_budget'.tr() : 'home.on_track'.tr(),
                         style: TextStyle(
                           color: isOverBudget
-                              ? const Color(0xFFE74C3C)
-                              : const Color(0xFF2ECC71),
+                              ? (isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense)
+                              : (isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome),
                           fontWeight: FontWeight.w600,
                           fontSize: 11,
                         ),

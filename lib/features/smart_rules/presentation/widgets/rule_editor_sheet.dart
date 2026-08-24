@@ -210,7 +210,7 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<RuleField>(
-                    value: condition.field,
+                    initialValue: condition.field,
                     decoration: InputDecoration(
                       labelText: 'smartRules.field'.tr(),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -234,7 +234,7 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: DropdownButtonFormField<RuleOperator>(
-                    value: condition.operator,
+                    initialValue: condition.operator,
                     decoration: InputDecoration(
                       labelText: 'smartRules.operator'.tr(),
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -297,7 +297,7 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<RuleActionType>(
-          value: _selectedActionType,
+          initialValue: _selectedActionType,
           decoration: InputDecoration(
             labelText: 'smartRules.action_type'.tr(),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -321,7 +321,7 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
         const SizedBox(height: 12),
         if (_selectedActionType == RuleActionType.categorize) ...[
           DropdownButtonFormField<int>(
-            value: _selectedCategoryId,
+            initialValue: _selectedCategoryId,
             decoration: InputDecoration(
               labelText: 'smartRules.select_category'.tr(),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -336,7 +336,7 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
           ),
         ] else if (_selectedActionType == RuleActionType.wallet) ...[
           DropdownButtonFormField<String>(
-            value: _selectedWalletProvider,
+            initialValue: _selectedWalletProvider,
             decoration: InputDecoration(
               labelText: 'smartRules.select_wallet'.tr(),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

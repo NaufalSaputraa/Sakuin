@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/theme/color_schemes.dart';
 import '../../currency/providers/currency_providers.dart';
 import '../domain/wallet_model.dart';
 import '../providers/wallet_providers.dart';
@@ -371,9 +372,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               if (wallet == null) return const SizedBox.shrink();
               return Card(
                 child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFF2ECC71),
-                    child: Text('💵', style: TextStyle(fontSize: 18)),
+                  leading: CircleAvatar(
+                    backgroundColor: theme.brightness == Brightness.dark
+                        ? SakuinColors.darkIncome
+                        : SakuinColors.lightIncome,
+                    child: const Text('💵', style: TextStyle(fontSize: 18)),
                   ),
                   title: Text(wallet.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: const Text('Uang tunai fisik / cash on hand'),

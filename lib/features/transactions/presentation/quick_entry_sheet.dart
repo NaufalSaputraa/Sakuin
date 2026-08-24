@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/theme/color_schemes.dart';
 import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
 import '../../currency/providers/currency_providers.dart';
@@ -447,29 +448,34 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             const SizedBox(height: 8),
 
             // Type Toggle (Expense / Income / Transfer)
-            Row(
-              children: [
-                _TypePill(
-                  label: 'input.type_expense'.tr(),
-                  isSelected: _transactionType == TransactionType.expense,
-                  color: const Color(0xFFE74C3C),
-                  onTap: () => setState(() => _transactionType = TransactionType.expense),
-                ),
-                const SizedBox(width: 8),
-                _TypePill(
-                  label: 'input.type_income'.tr(),
-                  isSelected: _transactionType == TransactionType.income,
-                  color: const Color(0xFF2ECC71),
-                  onTap: () => setState(() => _transactionType = TransactionType.income),
-                ),
-                const SizedBox(width: 8),
-                _TypePill(
-                  label: 'input.type_transfer'.tr(),
-                  isSelected: _transactionType == TransactionType.transfer,
-                  color: const Color(0xFF3B82C4),
-                  onTap: () => setState(() => _transactionType = TransactionType.transfer),
-                ),
-              ],
+            Builder(
+              builder: (context) {
+                final isDark = Theme.of(context).brightness == Brightness.dark;
+                return Row(
+                  children: [
+                    _TypePill(
+                      label: 'input.type_expense'.tr(),
+                      isSelected: _transactionType == TransactionType.expense,
+                      color: isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense,
+                      onTap: () => setState(() => _transactionType = TransactionType.expense),
+                    ),
+                    const SizedBox(width: 8),
+                    _TypePill(
+                      label: 'input.type_income'.tr(),
+                      isSelected: _transactionType == TransactionType.income,
+                      color: isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome,
+                      onTap: () => setState(() => _transactionType = TransactionType.income),
+                    ),
+                    const SizedBox(width: 8),
+                    _TypePill(
+                      label: 'input.type_transfer'.tr(),
+                      isSelected: _transactionType == TransactionType.transfer,
+                      color: isDark ? SakuinColors.darkSecondary : SakuinColors.lightSecondary,
+                      onTap: () => setState(() => _transactionType = TransactionType.transfer),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 16),
 

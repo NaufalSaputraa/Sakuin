@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/theme/color_schemes.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 import '../../../wallets/providers/wallet_providers.dart';
 
@@ -76,14 +77,18 @@ class _BalanceHeroCardState extends ConsumerState<BalanceHeroCard> {
               _MetricPill(
                 label: 'home.income'.tr(),
                 amount: _isBalanceHidden ? '••••' : '+${RupiahFormatter.compact(income)}',
-                color: const Color(0xFF2ECC71),
+                color: theme.brightness == Brightness.dark
+                    ? SakuinColors.darkIncome
+                    : SakuinColors.lightIncome,
                 icon: Icons.arrow_downward_rounded,
               ),
               const SizedBox(width: 10),
               _MetricPill(
                 label: 'home.expense'.tr(),
                 amount: _isBalanceHidden ? '••••' : '-${RupiahFormatter.compact(expense)}',
-                color: const Color(0xFFE74C3C),
+                color: theme.brightness == Brightness.dark
+                    ? SakuinColors.darkExpense
+                    : SakuinColors.lightExpense,
                 icon: Icons.arrow_upward_rounded,
               ),
             ],

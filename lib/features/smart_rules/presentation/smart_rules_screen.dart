@@ -147,7 +147,12 @@ class SmartRulesScreen extends ConsumerWidget {
                   onChanged: (value) {
                     ref.read(smartRulesNotifierProvider.notifier).toggleRule(rule.id, value);
                   },
-                  activeColor: theme.colorScheme.primary,
+                  thumbColor: WidgetStateProperty.resolveWith((states) {
+                    if (states.contains(WidgetState.selected)) {
+                      return theme.colorScheme.primary;
+                    }
+                    return null;
+                  }),
                 ),
               ],
             ),
