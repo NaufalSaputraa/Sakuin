@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../../../wallets/domain/wallet_model.dart';
 import '../../../wallets/providers/wallet_providers.dart';
 
@@ -46,10 +47,7 @@ class WalletListSection extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const SizedBox(
-            height: 110,
-            child: Center(child: CircularProgressIndicator()),
-          ),
+          loading: () => const ShimmerLoadingSection(section: ShimmerSection.walletCarousel),
           error: (err, _) => Text('Error loading wallets: $err'),
         ),
       ],

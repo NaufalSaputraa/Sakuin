@@ -177,10 +177,10 @@ class _RuleEditorSheetState extends ConsumerState<RuleEditorSheet> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: _isLoading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimary),
                     )
                   : Text(widget.rule == null ? 'common.save'.tr() : 'common.update'.tr()),
             ),

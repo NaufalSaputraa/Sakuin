@@ -177,7 +177,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                             child: CircleAvatar(
                               radius: 16,
                               backgroundColor: color,
-                              child: isSelected ? const Icon(Icons.check, color: Colors.white, size: 16) : null,
+                              child: isSelected ? Icon(Icons.check, color: theme.colorScheme.onPrimary, size: 16) : null,
                             ),
                           );
                         },

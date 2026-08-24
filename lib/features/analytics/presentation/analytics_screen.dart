@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../../transactions/domain/transaction_model.dart';
 import '../../transactions/providers/transaction_providers.dart';
 
@@ -256,10 +257,10 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                     value: cat.amount,
                                     title: '${percentage.toInt()}%',
                                     radius: isTouched ? 38 : 32,
-                                    titleStyle: const TextStyle(
+                                    titleStyle: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: theme.colorScheme.surface,
                                     ),
                                   );
                                 }).toList(),
@@ -321,7 +322,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const ShimmerLoadingSection(section: ShimmerSection.analyticsChart),
           error: (err, _) => Center(child: Text('Error: $err')),
         ),
       ),

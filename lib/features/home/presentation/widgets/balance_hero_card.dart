@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:number_flow_flutter/number_flow_flutter.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/color_schemes.dart';
 import '../../../transactions/providers/transaction_providers.dart';
@@ -65,12 +66,28 @@ class _BalanceHeroCardState extends ConsumerState<BalanceHeroCard> {
             ],
           ),
           const SizedBox(height: 4),
-          Text(
-            _isBalanceHidden ? '••••••••' : RupiahFormatter.format(totalBalance),
-            style: theme.textTheme.displayLarge?.copyWith(
-              letterSpacing: -0.5,
-            ),
-          ),
+          _isBalanceHidden
+              ? Text(
+                  '••••••••',
+                  style: theme.textTheme.displayLarge?.copyWith(
+                    letterSpacing: -0.5,
+                  ),
+                )
+              : NumberFlow(
+                  value: totalBalance,
+                  format: const NumberFlowFormat.currency(
+                    currencyCode: 'IDR',
+                    symbol: 'Rp ',
+                  ),
+                  locale: 'id_ID',
+                  style: theme.textTheme.displayLarge?.copyWith(
+                    letterSpacing: -0.5,
+                  ),
+                  spinTiming: const TimingConfig(
+                    duration: Duration(milliseconds: 600),
+                    curve: NumberFlowCurve(),
+                  ),
+                ),
           const SizedBox(height: 16),
           Row(
             children: [

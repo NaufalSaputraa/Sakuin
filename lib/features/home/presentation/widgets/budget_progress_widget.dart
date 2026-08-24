@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:number_flow_flutter/number_flow_flutter.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/theme/color_schemes.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../../../budget/providers/budget_providers.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 
@@ -15,6 +17,11 @@ class BudgetProgressWidget extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final budgetAsync = ref.watch(primaryBudgetProvider);
     final expenseAsync = ref.watch(currentMonthExpenseProvider);
+
+    // Show shimmer while loading
+    if (budgetAsync is AsyncLoading || expenseAsync is AsyncLoading) {
+      return const ShimmerLoadingSection(section: ShimmerSection.budgetProgress);
+    }
 
     final budget = budgetAsync.asData?.value;
     final spent = expenseAsync.asData?.value ?? 0.0;
@@ -104,11 +111,32 @@ class BudgetProgressWidget extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  '${RupiahFormatter.format(spent)} / ${RupiahFormatter.compact(limit)}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: NumberFlow(
+                        value: spent,
+                        format: const NumberFlowFormat.currency(
+                          currencyCode: 'IDR',
+                          symbol: 'Rp ',
+                        ),
+                        locale: 'id_ID',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        spinTiming: const TimingConfig(
+                          duration: Duration(milliseconds: 400),
+                          curve: NumberFlowCurve(),
+                        ),
+                      ),
+                    ),
+                    Text(
+                      ' / ${RupiahFormatter.compact(limit)}',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(

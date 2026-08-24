@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../domain/category_model.dart';
 import '../providers/category_providers.dart';
 
@@ -191,7 +192,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                               radius: 16,
                               backgroundColor: color,
                               child: isSelected
-                                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                                  ? Icon(Icons.check, color: theme.colorScheme.onPrimary, size: 16)
                                   : null,
                             ),
                           );
@@ -265,7 +266,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                 await repo.deleteCategory(cat.id);
               },
             ),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const ShimmerLoadingSection(section: ShimmerSection.categoriesList),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
 
@@ -278,7 +279,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                 await repo.deleteCategory(cat.id);
               },
             ),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const ShimmerLoadingSection(section: ShimmerSection.categoriesList),
             error: (e, _) => Center(child: Text('Error: $e')),
           ),
         ],
@@ -332,7 +333,7 @@ class _CategoryList extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                 )
               : IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                  icon: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.error, size: 20),
                   onPressed: () {
                     showDialog(
                       context: context,

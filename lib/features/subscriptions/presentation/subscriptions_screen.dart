@@ -289,8 +289,8 @@ class SubscriptionsScreen extends ConsumerWidget {
   }
 
   Color _getConfidenceColor(int percent, ThemeData theme) {
-    if (percent >= 80) return Colors.green;
-    if (percent >= 60) return Colors.orange;
+    if (percent >= 80) return theme.colorScheme.tertiary;
+    if (percent >= 60) return theme.colorScheme.secondary;
     return theme.colorScheme.error;
   }
 

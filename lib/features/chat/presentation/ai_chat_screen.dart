@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/widgets/shimmer_skeleton.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
@@ -378,7 +379,7 @@ Financial facts (absolute, do not contradict):
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const ShimmerLoadingSection(section: ShimmerSection.chatMessages),
                 error: (e, _) => Center(child: Text('Error: $e')),
               ),
             ),

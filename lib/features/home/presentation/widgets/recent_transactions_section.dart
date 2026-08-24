@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/theme/color_schemes.dart';
+import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../../../transactions/domain/transaction_model.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 
@@ -101,12 +102,7 @@ class RecentTransactionsSection extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(),
-            ),
-          ),
+          loading: () => const ShimmerLoadingSection(section: ShimmerSection.recentTransactions),
           error: (err, _) => Center(
             child: Text('Error loading transactions: $err'),
           ),
@@ -143,7 +139,7 @@ class _TransactionTile extends ConsumerWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         color: theme.colorScheme.error,
-        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+        child: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.onError),
       ),
       onDismissed: (_) {
         ref.read(transactionRepositoryProvider).deleteTransaction(tx.id);
