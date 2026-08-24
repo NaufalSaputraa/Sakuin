@@ -33,7 +33,8 @@
     "note": "Note (optional)",
     "type_expense": "Expense",
     "type_income": "Income",
-    "type_transfer": "Transfer"
+    "type_transfer": "Transfer",
+    "transaction_saved": "Transaction saved"
   },
   "wallets": {
     "physical": "Cash / Physical",
@@ -167,5 +168,52 @@
     "empty_description": "No recurring subscriptions detected yet. Add more transactions to enable detection.",
     "monthly": "Monthly",
     "confidence": "Confidence"
+  },
+  "ocr": {
+    "cameraTitle": "Scan Receipt",
+    "pickCamera": "Camera",
+    "pickGallery": "Gallery",
+    "scanning": "Scanning...",
+    "preview": "Preview",
+    "useResult": "Use Result",
+    "errorPermission": "Camera permission denied. Enable it in settings or use Gallery.",
+    "errorScan": "Could not read the receipt. Try a clearer photo."
+  },
+  "voice": {
+    "listening": "Listening...",
+    "tapToSpeak": "Tap to Speak",
+    "transcript": "Transcript",
+    "parsed": "Detected",
+    "useResult": "Use Result",
+    "errorPermission": "Microphone permission denied. Enable it in settings to use voice input.",
+    "errorInit": "Voice recognition is not available on this device.",
+    "stop": "Stop"
+  },
+  "llm": {
+    "modelTitle": "AI Model (On-Device)",
+    "downloadButton": "Download AI Model",
+    "downloading": "Downloading",
+    "ready": "Ready",
+    "notDownloaded": "Not Downloaded",
+    "loading": "Loading",
+    "error": "Error",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "openChat": "Open Chat",
+    "notDownloadedDesc": "Download the on-device AI model (~1.5 GB) to enable private, offline conversations. Your financial data never leaves the device.",
+    "readyDesc": "The AI model is ready. Chat privately with your on-device assistant — no internet required.",
+    "insufficientSpace": "Insufficient storage",
+    "insufficientSpaceHint": "Free up at least 3 GB of storage, then tap Retry.",
+    "verifyFailed": "Model verification failed (SHA-256 mismatch). Please retry the download.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "notDownloadedBanner": "AI model not downloaded. Please download it from Settings to enable on-device AI."
+  },
+  "currency": {
+    "section_title": "Currency & Offline Rates",
+    "base_currency": "Base currency (IDR)",
+    "base": "Base",
+    "load_error": "Failed to load currency rates",
+    "edit_rate": "Edit Rate for {{code}}",
+    "rate_to_idr": "Rate to IDR (1 {{code}} = ? IDR)"
   }
 }

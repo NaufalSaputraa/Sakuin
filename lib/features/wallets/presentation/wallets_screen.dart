@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../currency/providers/currency_providers.dart';
 import '../domain/wallet_model.dart';
 import '../providers/wallet_providers.dart';
 
@@ -14,18 +15,40 @@ class WalletsScreen extends ConsumerStatefulWidget {
 class _WalletsScreenState extends ConsumerState<WalletsScreen> {
   void _showAdjustBalanceDialog(BuildContext context, WalletModel wallet) {
     final controller = TextEditingController(text: wallet.balance.toInt().toString());
+    String selectedCurrency = wallet.currency;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Sesuaikan Saldo ${wallet.name}'),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            prefixText: 'Rp ',
-            border: OutlineInputBorder(),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                prefixText: CurrencyFormatter.symbol(selectedCurrency),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButton<String>(
+              value: selectedCurrency,
+              isExpanded: true,
+              items: const [
+                DropdownMenuItem(value: 'IDR', child: Text('IDR (Rp)')),
+                DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
+                DropdownMenuItem(value: 'SGD', child: Text('SGD (S\$)')),
+                DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
+                DropdownMenuItem(value: 'JPY', child: Text('JPY (¥)')),
+                DropdownMenuItem(value: 'MYR', child: Text('MYR (RM)')),
+              ],
+              onChanged: (val) {
+                if (val != null) selectedCurrency = val;
+              },
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -37,7 +60,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               final newBal = double.tryParse(controller.text.trim());
               if (newBal != null) {
                 final repo = ref.read(walletRepositoryProvider);
-                await repo.updateWallet(wallet.copyWith(balance: newBal));
+                await repo.updateWallet(wallet.copyWith(balance: newBal, currency: selectedCurrency));
               }
               if (context.mounted) Navigator.of(ctx).pop();
             },
@@ -70,6 +93,13 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            String selectedCurrency = 'IDR';
+            final ratesAsync = ref.watch(currencyRatesProvider);
+            final currencyCodes = ratesAsync.when(
+              data: (rates) => rates.map((r) => r.code).toList(),
+              loading: () => <String>['IDR'],
+              error: (_, __) => <String>['IDR'],
+            );
             return Padding(
               padding: EdgeInsets.only(
                 left: 20,
@@ -111,6 +141,22 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         prefixText: 'Rp ',
                         border: OutlineInputBorder(),
                       ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Mata Uang Dompet', style: theme.textTheme.titleSmall),
+                    const SizedBox(height: 8),
+                    DropdownButton<String>(
+                      value: selectedCurrency,
+                      isExpanded: true,
+                      items: currencyCodes.map((code) {
+                        return DropdownMenuItem(
+                          value: code,
+                          child: Text('$code (${CurrencyFormatter.symbol(code)})'),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null) setSheetState(() => selectedCurrency = val);
+                      },
                     ),
                     const SizedBox(height: 16),
                     Text('Pilih Warna Badge', style: theme.textTheme.titleSmall),
@@ -156,6 +202,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                             initialBalance: bal,
                             icon: selectedIcon,
                             color: selectedColor,
+                            currency: selectedCurrency,
                           );
 
                           if (context.mounted) Navigator.of(context).pop();

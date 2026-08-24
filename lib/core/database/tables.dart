@@ -43,8 +43,22 @@ class Transactions extends Table {
   TextColumn get sourceInput => text().withDefault(const Constant('manual'))(); // 'manual' | 'text_parse' | 'ocr' | 'voice' | 'ai_chat'
   TextColumn get rawInput => text().nullable()();
   IntColumn get transferToWalletId => integer().nullable().references(Wallets, #id)();
+  // Multi-currency: transaction currency (defaults to IDR) + snapshot of equivalent value in IDR.
+  TextColumn get currency => text().withDefault(const Constant('IDR'))();
+  RealColumn get amountBase => real().withDefault(const Constant(0.0))(); // equivalent amount in IDR
   DateTimeColumn get transactionDate => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+}
+
+/// Offline currency exchange rates relative to IDR (base currency).
+@DataClassName('CurrencyRatesData')
+class CurrencyRates extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get code => text().unique()(); // 'USD', 'SGD', 'EUR', 'JPY', 'MYR', 'IDR'
+  TextColumn get name => text()(); // 'US Dollar'
+  RealColumn get rateToIdr => real()(); // 1 unit of currency = rateToIdr IDR
+  BoolColumn get isBase => boolean().withDefault(const Constant(false))();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 }
 

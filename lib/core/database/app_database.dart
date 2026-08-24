@@ -9,19 +9,20 @@ import 'daos/budget_dao.dart';
 import 'daos/chat_dao.dart';
 import 'daos/smart_rule_dao.dart';
 import 'daos/subscription_dao.dart';
+import 'daos/currency_rates_dao.dart';
 import '../constants/category_defaults.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules, Subscriptions],
-  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao, SmartRuleDao, SubscriptionDao],
+  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules, Subscriptions, CurrencyRates],
+  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao, SmartRuleDao, SubscriptionDao, CurrencyRatesDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -29,10 +30,22 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (m) async {
         await m.createAll();
         await _seedInitialData();
+        await _seedCurrencyRates();
       },
       onUpgrade: (m, from, to) async {
+        // NOTE: Backup WAJIB before destructive migration (AGENTS.md).
+        // v1 -> v2: create subscriptions table.
         if (from < 2) {
           await m.createTable(subscriptions);
+        }
+        // v2 -> v3: add currency support.
+        // - create currency_rates table
+        // - add currency + amountBase columns to transactions (safe defaults)
+        if (from < 3) {
+          await m.createTable(currencyRates);
+          await m.addColumn(transactions, transactions.currency);
+          await m.addColumn(transactions, transactions.amountBase);
+          await _seedCurrencyRates();
         }
       },
     );
@@ -134,9 +147,47 @@ class AppDatabase extends _$AppDatabase {
     );
   }
 
+  /// Seed default offline currency rates (static, relative to IDR).
+  /// Called on fresh install (onCreate) and on upgrade to v3 so the
+  /// rates table is never empty.
+  Future<void> _seedCurrencyRates() async {
+    const seed = [
+      _SeedRate(code: 'IDR', name: 'Indonesian Rupiah', rateToIdr: 1.0, isBase: true),
+      _SeedRate(code: 'USD', name: 'US Dollar', rateToIdr: 15500.0, isBase: false),
+      _SeedRate(code: 'SGD', name: 'Singapore Dollar', rateToIdr: 11500.0, isBase: false),
+      _SeedRate(code: 'EUR', name: 'Euro', rateToIdr: 16800.0, isBase: false),
+      _SeedRate(code: 'JPY', name: 'Japanese Yen', rateToIdr: 105.0, isBase: false),
+      _SeedRate(code: 'MYR', name: 'Malaysian Ringgit', rateToIdr: 3500.0, isBase: false),
+    ];
+
+    for (final s in seed) {
+      await into(currencyRates).insertOnConflictUpdate(
+        CurrencyRatesCompanion.insert(
+          code: s.code,
+          name: s.name,
+          rateToIdr: s.rateToIdr,
+          isBase: Value(s.isBase),
+        ),
+      );
+    }
+  }
+
   static QueryExecutor _openConnection() {
     return driftDatabase(name: 'sakuin_db');
   }
+}
+
+class _SeedRate {
+  final String code;
+  final String name;
+  final double rateToIdr;
+  final bool isBase;
+  const _SeedRate({
+    required this.code,
+    required this.name,
+    required this.rateToIdr,
+    required this.isBase,
+  });
 }
 
 final databaseProvider = Provider<AppDatabase>((ref) {

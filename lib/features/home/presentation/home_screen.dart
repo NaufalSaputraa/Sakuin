@@ -42,7 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           break;
         case QuickActionType.scanReceipt:
           final scanner = ref.read(receiptScannerServiceProvider);
-          final result = await scanner.scanReceipt(source: ReceiptSource.camera);
+          final result = await scanner.scanReceiptFromSource(source: ReceiptSource.camera);
           if (result != null && mounted) {
             await QuickEntrySheet.show(
               context,
@@ -106,7 +106,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () async {
                     Navigator.of(ctx).pop();
                     final scanner = ref.read(receiptScannerServiceProvider);
-                    final result = await scanner.scanReceipt(source: ReceiptSource.camera);
+                    final result = await scanner.scanReceiptFromSource(source: ReceiptSource.camera);
                     if (result != null && context.mounted) {
                       await QuickEntrySheet.show(
                         context,
@@ -127,7 +127,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () async {
                     Navigator.of(ctx).pop();
                     final scanner = ref.read(receiptScannerServiceProvider);
-                    final result = await scanner.scanReceipt(source: ReceiptSource.gallery);
+                    final result = await scanner.scanReceiptFromSource(source: ReceiptSource.gallery);
                     if (result != null && context.mounted) {
                       await QuickEntrySheet.show(
                         context,

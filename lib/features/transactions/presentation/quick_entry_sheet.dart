@@ -7,13 +7,17 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
+import '../../currency/providers/currency_providers.dart';
 import '../../smart_rules/domain/smart_rule_model.dart';
 import '../../smart_rules/providers/smart_rule_providers.dart';
 import '../../wallets/domain/wallet_model.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../domain/transaction_model.dart';
 import '../providers/transaction_providers.dart';
+import '../presentation/receipt_scan_sheet.dart';
+import '../presentation/voice_input_sheet.dart';
 import '../../../services/ml/text_parser_service.dart';
+import '../../../services/ml/parsed_transaction.dart';
 
 class QuickEntrySheet extends ConsumerStatefulWidget {
   final String? initialText;
@@ -56,6 +60,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
   int? _selectedCategoryId;
   double _parsedAmount = 0.0;
   bool _isLoading = false;
+  String _selectedCurrency = 'IDR';
 
   @override
   void initState() {
@@ -64,6 +69,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     _titleController = TextEditingController(text: 'Transaksi');
     _amountController = TextEditingController();
     _isNumpadMode = widget.startInNumpadMode;
+    _selectedCurrency = ref.read(selectedCurrencyProvider);
 
     if (widget.initialText != null && widget.initialText!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -188,6 +194,9 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
 
     setState(() => _isLoading = true);
 
+    // Persist selected currency for next entry.
+    ref.read(selectedCurrencyProvider.notifier).set(_selectedCurrency);
+
     final repo = ref.read(transactionRepositoryProvider);
     final result = await repo.createTransaction(
       walletId: finalWalletId,
@@ -197,6 +206,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       title: title,
       sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
       rawInput: _textController.text.trim(),
+      currency: _selectedCurrency,
     );
 
     setState(() => _isLoading = false);
@@ -207,7 +217,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Transaksi ${RupiahFormatter.format(amount)} berhasil dicatat'),
+            content: Text('${'input.transaction_saved'.tr()} ${CurrencyFormatter.format(amount, _selectedCurrency)}'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -227,6 +237,50 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     } catch (_) {
       return {};
     }
+  }
+
+  Future<void> _openOcr() async {
+    final parsed = await ReceiptScanSheet.show(context);
+    if (parsed != null && mounted) {
+      _applyParsed(parsed);
+    }
+  }
+
+  Future<void> _openVoice() async {
+    final parsed = await VoiceInputSheet.show(context);
+    if (parsed != null && mounted) {
+      _applyParsed(parsed);
+    }
+  }
+
+  void _applyParsed(ParsedTransaction parsed) {
+    final categories =
+        ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
+    final wallets =
+        ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
+
+    setState(() {
+      _transactionType = parsed.transactionType;
+      _titleController.text = parsed.title;
+
+      if (parsed.amount != null && parsed.amount! > 0) {
+        _parsedAmount = parsed.amount!;
+        _amountController.text = _parsedAmount.toStringAsFixed(0);
+      }
+
+      if (parsed.categoryKey != null) {
+        final match = categories.where((c) => c.key == parsed.categoryKey).firstOrNull;
+        if (match != null) _selectedCategoryId = match.id;
+      }
+
+      if (parsed.walletProvider != null) {
+        final match = wallets.where((w) {
+          if (parsed.walletProvider == 'physical') return w.isPhysical;
+          return w.provider == parsed.walletProvider;
+        }).firstOrNull;
+        if (match != null) _selectedWalletId = match.id;
+      }
+    });
   }
 
   @override
@@ -294,7 +348,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                             color: theme.colorScheme.primary,
                           ),
                           decoration: InputDecoration(
-                            prefixText: 'Rp ',
+                            prefixText: CurrencyFormatter.symbol(_selectedCurrency),
                             hintText: '0',
                             border: InputBorder.none,
                             hintStyle: TextStyle(
@@ -320,6 +374,16 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                           onChanged: _triggerParse,
                           onSubmitted: _triggerParse,
                         ),
+                ),
+                IconButton(
+                  onPressed: _isLoading ? null : _openVoice,
+                  icon: const Icon(Icons.mic_rounded),
+                  tooltip: 'voice.tapToSpeak'.tr(),
+                ),
+                IconButton(
+                  onPressed: _isLoading ? null : _openOcr,
+                  icon: const Icon(Icons.document_scanner_rounded),
+                  tooltip: 'ocr.cameraTitle'.tr(),
                 ),
                 IconButton.filled(
                   onPressed: _submitTransaction,
@@ -386,12 +450,21 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                         'input.amount'.tr(),
                         style: theme.textTheme.bodySmall,
                       ),
-                      Text(
-                        RupiahFormatter.format(_parsedAmount),
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: theme.colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            CurrencyFormatter.format(_parsedAmount, _selectedCurrency),
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _CurrencyPicker(
+                            value: _selectedCurrency,
+                            onChanged: (code) => setState(() => _selectedCurrency = code),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -550,6 +623,52 @@ class _TypePill extends StatelessWidget {
             fontSize: 12,
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _CurrencyPicker extends ConsumerWidget {
+  final String value;
+  final ValueChanged<String> onChanged;
+
+  const _CurrencyPicker({
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final ratesAsync = ref.watch(currencyRatesProvider);
+
+    final codes = ratesAsync.when(
+      data: (rates) => rates.map((r) => r.code).toList(),
+      loading: () => <String>['IDR'],
+      error: (_, __) => <String>['IDR'],
+    );
+
+    if (!codes.contains(value)) codes.add(value);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.15)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownButton<String>(
+        value: value,
+        underline: const SizedBox.shrink(),
+        isDense: true,
+        items: codes.map((code) {
+          return DropdownMenuItem(
+            value: code,
+            child: Text(code),
+          );
+        }).toList(),
+        onChanged: (code) {
+          if (code != null) onChanged(code);
+        },
       ),
     );
   }

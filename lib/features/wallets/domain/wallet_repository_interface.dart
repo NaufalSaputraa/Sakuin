@@ -15,6 +15,7 @@ abstract class WalletRepositoryInterface {
     double initialBalance = 0.0,
     String? icon,
     String? color,
+    String currency = 'IDR',
   });
   Future<Result<bool, AppError>> updateWallet(WalletModel wallet);
 }

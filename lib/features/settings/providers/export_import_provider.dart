@@ -67,7 +67,9 @@ class ExportImportNotifier extends Notifier<ExportImportState> {
 
       state = state.copyWith(progress: 0.8);
       // Save to file
-      final output = await FilePicker.platform.saveFile(
+      // file_picker 12: static entry point; saveFile writes [bytes] itself
+      // and returns the saved file Uri (null when cancelled).
+      final output = await FilePicker.saveFile(
         dialogTitle: 'Save CSV Export',
         fileName: 'sakuin_transactions_${DateTime.now().toIso8601String().split('T').first}.csv',
         type: FileType.custom,
@@ -103,7 +105,7 @@ class ExportImportNotifier extends Notifier<ExportImportState> {
       final jsonString = await _exportService.toJson(bundle);
 
       state = state.copyWith(progress: 0.8);
-      final output = await FilePicker.platform.saveFile(
+      final output = await FilePicker.saveFile(
         dialogTitle: 'Save JSON Export',
         fileName: 'sakuin_backup_${DateTime.now().toIso8601String().split('T').first}.json',
         type: FileType.custom,
@@ -138,25 +140,22 @@ class ExportImportNotifier extends Notifier<ExportImportState> {
     state = state.copyWith(isImporting: true, progress: 0.1, error: null);
 
     try {
-      final result = await FilePicker.platform.pickFiles(
+      // file_picker 12: pickFile returns a single PlatformFile? (null when
+      // cancelled); bytes are read lazily via readAsBytes().
+      final file = await FilePicker.pickFile(
         dialogTitle: 'Select Backup File',
         type: FileType.custom,
         allowedExtensions: ['json', 'csv'],
-        withData: true,
       );
 
-      if (result == null || result.files.isEmpty) {
+      if (file == null) {
         state = state.copyWith(isImporting: false, error: 'Import cancelled');
         return;
       }
 
-      final file = result.files.first;
-      final extension = file.extension?.toLowerCase() ?? '';
-      final bytes = file.bytes;
-      if (bytes == null) {
-        state = state.copyWith(isImporting: false, error: 'Failed to read file');
-        return;
-      }
+      final extension =
+          file.name.contains('.') ? file.name.split('.').last.toLowerCase() : '';
+      final bytes = await file.readAsBytes();
 
       state = state.copyWith(progress: 0.3);
       final content = String.fromCharCodes(bytes);

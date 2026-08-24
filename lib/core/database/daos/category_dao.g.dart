@@ -7,4 +7,16 @@ mixin _$CategoryDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTable get categories => attachedDatabase.categories;
   $WalletsTable get wallets => attachedDatabase.wallets;
   $TransactionsTable get transactions => attachedDatabase.transactions;
+  CategoryDaoManager get managers => CategoryDaoManager(this);
+}
+
+class CategoryDaoManager {
+  final _$CategoryDaoMixin _db;
+  CategoryDaoManager(this._db);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
+  $$WalletsTableTableManager get wallets =>
+      $$WalletsTableTableManager(_db.attachedDatabase, _db.wallets);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db.attachedDatabase, _db.transactions);
 }

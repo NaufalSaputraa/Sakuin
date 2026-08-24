@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -10,7 +12,9 @@ import '../../transactions/providers/transaction_providers.dart';
 import '../../wallets/domain/wallet_model.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../../../services/ml/text_parser_service.dart';
+import '../../../services/llm/model_repository.dart';
 import '../providers/chat_providers.dart';
+import '../providers/qwen_chat_provider.dart';
 
 class AiChatScreen extends ConsumerStatefulWidget {
   const AiChatScreen({super.key});
@@ -73,8 +77,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     setState(() {
       _isTyping = true;
     });
-
-    await Future.delayed(const Duration(milliseconds: 400));
 
     final totalBalance = ref.read(totalBalanceProvider).asData?.value ?? 0.0;
     final income = ref.read(currentMonthIncomeProvider).asData?.value ?? 0.0;
@@ -151,45 +153,105 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       }
     }
 
-    // 3. Conversational Advice & Intelligence
+    // 3. Conversational: use on-device Qwen if READY, else rule-based fallback.
     String response;
-    final lower = text.toLowerCase();
-
-    if (isEng) {
-      if (lower.contains('balance') || lower.contains('money') || lower.contains('how much')) {
-        response = 'Your total active balance is **${RupiahFormatter.format(totalBalance)}** across your physical cash and digital e-wallets.';
-      } else if (lower.contains('budget') || lower.contains('safe') || lower.contains('limit')) {
-        if (expense > limit) {
-          response = '⚠️ **Budget Alert:** You have spent **${RupiahFormatter.format(expense)}**, which exceeds your monthly limit of **${RupiahFormatter.format(limit)}**. We advise reducing non-essential spending.';
-        } else {
-          response = '✅ **Budget on Track!** You have spent **${RupiahFormatter.format(expense)}** out of your **${RupiahFormatter.format(limit)}** limit. You have **${RupiahFormatter.format(remainingBudget)}** remaining this month.';
-        }
-      } else if (lower.contains('tips') || lower.contains('advice') || lower.contains('save')) {
-        response = '💡 **Gemma Financial Advice:**\n1. Follow the 50/30/20 rule: 50% Needs, 30% Wants, 20% Savings.\n2. Regularly log small daily micro-expenses (coffee, parking) to prevent hidden leaks.';
-      } else {
-        response = '📊 **Monthly Overview:**\n- Income: **+${RupiahFormatter.format(income)}**\n- Expenses: **-${RupiahFormatter.format(expense)}**\n- Total Balance: **${RupiahFormatter.format(totalBalance)}**\n- Remaining Budget: **${RupiahFormatter.format(remainingBudget)}**';
-      }
+    final modelState = ref.read(qwenChatNotifierProvider).modelState;
+    if (modelState == ModelState.ready) {
+      final financialContext = _buildFinancialContext(
+        totalBalance: totalBalance,
+        income: income,
+        expense: expense,
+        limit: limit,
+        remainingBudget: remainingBudget,
+      );
+      final qwen = ref.read(qwenChatNotifierProvider.notifier);
+      final reply = await qwen.generate(userPrompt: text, financialContext: financialContext);
+      response = reply.isNotEmpty
+          ? reply
+          : _ruleBasedResponse(
+              text: text,
+              isEng: isEng,
+              totalBalance: totalBalance,
+              income: income,
+              expense: expense,
+              limit: limit,
+              remainingBudget: remainingBudget,
+            );
     } else {
-      if (lower.contains('saldo') || lower.contains('uang') || lower.contains('berapa')) {
-        response = 'Total saldomu saat ini adalah **${RupiahFormatter.format(totalBalance)}** yang tersimpan di dompet fisik dan e-wallet digitalmu.';
-      } else if (lower.contains('anggaran') || lower.contains('budget') || lower.contains('aman') || lower.contains('status')) {
-        if (expense > limit) {
-          response = '⚠️ **Peringatan Anggaran:** Pengeluaranmu (**${RupiahFormatter.format(expense)}**) telah melebihi batas bulanan (**${RupiahFormatter.format(limit)}**). Tahan pengeluaran hiburan dan belanja non-primer.';
-        } else {
-          response = '✅ **Anggaran Sangat Aman!** Kamu baru memakai **${RupiahFormatter.format(expense)}** dari batas **${RupiahFormatter.format(limit)}**. Sisa dana yang bisa kamu gunakan bulan ini: **${RupiahFormatter.format(remainingBudget)}**.';
-        }
-      } else if (lower.contains('saran') || lower.contains('tips') || lower.contains('nasihat') || lower.contains('hemat') || lower.contains('insight')) {
-        response = '💡 **Insight & Nasihat Keuangan Gemma:**\n1. **Pantau Kategori Terbesar**: Cek tab Analytics untuk melihat kategori pengeluaran teratasmu.\n2. **Manfaatkan Dual Wallet**: Pisahkan uang operasional di Dompet Digital (GoPay/OVO) dan tabungan darurat di Dompet Fisik/Bank.\n3. **Cepat Catat**: Cukup ketik daftar pengeluaranmu di sini atau via Smart Input Bar kapan saja.';
-      } else if (lower.contains('ringkasan') || lower.contains('rekap') || lower.contains('laporan')) {
-        response = '📊 **Rekap Keuangan Bulan Ini:**\n- Pemasukan: **+${RupiahFormatter.format(income)}**\n- Pengeluaran: **-${RupiahFormatter.format(expense)}**\n- Saldo Aktif: **${RupiahFormatter.format(totalBalance)}**\n- Sisa Anggaran: **${RupiahFormatter.format(remainingBudget)}**';
-      } else {
-        response = 'Saya telah menganalisis catatan keuanganmu: Saldo aktifmu **${RupiahFormatter.format(totalBalance)}** dengan sisa anggaran **${RupiahFormatter.format(remainingBudget)}**.\n\nKamu bisa bertanya saran finansial atau langsung menyuruh saya mencatat transaksi (contoh: *"catatkan makan siang 25rb gopay dan bensin 50rb"*).';
-      }
+      response = _ruleBasedResponse(
+        text: text,
+        isEng: isEng,
+        totalBalance: totalBalance,
+        income: income,
+        expense: expense,
+        limit: limit,
+        remainingBudget: remainingBudget,
+      );
     }
 
     await chatRepo.addMessage(content: response, isUser: false);
     if (mounted) setState(() => _isTyping = false);
     _scrollToBottom();
+  }
+
+  String _buildFinancialContext({
+    required double totalBalance,
+    required double income,
+    required double expense,
+    required double limit,
+    required double remainingBudget,
+  }) {
+    return '''
+Financial facts (absolute, do not contradict):
+- Total Balance: Rp ${totalBalance.toStringAsFixed(0)}
+- Monthly Income: Rp ${income.toStringAsFixed(0)}
+- Monthly Expense: Rp ${expense.toStringAsFixed(0)}
+- Budget Limit: Rp ${limit.toStringAsFixed(0)}
+- Remaining Budget: Rp ${remainingBudget.toStringAsFixed(0)}
+''';
+  }
+
+  String _ruleBasedResponse({
+    required String text,
+    required bool isEng,
+    required double totalBalance,
+    required double income,
+    required double expense,
+    required double limit,
+    required double remainingBudget,
+  }) {
+    final lower = text.toLowerCase();
+    if (isEng) {
+      if (lower.contains('balance') || lower.contains('money') || lower.contains('how much')) {
+        return 'Your total active balance is **${RupiahFormatter.format(totalBalance)}** across your physical cash and digital e-wallets.';
+      } else if (lower.contains('budget') || lower.contains('safe') || lower.contains('limit')) {
+        if (expense > limit) {
+          return '⚠️ **Budget Alert:** You have spent **${RupiahFormatter.format(expense)}**, which exceeds your monthly limit of **${RupiahFormatter.format(limit)}**. We advise reducing non-essential spending.';
+        } else {
+          return '✅ **Budget on Track!** You have spent **${RupiahFormatter.format(expense)}** out of your **${RupiahFormatter.format(limit)}** limit. You have **${RupiahFormatter.format(remainingBudget)}** remaining this month.';
+        }
+      } else if (lower.contains('tips') || lower.contains('advice') || lower.contains('save')) {
+        return '💡 **Sakuin AI Financial Advice:**\n1. Follow the 50/30/20 rule: 50% Needs, 30% Wants, 20% Savings.\n2. Regularly log small daily micro-expenses (coffee, parking) to prevent hidden leaks.';
+      } else {
+        return '📊 **Monthly Overview:**\n- Income: **+${RupiahFormatter.format(income)}**\n- Expenses: **-${RupiahFormatter.format(expense)}**\n- Total Balance: **${RupiahFormatter.format(totalBalance)}**\n- Remaining Budget: **${RupiahFormatter.format(remainingBudget)}**';
+      }
+    } else {
+      if (lower.contains('saldo') || lower.contains('uang') || lower.contains('berapa')) {
+        return 'Total saldomu saat ini adalah **${RupiahFormatter.format(totalBalance)}** yang tersimpan di dompet fisik dan e-wallet digitalmu.';
+      } else if (lower.contains('anggaran') || lower.contains('budget') || lower.contains('aman') || lower.contains('status')) {
+        if (expense > limit) {
+          return '⚠️ **Peringatan Anggaran:** Pengeluaranmu (**${RupiahFormatter.format(expense)}**) telah melebihi batas bulanan (**${RupiahFormatter.format(limit)}**). Tahan pengeluaran hiburan dan belanja non-primer.';
+        } else {
+          return '✅ **Anggaran Sangat Aman!** Kamu baru memakai **${RupiahFormatter.format(expense)}** dari batas **${RupiahFormatter.format(limit)}**. Sisa dana yang bisa kamu gunakan bulan ini: **${RupiahFormatter.format(remainingBudget)}**.';
+        }
+      } else if (lower.contains('saran') || lower.contains('tips') || lower.contains('nasihat') || lower.contains('hemat') || lower.contains('insight')) {
+        return '💡 **Insight & Nasihat Keuangan Sakuin AI:**\n1. **Pantau Kategori Terbesar**: Cek tab Analytics untuk melihat kategori pengeluaran teratasmu.\n2. **Manfaatkan Dual Wallet**: Pisahkan uang operasional di Dompet Digital (GoPay/OVO) dan tabungan darurat di Dompet Fisik/Bank.\n3. **Cepat Catat**: Cukup ketik daftar pengeluaranmu di sini atau via Smart Input Bar kapan saja.';
+      } else if (lower.contains('ringkasan') || lower.contains('rekap') || lower.contains('laporan')) {
+        return '📊 **Rekap Keuangan Bulan Ini:**\n- Pemasukan: **+${RupiahFormatter.format(income)}**\n- Pengeluaran: **-${RupiahFormatter.format(expense)}**\n- Saldo Aktif: **${RupiahFormatter.format(totalBalance)}**\n- Sisa Anggaran: **${RupiahFormatter.format(remainingBudget)}**';
+      } else {
+        return 'Saya telah menganalisis catatan keuanganmu: Saldo aktifmu **${RupiahFormatter.format(totalBalance)}** dengan sisa anggaran **${RupiahFormatter.format(remainingBudget)}**.\n\nKamu bisa bertanya saran finansial atau langsung menyuruh saya mencatat transaksi (contoh: *"catatkan makan siang 25rb gopay dan bensin 50rb"*).';
+      }
+    }
   }
 
   void _showClearHistoryDialog() {
@@ -226,6 +288,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final messagesAsync = ref.watch(chatMessagesStreamProvider);
+    final modelState = ref.watch(qwenChatNotifierProvider).modelState;
 
     return Scaffold(
       appBar: AppBar(
@@ -240,7 +303,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Sakuin AI (Gemma)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                const Text('Sakuin AI (On-Device)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 Text(
                   'On-Device Action Assistant',
                   style: TextStyle(fontSize: 11, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
@@ -260,6 +323,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            if (modelState != ModelState.ready) _ModelStatusBanner(state: modelState),
             // Quick Prompts Chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -322,7 +386,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
                 child: Row(
                   children: [
                     Text(
-                      'Gemma AI sedang memproses...',
+                      'AI sedang memproses...',
                       style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
                     ),
                   ],
@@ -473,6 +537,45 @@ class _QuickPromptChip extends StatelessWidget {
         color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
       ),
       backgroundColor: theme.colorScheme.surface,
+    );
+  }
+}
+
+class _ModelStatusBanner extends StatelessWidget {
+  const _ModelStatusBanner({required this.state});
+  final ModelState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isError = state == ModelState.error;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      color: isError
+          ? theme.colorScheme.errorContainer.withValues(alpha: 0.3)
+          : theme.colorScheme.primaryContainer.withValues(alpha: 0.25),
+      child: Row(
+        children: [
+          Icon(
+            isError ? Icons.error_outline_rounded : Icons.info_outline_rounded,
+            size: 18,
+            color: isError ? theme.colorScheme.error : theme.colorScheme.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'llm.notDownloadedBanner'.tr(),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isError ? theme.colorScheme.error : theme.colorScheme.primary,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => context.push('/settings'),
+            child: Text('llm.downloadButton'.tr()),
+          ),
+        ],
+      ),
     );
   }
 }

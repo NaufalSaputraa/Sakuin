@@ -20,6 +20,7 @@ abstract class TransactionRepositoryInterface {
     String? rawInput,
     int? transferToWalletId,
     DateTime? transactionDate,
+    String currency = 'IDR',
   });
   Future<Result<int, AppError>> deleteTransaction(int id);
 }

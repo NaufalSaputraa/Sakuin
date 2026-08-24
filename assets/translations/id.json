@@ -33,7 +33,8 @@
     "note": "Catatan (opsional)",
     "type_expense": "Pengeluaran",
     "type_income": "Pemasukan",
-    "type_transfer": "Transfer"
+    "type_transfer": "Transfer",
+    "transaction_saved": "Transaksi tersimpan"
   },
   "wallets": {
     "physical": "Uang Fisik / Tunai",
@@ -167,5 +168,52 @@
     "empty_description": "Belum ada langganan berulang terdeteksi. Tambah lebih banyak transaksi untuk mengaktifkan deteksi.",
     "monthly": "Bulanan",
     "confidence": "Kepercayaan"
+  },
+  "ocr": {
+    "cameraTitle": "Pindai Struk",
+    "pickCamera": "Kamera",
+    "pickGallery": "Galeri",
+    "scanning": "Memindai...",
+    "preview": "Pratinjau",
+    "useResult": "Gunakan Hasil",
+    "errorPermission": "Izin kamera ditolak. Aktifkan di pengaturan atau gunakan Galeri.",
+    "errorScan": "Tidak dapat membaca struk. Coba foto yang lebih jelas."
+  },
+  "voice": {
+    "listening": "Mendengarkan...",
+    "tapToSpeak": "Ketuk untuk Bicara",
+    "transcript": "Transkrip",
+    "parsed": "Terdeteksi",
+    "useResult": "Gunakan Hasil",
+    "errorPermission": "Izin mikrofon ditolak. Aktifkan di pengaturan untuk menggunakan input suara.",
+    "errorInit": "Pengenalan suara tidak tersedia di perangkat ini.",
+    "stop": "Berhenti"
+  },
+  "llm": {
+    "modelTitle": "Model AI (On-Device)",
+    "downloadButton": "Unduh Model AI",
+    "downloading": "Mengunduh",
+    "ready": "Siap",
+    "notDownloaded": "Belum Diunduh",
+    "loading": "Memuat",
+    "error": "Gagal",
+    "cancel": "Batal",
+    "retry": "Coba Lagi",
+    "openChat": "Buka Chat",
+    "notDownloadedDesc": "Unduh model AI on-device (~1.5 GB) untuk mengaktifkan percakapan privat dan offline. Data keuanganmu tidak pernah keluar dari perangkat.",
+    "readyDesc": "Model AI sudah siap. Mengobrol privat dengan asisten on-device — tanpa internet.",
+    "insufficientSpace": "Penyimpanan tidak cukup",
+    "insufficientSpaceHint": "Kosongkan setidaknya 3 GB penyimpanan, lalu ketuk Coba Lagi.",
+    "verifyFailed": "Verifikasi model gagal (SHA-256 tidak cocok). Silakan ulangi unduhan.",
+    "errorGeneric": "Terjadi kesalahan. Silakan coba lagi.",
+    "notDownloadedBanner": "Model AI belum diunduh. Unduh dari Setelan untuk mengaktifkan AI on-device."
+  },
+  "currency": {
+    "section_title": "Mata Uang & Kurs Offline",
+    "base_currency": "Mata uang dasar (IDR)",
+    "base": "Dasar",
+    "load_error": "Gagal memuat kurs mata uang",
+    "edit_rate": "Ubah Kurs {{code}}",
+    "rate_to_idr": "Kurs ke IDR (1 {{code}} = ? IDR)"
   }
 }

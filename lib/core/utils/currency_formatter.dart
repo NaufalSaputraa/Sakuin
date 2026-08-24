@@ -106,3 +106,55 @@ class RupiahFormatter {
     return format(amount);
   }
 }
+
+/// Generic currency formatter that formats an amount according to its
+/// currency code. Falls back to [RupiahFormatter] for IDR.
+class CurrencyFormatter {
+  static const Map<String, String> _symbols = {
+    'IDR': 'Rp ',
+    'USD': '\$',
+    'SGD': 'S\$',
+    'EUR': '€',
+    'JPY': '¥',
+    'MYR': 'RM',
+  };
+
+  /// Number of decimal digits per currency (JPY has none).
+  static const Map<String, int> _decimalDigits = {
+    'IDR': 0,
+    'JPY': 0,
+    'USD': 2,
+    'SGD': 2,
+    'EUR': 2,
+    'MYR': 2,
+  };
+
+  /// Format [amount] using [currencyCode] (e.g. "Rp 50.000", "$12.50").
+  /// For IDR it delegates to [RupiahFormatter] to preserve existing behavior.
+  static String format(double amount, String currencyCode, {bool showSymbol = true}) {
+    if (currencyCode == 'IDR') {
+      return RupiahFormatter.format(amount, showSymbol: showSymbol);
+    }
+
+    final symbol = _symbols[currencyCode] ?? '$currencyCode ';
+    final digits = _decimalDigits[currencyCode] ?? 2;
+
+    final formatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: showSymbol ? symbol : '',
+      decimalDigits: digits,
+    );
+    return formatter.format(amount).trim();
+  }
+
+  /// Compact representation per currency (delegates to [RupiahFormatter] for IDR).
+  static String compact(double amount, String currencyCode) {
+    if (currencyCode == 'IDR') {
+      return RupiahFormatter.compact(amount);
+    }
+    return format(amount, currencyCode);
+  }
+
+  /// Symbol for a currency code (e.g. "Rp ", "$").
+  static String symbol(String currencyCode) => _symbols[currencyCode] ?? '$currencyCode ';
+}

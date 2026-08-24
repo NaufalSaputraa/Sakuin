@@ -6,4 +6,14 @@ part of 'subscription_dao.dart';
 mixin _$SubscriptionDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTable get categories => attachedDatabase.categories;
   $SubscriptionsTable get subscriptions => attachedDatabase.subscriptions;
+  SubscriptionDaoManager get managers => SubscriptionDaoManager(this);
+}
+
+class SubscriptionDaoManager {
+  final _$SubscriptionDaoMixin _db;
+  SubscriptionDaoManager(this._db);
+  $$CategoriesTableTableManager get categories =>
+      $$CategoriesTableTableManager(_db.attachedDatabase, _db.categories);
+  $$SubscriptionsTableTableManager get subscriptions =>
+      $$SubscriptionsTableTableManager(_db.attachedDatabase, _db.subscriptions);
 }

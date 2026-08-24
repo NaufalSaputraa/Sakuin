@@ -8,7 +8,18 @@ import '../../wallets/providers/wallet_providers.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
 
-final onboardingStateProvider = StateProvider<bool>((ref) => false);
+/// Riverpod 3 removed [StateProvider]; use a [Notifier] instead.
+class OnboardingStateNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void set(bool value) => state = value;
+}
+
+final onboardingStateProvider =
+    NotifierProvider<OnboardingStateNotifier, bool>(
+  () => OnboardingStateNotifier(),
+);
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});

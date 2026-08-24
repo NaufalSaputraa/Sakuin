@@ -89,7 +89,7 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
               t.transactionDate.isBiggerOrEqualValue(start) &
               t.transactionDate.isSmallerOrEqualValue(end)))
         .watch()
-        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amount));
+        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amountBase));
   }
 
   Stream<double> watchTotalExpenseForMonth(DateTime month) {
@@ -102,6 +102,6 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
               t.transactionDate.isBiggerOrEqualValue(start) &
               t.transactionDate.isSmallerOrEqualValue(end)))
         .watch()
-        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amount));
+        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amountBase));
   }
 }

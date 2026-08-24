@@ -60,3 +60,7 @@ final class ValidationError extends AppError {
 final class ParseError extends AppError {
   const ParseError(super.message);
 }
+
+final class PermissionError extends AppError {
+  const PermissionError(super.message);
+}

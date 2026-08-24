@@ -9,6 +9,9 @@ import '../../../core/utils/currency_formatter.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../chat/providers/chat_providers.dart';
+import '../../currency/domain/currency_model.dart';
+import '../../currency/providers/currency_providers.dart';
+import 'ai_model_section.dart';
 import '../providers/export_import_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -213,20 +216,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 24),
 
+          // 2b. Currency & Offline Rates Section
+          Text('currency.section_title'.tr(), style: theme.textTheme.titleSmall),
+          const SizedBox(height: 8),
+          const _CurrencyRatesSection(),
+          const SizedBox(height: 24),
+
           // 3. AI & OCR Engine Section
           Text('Mesin AI & Machine Learning', style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
-          ListTile(
-            leading: const Icon(Icons.auto_awesome_rounded),
-            title: const Text('Model AI On-Device'),
-            subtitle: const Text('Google Gemma 2B-IT (Edge Optimized)'),
-            trailing: Chip(
-              label: const Text('Aktif', style: TextStyle(fontSize: 11)),
-              backgroundColor: theme.colorScheme.primaryContainer,
-            ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-          ),
+          const AiModelSection(),
           const SizedBox(height: 4),
 
           ListTile(
@@ -543,6 +543,87 @@ class _BackupSection extends ConsumerWidget {
               notifier.pickAndImport();
             },
             child: Text('exportImport.importConfirmAction'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrencyRatesSection extends ConsumerWidget {
+  const _CurrencyRatesSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final ratesAsync = ref.watch(currencyRatesProvider);
+    final repo = ref.read(currencyRepositoryProvider);
+
+    return ratesAsync.when(
+      data: (rates) => Column(
+        children: rates.map((rate) {
+          return ListTile(
+            leading: const Icon(Icons.currency_exchange_outlined),
+            title: Text('${rate.code} — ${rate.name}'),
+            subtitle: rate.isBase
+                ? Text('currency.base_currency'.tr())
+                : Text('1 ${rate.code} = ${CurrencyFormatter.format(rate.rateToIdr, 'IDR')}'),
+            trailing: rate.isBase
+                ? Chip(
+                    label: Text('currency.base'.tr()),
+                    backgroundColor: theme.colorScheme.secondaryContainer,
+                  )
+                : const Icon(Icons.edit_outlined, size: 18),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onTap: rate.isBase
+                ? null
+                : () => _showEditRateDialog(context, ref, rate),
+          );
+        }).toList(),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Text('currency.load_error'.tr()),
+    );
+  }
+
+  void _showEditRateDialog(
+    BuildContext context,
+    WidgetRef ref,
+    CurrencyRateModel rate,
+  ) {
+    final controller = TextEditingController(text: rate.rateToIdr.toStringAsFixed(2));
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('currency.edit_rate'.tr(namedArgs: {'code': rate.code})),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: InputDecoration(
+            labelText: 'currency.rate_to_idr'.tr(),
+            prefixText: 'Rp ',
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('common.cancel'.tr()),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final parsed = double.tryParse(controller.text.trim().replaceAll('.', '').replaceAll(',', '.'));
+              if (parsed != null && parsed > 0) {
+                final repo = ref.read(currencyRepositoryProvider);
+                await repo.upsertRate(
+                  rate.copyWith(rateToIdr: parsed, updatedAt: DateTime.now()),
+                );
+              }
+              if (context.mounted) Navigator.of(ctx).pop();
+            },
+            child: Text('common.save'.tr()),
           ),
         ],
       ),

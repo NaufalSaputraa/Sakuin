@@ -1,13 +1,18 @@
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
 import '../../../core/utils/result.dart';
+import '../../currency/data/currency_repository.dart';
+import '../../currency/domain/currency_repository_interface.dart';
+import '../../../services/currency/currency_converter_service.dart';
 import '../domain/transaction_model.dart';
 import '../domain/transaction_repository_interface.dart';
 
 class TransactionRepository implements TransactionRepositoryInterface {
   final AppDatabase _db;
+  final CurrencyRepositoryInterface _currencyRepo;
 
-  TransactionRepository(this._db);
+  TransactionRepository(this._db, [CurrencyRepositoryInterface? currencyRepo])
+      : _currencyRepo = currencyRepo ?? CurrencyRepository(_db);
 
   TransactionModel _toDomain(TransactionEntry entry) {
     return TransactionModel(
@@ -25,6 +30,8 @@ class TransactionRepository implements TransactionRepositoryInterface {
       transactionDate: entry.transactionDate,
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt,
+      currency: entry.currency,
+      amountBase: entry.amountBase,
     );
   }
 
@@ -76,8 +83,12 @@ class TransactionRepository implements TransactionRepositoryInterface {
     String? rawInput,
     int? transferToWalletId,
     DateTime? transactionDate,
+    String currency = 'IDR',
   }) async {
     try {
+      // Compute equivalent amount in IDR (base) using offline rates.
+      final amountBase = await _computeAmountBase(amount, currency);
+
       final id = await _db.transactionDao.insertTransaction(
         TransactionsCompanion.insert(
           walletId: walletId,
@@ -90,6 +101,8 @@ class TransactionRepository implements TransactionRepositoryInterface {
           sourceInput: Value(sourceInput),
           rawInput: Value(rawInput),
           transferToWalletId: Value(transferToWalletId),
+          currency: Value(currency),
+          amountBase: Value(amountBase),
           transactionDate: Value(transactionDate ?? DateTime.now()),
         ),
       );
@@ -97,6 +110,25 @@ class TransactionRepository implements TransactionRepositoryInterface {
     } catch (e) {
       return Failure(AppError.database(e.toString()));
     }
+  }
+
+  /// Compute amountBase by reading the rate from the currency DAO.
+  /// Falls back to the static default rate if the code is not in the DB.
+  Future<double> _computeAmountBase(double amount, String currency) async {
+    if (currency == 'IDR') return amount;
+    final rate = await _currencyRepo.getRate(currency);
+    if (rate.isSuccess) {
+      return amount * rate.valueOrNull!.rateToIdr;
+    }
+    // Fallback to static offline default.
+    return _fallbackAmountBase(amount, currency);
+  }
+
+  double _fallbackAmountBase(double amount, String currency) {
+    if (currency == 'IDR') return amount;
+    final defaults = CurrencyConverterService.defaultRates;
+    final match = defaults.where((r) => r.code == currency).firstOrNull;
+    return match == null ? amount : amount * match.rateToIdr;
   }
 
   @override

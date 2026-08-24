@@ -13,7 +13,11 @@ enum ReceiptSource {
 class ReceiptScannerService {
   final ImagePicker _picker = ImagePicker();
 
-  Future<ParsedTransaction?> scanReceipt({required ReceiptSource source}) async {
+  /// Legacy entry point: pick an image from [source] then OCR it.
+  ///
+  /// Kept for backward compatibility (e.g. quick-action shortcuts). Prefer the
+  /// new [scanReceipt] path-based flow for the full camera → crop → OCR pipeline.
+  Future<ParsedTransaction?> scanReceiptFromSource({required ReceiptSource source}) async {
     final imageSource = source == ReceiptSource.camera ? ImageSource.camera : ImageSource.gallery;
     final pickedFile = await _picker.pickImage(
       source: imageSource,
@@ -22,7 +26,16 @@ class ReceiptScannerService {
 
     if (pickedFile == null) return null;
 
-    final inputImage = InputImage.fromFilePath(pickedFile.path);
+    return scanReceipt(pickedFile.path);
+  }
+
+  /// OCR a pre-captured (and ideally cropped) image at [croppedImagePath].
+  ///
+  /// Loads the image, runs ML Kit [TextRecognizer] (latin script), then routes
+  /// the recognized text through [parseReceiptText]. Returns a structured
+  /// [ParsedTransaction], or `null` if no text could be recognized.
+  Future<ParsedTransaction?> scanReceipt(String croppedImagePath) async {
+    final inputImage = InputImage.fromFilePath(croppedImagePath);
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
     try {

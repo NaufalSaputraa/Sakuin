@@ -1155,6 +1155,22 @@ class $TransactionsTable extends Transactions
       requiredDuringInsert: false,
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('REFERENCES wallets (id)'));
+  static const VerificationMeta _currencyMeta =
+      const VerificationMeta('currency');
+  @override
+  late final GeneratedColumn<String> currency = GeneratedColumn<String>(
+      'currency', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('IDR'));
+  static const VerificationMeta _amountBaseMeta =
+      const VerificationMeta('amountBase');
+  @override
+  late final GeneratedColumn<double> amountBase = GeneratedColumn<double>(
+      'amount_base', aliasedName, false,
+      type: DriftSqlType.double,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0.0));
   static const VerificationMeta _transactionDateMeta =
       const VerificationMeta('transactionDate');
   @override
@@ -1192,6 +1208,8 @@ class $TransactionsTable extends Transactions
         sourceInput,
         rawInput,
         transferToWalletId,
+        currency,
+        amountBase,
         transactionDate,
         createdAt,
         updatedAt
@@ -1267,6 +1285,16 @@ class $TransactionsTable extends Transactions
           transferToWalletId.isAcceptableOrUnknown(
               data['transfer_to_wallet_id']!, _transferToWalletIdMeta));
     }
+    if (data.containsKey('currency')) {
+      context.handle(_currencyMeta,
+          currency.isAcceptableOrUnknown(data['currency']!, _currencyMeta));
+    }
+    if (data.containsKey('amount_base')) {
+      context.handle(
+          _amountBaseMeta,
+          amountBase.isAcceptableOrUnknown(
+              data['amount_base']!, _amountBaseMeta));
+    }
     if (data.containsKey('transaction_date')) {
       context.handle(
           _transactionDateMeta,
@@ -1312,6 +1340,10 @@ class $TransactionsTable extends Transactions
           .read(DriftSqlType.string, data['${effectivePrefix}raw_input']),
       transferToWalletId: attachedDatabase.typeMapping.read(
           DriftSqlType.int, data['${effectivePrefix}transfer_to_wallet_id']),
+      currency: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}currency'])!,
+      amountBase: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}amount_base'])!,
       transactionDate: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}transaction_date'])!,
       createdAt: attachedDatabase.typeMapping
@@ -1340,6 +1372,8 @@ class TransactionEntry extends DataClass
   final String sourceInput;
   final String? rawInput;
   final int? transferToWalletId;
+  final String currency;
+  final double amountBase;
   final DateTime transactionDate;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -1355,6 +1389,8 @@ class TransactionEntry extends DataClass
       required this.sourceInput,
       this.rawInput,
       this.transferToWalletId,
+      required this.currency,
+      required this.amountBase,
       required this.transactionDate,
       required this.createdAt,
       required this.updatedAt});
@@ -1382,6 +1418,8 @@ class TransactionEntry extends DataClass
     if (!nullToAbsent || transferToWalletId != null) {
       map['transfer_to_wallet_id'] = Variable<int>(transferToWalletId);
     }
+    map['currency'] = Variable<String>(currency);
+    map['amount_base'] = Variable<double>(amountBase);
     map['transaction_date'] = Variable<DateTime>(transactionDate);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1411,6 +1449,8 @@ class TransactionEntry extends DataClass
       transferToWalletId: transferToWalletId == null && nullToAbsent
           ? const Value.absent()
           : Value(transferToWalletId),
+      currency: Value(currency),
+      amountBase: Value(amountBase),
       transactionDate: Value(transactionDate),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -1432,6 +1472,8 @@ class TransactionEntry extends DataClass
       sourceInput: serializer.fromJson<String>(json['sourceInput']),
       rawInput: serializer.fromJson<String?>(json['rawInput']),
       transferToWalletId: serializer.fromJson<int?>(json['transferToWalletId']),
+      currency: serializer.fromJson<String>(json['currency']),
+      amountBase: serializer.fromJson<double>(json['amountBase']),
       transactionDate: serializer.fromJson<DateTime>(json['transactionDate']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -1452,6 +1494,8 @@ class TransactionEntry extends DataClass
       'sourceInput': serializer.toJson<String>(sourceInput),
       'rawInput': serializer.toJson<String?>(rawInput),
       'transferToWalletId': serializer.toJson<int?>(transferToWalletId),
+      'currency': serializer.toJson<String>(currency),
+      'amountBase': serializer.toJson<double>(amountBase),
       'transactionDate': serializer.toJson<DateTime>(transactionDate),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -1470,6 +1514,8 @@ class TransactionEntry extends DataClass
           String? sourceInput,
           Value<String?> rawInput = const Value.absent(),
           Value<int?> transferToWalletId = const Value.absent(),
+          String? currency,
+          double? amountBase,
           DateTime? transactionDate,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
@@ -1487,6 +1533,8 @@ class TransactionEntry extends DataClass
         transferToWalletId: transferToWalletId.present
             ? transferToWalletId.value
             : this.transferToWalletId,
+        currency: currency ?? this.currency,
+        amountBase: amountBase ?? this.amountBase,
         transactionDate: transactionDate ?? this.transactionDate,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -1511,6 +1559,9 @@ class TransactionEntry extends DataClass
       transferToWalletId: data.transferToWalletId.present
           ? data.transferToWalletId.value
           : this.transferToWalletId,
+      currency: data.currency.present ? data.currency.value : this.currency,
+      amountBase:
+          data.amountBase.present ? data.amountBase.value : this.amountBase,
       transactionDate: data.transactionDate.present
           ? data.transactionDate.value
           : this.transactionDate,
@@ -1533,6 +1584,8 @@ class TransactionEntry extends DataClass
           ..write('sourceInput: $sourceInput, ')
           ..write('rawInput: $rawInput, ')
           ..write('transferToWalletId: $transferToWalletId, ')
+          ..write('currency: $currency, ')
+          ..write('amountBase: $amountBase, ')
           ..write('transactionDate: $transactionDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -1553,6 +1606,8 @@ class TransactionEntry extends DataClass
       sourceInput,
       rawInput,
       transferToWalletId,
+      currency,
+      amountBase,
       transactionDate,
       createdAt,
       updatedAt);
@@ -1571,6 +1626,8 @@ class TransactionEntry extends DataClass
           other.sourceInput == this.sourceInput &&
           other.rawInput == this.rawInput &&
           other.transferToWalletId == this.transferToWalletId &&
+          other.currency == this.currency &&
+          other.amountBase == this.amountBase &&
           other.transactionDate == this.transactionDate &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -1588,6 +1645,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
   final Value<String> sourceInput;
   final Value<String?> rawInput;
   final Value<int?> transferToWalletId;
+  final Value<String> currency;
+  final Value<double> amountBase;
   final Value<DateTime> transactionDate;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -1603,6 +1662,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
     this.sourceInput = const Value.absent(),
     this.rawInput = const Value.absent(),
     this.transferToWalletId = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.amountBase = const Value.absent(),
     this.transactionDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1619,6 +1680,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
     this.sourceInput = const Value.absent(),
     this.rawInput = const Value.absent(),
     this.transferToWalletId = const Value.absent(),
+    this.currency = const Value.absent(),
+    this.amountBase = const Value.absent(),
     this.transactionDate = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -1638,6 +1701,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
     Expression<String>? sourceInput,
     Expression<String>? rawInput,
     Expression<int>? transferToWalletId,
+    Expression<String>? currency,
+    Expression<double>? amountBase,
     Expression<DateTime>? transactionDate,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -1655,6 +1720,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
       if (rawInput != null) 'raw_input': rawInput,
       if (transferToWalletId != null)
         'transfer_to_wallet_id': transferToWalletId,
+      if (currency != null) 'currency': currency,
+      if (amountBase != null) 'amount_base': amountBase,
       if (transactionDate != null) 'transaction_date': transactionDate,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -1673,6 +1740,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
       Value<String>? sourceInput,
       Value<String?>? rawInput,
       Value<int?>? transferToWalletId,
+      Value<String>? currency,
+      Value<double>? amountBase,
       Value<DateTime>? transactionDate,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
@@ -1688,6 +1757,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
       sourceInput: sourceInput ?? this.sourceInput,
       rawInput: rawInput ?? this.rawInput,
       transferToWalletId: transferToWalletId ?? this.transferToWalletId,
+      currency: currency ?? this.currency,
+      amountBase: amountBase ?? this.amountBase,
       transactionDate: transactionDate ?? this.transactionDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -1730,6 +1801,12 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
     if (transferToWalletId.present) {
       map['transfer_to_wallet_id'] = Variable<int>(transferToWalletId.value);
     }
+    if (currency.present) {
+      map['currency'] = Variable<String>(currency.value);
+    }
+    if (amountBase.present) {
+      map['amount_base'] = Variable<double>(amountBase.value);
+    }
     if (transactionDate.present) {
       map['transaction_date'] = Variable<DateTime>(transactionDate.value);
     }
@@ -1756,6 +1833,8 @@ class TransactionsCompanion extends UpdateCompanion<TransactionEntry> {
           ..write('sourceInput: $sourceInput, ')
           ..write('rawInput: $rawInput, ')
           ..write('transferToWalletId: $transferToWalletId, ')
+          ..write('currency: $currency, ')
+          ..write('amountBase: $amountBase, ')
           ..write('transactionDate: $transactionDate, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -3673,6 +3752,344 @@ class SubscriptionsCompanion extends UpdateCompanion<SubscriptionEntry> {
   }
 }
 
+class $CurrencyRatesTable extends CurrencyRates
+    with TableInfo<$CurrencyRatesTable, CurrencyRatesData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CurrencyRatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+      'code', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _rateToIdrMeta =
+      const VerificationMeta('rateToIdr');
+  @override
+  late final GeneratedColumn<double> rateToIdr = GeneratedColumn<double>(
+      'rate_to_idr', aliasedName, false,
+      type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _isBaseMeta = const VerificationMeta('isBase');
+  @override
+  late final GeneratedColumn<bool> isBase = GeneratedColumn<bool>(
+      'is_base', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_base" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, code, name, rateToIdr, isBase, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'currency_rates';
+  @override
+  VerificationContext validateIntegrity(Insertable<CurrencyRatesData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+          _codeMeta, code.isAcceptableOrUnknown(data['code']!, _codeMeta));
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('rate_to_idr')) {
+      context.handle(
+          _rateToIdrMeta,
+          rateToIdr.isAcceptableOrUnknown(
+              data['rate_to_idr']!, _rateToIdrMeta));
+    } else if (isInserting) {
+      context.missing(_rateToIdrMeta);
+    }
+    if (data.containsKey('is_base')) {
+      context.handle(_isBaseMeta,
+          isBase.isAcceptableOrUnknown(data['is_base']!, _isBaseMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CurrencyRatesData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CurrencyRatesData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      code: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}code'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      rateToIdr: attachedDatabase.typeMapping
+          .read(DriftSqlType.double, data['${effectivePrefix}rate_to_idr'])!,
+      isBase: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_base'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+    );
+  }
+
+  @override
+  $CurrencyRatesTable createAlias(String alias) {
+    return $CurrencyRatesTable(attachedDatabase, alias);
+  }
+}
+
+class CurrencyRatesData extends DataClass
+    implements Insertable<CurrencyRatesData> {
+  final int id;
+  final String code;
+  final String name;
+  final double rateToIdr;
+  final bool isBase;
+  final DateTime updatedAt;
+  const CurrencyRatesData(
+      {required this.id,
+      required this.code,
+      required this.name,
+      required this.rateToIdr,
+      required this.isBase,
+      required this.updatedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    map['rate_to_idr'] = Variable<double>(rateToIdr);
+    map['is_base'] = Variable<bool>(isBase);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CurrencyRatesCompanion toCompanion(bool nullToAbsent) {
+    return CurrencyRatesCompanion(
+      id: Value(id),
+      code: Value(code),
+      name: Value(name),
+      rateToIdr: Value(rateToIdr),
+      isBase: Value(isBase),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CurrencyRatesData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CurrencyRatesData(
+      id: serializer.fromJson<int>(json['id']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      rateToIdr: serializer.fromJson<double>(json['rateToIdr']),
+      isBase: serializer.fromJson<bool>(json['isBase']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'rateToIdr': serializer.toJson<double>(rateToIdr),
+      'isBase': serializer.toJson<bool>(isBase),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CurrencyRatesData copyWith(
+          {int? id,
+          String? code,
+          String? name,
+          double? rateToIdr,
+          bool? isBase,
+          DateTime? updatedAt}) =>
+      CurrencyRatesData(
+        id: id ?? this.id,
+        code: code ?? this.code,
+        name: name ?? this.name,
+        rateToIdr: rateToIdr ?? this.rateToIdr,
+        isBase: isBase ?? this.isBase,
+        updatedAt: updatedAt ?? this.updatedAt,
+      );
+  CurrencyRatesData copyWithCompanion(CurrencyRatesCompanion data) {
+    return CurrencyRatesData(
+      id: data.id.present ? data.id.value : this.id,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      rateToIdr: data.rateToIdr.present ? data.rateToIdr.value : this.rateToIdr,
+      isBase: data.isBase.present ? data.isBase.value : this.isBase,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CurrencyRatesData(')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('rateToIdr: $rateToIdr, ')
+          ..write('isBase: $isBase, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, code, name, rateToIdr, isBase, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CurrencyRatesData &&
+          other.id == this.id &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.rateToIdr == this.rateToIdr &&
+          other.isBase == this.isBase &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CurrencyRatesCompanion extends UpdateCompanion<CurrencyRatesData> {
+  final Value<int> id;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<double> rateToIdr;
+  final Value<bool> isBase;
+  final Value<DateTime> updatedAt;
+  const CurrencyRatesCompanion({
+    this.id = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.rateToIdr = const Value.absent(),
+    this.isBase = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  });
+  CurrencyRatesCompanion.insert({
+    this.id = const Value.absent(),
+    required String code,
+    required String name,
+    required double rateToIdr,
+    this.isBase = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+  })  : code = Value(code),
+        name = Value(name),
+        rateToIdr = Value(rateToIdr);
+  static Insertable<CurrencyRatesData> custom({
+    Expression<int>? id,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<double>? rateToIdr,
+    Expression<bool>? isBase,
+    Expression<DateTime>? updatedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (rateToIdr != null) 'rate_to_idr': rateToIdr,
+      if (isBase != null) 'is_base': isBase,
+      if (updatedAt != null) 'updated_at': updatedAt,
+    });
+  }
+
+  CurrencyRatesCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? code,
+      Value<String>? name,
+      Value<double>? rateToIdr,
+      Value<bool>? isBase,
+      Value<DateTime>? updatedAt}) {
+    return CurrencyRatesCompanion(
+      id: id ?? this.id,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      rateToIdr: rateToIdr ?? this.rateToIdr,
+      isBase: isBase ?? this.isBase,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (rateToIdr.present) {
+      map['rate_to_idr'] = Variable<double>(rateToIdr.value);
+    }
+    if (isBase.present) {
+      map['is_base'] = Variable<bool>(isBase.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CurrencyRatesCompanion(')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('rateToIdr: $rateToIdr, ')
+          ..write('isBase: $isBase, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3683,6 +4100,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ChatMessagesTable chatMessages = $ChatMessagesTable(this);
   late final $SmartRulesTable smartRules = $SmartRulesTable(this);
   late final $SubscriptionsTable subscriptions = $SubscriptionsTable(this);
+  late final $CurrencyRatesTable currencyRates = $CurrencyRatesTable(this);
   late final WalletDao walletDao = WalletDao(this as AppDatabase);
   late final CategoryDao categoryDao = CategoryDao(this as AppDatabase);
   late final TransactionDao transactionDao =
@@ -3692,6 +4110,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final SmartRuleDao smartRuleDao = SmartRuleDao(this as AppDatabase);
   late final SubscriptionDao subscriptionDao =
       SubscriptionDao(this as AppDatabase);
+  late final CurrencyRatesDao currencyRatesDao =
+      CurrencyRatesDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3703,7 +4123,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         budgets,
         chatMessages,
         smartRules,
-        subscriptions
+        subscriptions,
+        currencyRates
       ];
 }
 
@@ -3740,8 +4161,8 @@ final class $$WalletsTableReferences
     extends BaseReferences<_$AppDatabase, $WalletsTable, WalletEntry> {
   $$WalletsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static $WalletsTable _parentIdTable(_$AppDatabase db) => db.wallets
-      .createAlias($_aliasNameGenerator(db.wallets.parentId, db.wallets.id));
+  static $WalletsTable _parentIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('wallets__parent_id__wallets__id');
 
   $$WalletsTableProcessedTableManager? get parentId {
     final $_column = $_itemColumn<int>('parent_id');
@@ -3755,9 +4176,9 @@ final class $$WalletsTableReferences
   }
 
   static MultiTypedResultKey<$BudgetsTable, List<BudgetEntry>>
-      _budgetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.budgets,
-          aliasName: $_aliasNameGenerator(db.wallets.id, db.budgets.walletId));
+      _budgetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.budgets,
+              aliasName: 'wallets__id__budgets__wallet_id');
 
   $$BudgetsTableProcessedTableManager get budgetsRefs {
     final manager = $$BudgetsTableTableManager($_db, $_db.budgets)
@@ -4175,8 +4596,7 @@ final class $$CategoriesTableReferences
   $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _parentIdTable(_$AppDatabase db) =>
-      db.categories.createAlias(
-          $_aliasNameGenerator(db.categories.parentId, db.categories.id));
+      db.categories.createAlias('categories__parent_id__categories__id');
 
   $$CategoriesTableProcessedTableManager? get parentId {
     final $_column = $_itemColumn<int>('parent_id');
@@ -4192,8 +4612,7 @@ final class $$CategoriesTableReferences
   static MultiTypedResultKey<$TransactionsTable, List<TransactionEntry>>
       _transactionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.transactions,
-              aliasName: $_aliasNameGenerator(
-                  db.categories.id, db.transactions.categoryId));
+              aliasName: 'categories__id__transactions__category_id');
 
   $$TransactionsTableProcessedTableManager get transactionsRefs {
     final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
@@ -4205,10 +4624,9 @@ final class $$CategoriesTableReferences
   }
 
   static MultiTypedResultKey<$BudgetsTable, List<BudgetEntry>>
-      _budgetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
-          db.budgets,
-          aliasName:
-              $_aliasNameGenerator(db.categories.id, db.budgets.categoryId));
+      _budgetsRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.budgets,
+              aliasName: 'categories__id__budgets__category_id');
 
   $$BudgetsTableProcessedTableManager get budgetsRefs {
     final manager = $$BudgetsTableTableManager($_db, $_db.budgets)
@@ -4222,8 +4640,7 @@ final class $$CategoriesTableReferences
   static MultiTypedResultKey<$SubscriptionsTable, List<SubscriptionEntry>>
       _subscriptionsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.subscriptions,
-              aliasName: $_aliasNameGenerator(
-                  db.categories.id, db.subscriptions.categoryId));
+              aliasName: 'categories__id__subscriptions__category_id');
 
   $$SubscriptionsTableProcessedTableManager get subscriptionsRefs {
     final manager = $$SubscriptionsTableTableManager($_db, $_db.subscriptions)
@@ -4727,6 +5144,8 @@ typedef $$TransactionsTableCreateCompanionBuilder = TransactionsCompanion
   Value<String> sourceInput,
   Value<String?> rawInput,
   Value<int?> transferToWalletId,
+  Value<String> currency,
+  Value<double> amountBase,
   Value<DateTime> transactionDate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -4744,6 +5163,8 @@ typedef $$TransactionsTableUpdateCompanionBuilder = TransactionsCompanion
   Value<String> sourceInput,
   Value<String?> rawInput,
   Value<int?> transferToWalletId,
+  Value<String> currency,
+  Value<double> amountBase,
   Value<DateTime> transactionDate,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -4754,8 +5175,7 @@ final class $$TransactionsTableReferences extends BaseReferences<_$AppDatabase,
   $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $WalletsTable _walletIdTable(_$AppDatabase db) =>
-      db.wallets.createAlias(
-          $_aliasNameGenerator(db.transactions.walletId, db.wallets.id));
+      db.wallets.createAlias('transactions__wallet_id__wallets__id');
 
   $$WalletsTableProcessedTableManager get walletId {
     final $_column = $_itemColumn<int>('wallet_id')!;
@@ -4769,8 +5189,7 @@ final class $$TransactionsTableReferences extends BaseReferences<_$AppDatabase,
   }
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
-      db.categories.createAlias(
-          $_aliasNameGenerator(db.transactions.categoryId, db.categories.id));
+      db.categories.createAlias('transactions__category_id__categories__id');
 
   $$CategoriesTableProcessedTableManager? get categoryId {
     final $_column = $_itemColumn<int>('category_id');
@@ -4783,9 +5202,8 @@ final class $$TransactionsTableReferences extends BaseReferences<_$AppDatabase,
         manager.$state.copyWith(prefetchedData: [item]));
   }
 
-  static $WalletsTable _transferToWalletIdTable(_$AppDatabase db) =>
-      db.wallets.createAlias($_aliasNameGenerator(
-          db.transactions.transferToWalletId, db.wallets.id));
+  static $WalletsTable _transferToWalletIdTable(_$AppDatabase db) => db.wallets
+      .createAlias('transactions__transfer_to_wallet_id__wallets__id');
 
   $$WalletsTableProcessedTableManager? get transferToWalletId {
     final $_column = $_itemColumn<int>('transfer_to_wallet_id');
@@ -4832,6 +5250,12 @@ class $$TransactionsTableFilterComposer
 
   ColumnFilters<String> get rawInput => $composableBuilder(
       column: $table.rawInput, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get amountBase => $composableBuilder(
+      column: $table.amountBase, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get transactionDate => $composableBuilder(
       column: $table.transactionDate,
@@ -4938,6 +5362,12 @@ class $$TransactionsTableOrderingComposer
   ColumnOrderings<String> get rawInput => $composableBuilder(
       column: $table.rawInput, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get currency => $composableBuilder(
+      column: $table.currency, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get amountBase => $composableBuilder(
+      column: $table.amountBase, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get transactionDate => $composableBuilder(
       column: $table.transactionDate,
       builder: (column) => ColumnOrderings(column));
@@ -5041,6 +5471,12 @@ class $$TransactionsTableAnnotationComposer
 
   GeneratedColumn<String> get rawInput =>
       $composableBuilder(column: $table.rawInput, builder: (column) => column);
+
+  GeneratedColumn<String> get currency =>
+      $composableBuilder(column: $table.currency, builder: (column) => column);
+
+  GeneratedColumn<double> get amountBase => $composableBuilder(
+      column: $table.amountBase, builder: (column) => column);
 
   GeneratedColumn<DateTime> get transactionDate => $composableBuilder(
       column: $table.transactionDate, builder: (column) => column);
@@ -5147,6 +5583,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<String> sourceInput = const Value.absent(),
             Value<String?> rawInput = const Value.absent(),
             Value<int?> transferToWalletId = const Value.absent(),
+            Value<String> currency = const Value.absent(),
+            Value<double> amountBase = const Value.absent(),
             Value<DateTime> transactionDate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -5163,6 +5601,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
             sourceInput: sourceInput,
             rawInput: rawInput,
             transferToWalletId: transferToWalletId,
+            currency: currency,
+            amountBase: amountBase,
             transactionDate: transactionDate,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -5179,6 +5619,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
             Value<String> sourceInput = const Value.absent(),
             Value<String?> rawInput = const Value.absent(),
             Value<int?> transferToWalletId = const Value.absent(),
+            Value<String> currency = const Value.absent(),
+            Value<double> amountBase = const Value.absent(),
             Value<DateTime> transactionDate = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -5195,6 +5637,8 @@ class $$TransactionsTableTableManager extends RootTableManager<
             sourceInput: sourceInput,
             rawInput: rawInput,
             transferToWalletId: transferToWalletId,
+            currency: currency,
+            amountBase: amountBase,
             transactionDate: transactionDate,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -5312,8 +5756,7 @@ final class $$BudgetsTableReferences
   $$BudgetsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
-      db.categories.createAlias(
-          $_aliasNameGenerator(db.budgets.categoryId, db.categories.id));
+      db.categories.createAlias('budgets__category_id__categories__id');
 
   $$CategoriesTableProcessedTableManager? get categoryId {
     final $_column = $_itemColumn<int>('category_id');
@@ -5326,8 +5769,8 @@ final class $$BudgetsTableReferences
         manager.$state.copyWith(prefetchedData: [item]));
   }
 
-  static $WalletsTable _walletIdTable(_$AppDatabase db) => db.wallets
-      .createAlias($_aliasNameGenerator(db.budgets.walletId, db.wallets.id));
+  static $WalletsTable _walletIdTable(_$AppDatabase db) =>
+      db.wallets.createAlias('budgets__wallet_id__wallets__id');
 
   $$WalletsTableProcessedTableManager? get walletId {
     final $_column = $_itemColumn<int>('wallet_id');
@@ -6126,8 +6569,7 @@ final class $$SubscriptionsTableReferences extends BaseReferences<_$AppDatabase,
       super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTable _categoryIdTable(_$AppDatabase db) =>
-      db.categories.createAlias(
-          $_aliasNameGenerator(db.subscriptions.categoryId, db.categories.id));
+      db.categories.createAlias('subscriptions__category_id__categories__id');
 
   $$CategoriesTableProcessedTableManager? get categoryId {
     final $_column = $_itemColumn<int>('category_id');
@@ -6480,6 +6922,188 @@ typedef $$SubscriptionsTableProcessedTableManager = ProcessedTableManager<
     (SubscriptionEntry, $$SubscriptionsTableReferences),
     SubscriptionEntry,
     PrefetchHooks Function({bool categoryId})>;
+typedef $$CurrencyRatesTableCreateCompanionBuilder = CurrencyRatesCompanion
+    Function({
+  Value<int> id,
+  required String code,
+  required String name,
+  required double rateToIdr,
+  Value<bool> isBase,
+  Value<DateTime> updatedAt,
+});
+typedef $$CurrencyRatesTableUpdateCompanionBuilder = CurrencyRatesCompanion
+    Function({
+  Value<int> id,
+  Value<String> code,
+  Value<String> name,
+  Value<double> rateToIdr,
+  Value<bool> isBase,
+  Value<DateTime> updatedAt,
+});
+
+class $$CurrencyRatesTableFilterComposer
+    extends Composer<_$AppDatabase, $CurrencyRatesTable> {
+  $$CurrencyRatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<double> get rateToIdr => $composableBuilder(
+      column: $table.rateToIdr, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isBase => $composableBuilder(
+      column: $table.isBase, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$CurrencyRatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CurrencyRatesTable> {
+  $$CurrencyRatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<double> get rateToIdr => $composableBuilder(
+      column: $table.rateToIdr, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isBase => $composableBuilder(
+      column: $table.isBase, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CurrencyRatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CurrencyRatesTable> {
+  $$CurrencyRatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<double> get rateToIdr =>
+      $composableBuilder(column: $table.rateToIdr, builder: (column) => column);
+
+  GeneratedColumn<bool> get isBase =>
+      $composableBuilder(column: $table.isBase, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CurrencyRatesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CurrencyRatesTable,
+    CurrencyRatesData,
+    $$CurrencyRatesTableFilterComposer,
+    $$CurrencyRatesTableOrderingComposer,
+    $$CurrencyRatesTableAnnotationComposer,
+    $$CurrencyRatesTableCreateCompanionBuilder,
+    $$CurrencyRatesTableUpdateCompanionBuilder,
+    (
+      CurrencyRatesData,
+      BaseReferences<_$AppDatabase, $CurrencyRatesTable, CurrencyRatesData>
+    ),
+    CurrencyRatesData,
+    PrefetchHooks Function()> {
+  $$CurrencyRatesTableTableManager(_$AppDatabase db, $CurrencyRatesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CurrencyRatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CurrencyRatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CurrencyRatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> code = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<double> rateToIdr = const Value.absent(),
+            Value<bool> isBase = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              CurrencyRatesCompanion(
+            id: id,
+            code: code,
+            name: name,
+            rateToIdr: rateToIdr,
+            isBase: isBase,
+            updatedAt: updatedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String code,
+            required String name,
+            required double rateToIdr,
+            Value<bool> isBase = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+          }) =>
+              CurrencyRatesCompanion.insert(
+            id: id,
+            code: code,
+            name: name,
+            rateToIdr: rateToIdr,
+            isBase: isBase,
+            updatedAt: updatedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CurrencyRatesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CurrencyRatesTable,
+    CurrencyRatesData,
+    $$CurrencyRatesTableFilterComposer,
+    $$CurrencyRatesTableOrderingComposer,
+    $$CurrencyRatesTableAnnotationComposer,
+    $$CurrencyRatesTableCreateCompanionBuilder,
+    $$CurrencyRatesTableUpdateCompanionBuilder,
+    (
+      CurrencyRatesData,
+      BaseReferences<_$AppDatabase, $CurrencyRatesTable, CurrencyRatesData>
+    ),
+    CurrencyRatesData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -6498,4 +7122,6 @@ class $AppDatabaseManager {
       $$SmartRulesTableTableManager(_db, _db.smartRules);
   $$SubscriptionsTableTableManager get subscriptions =>
       $$SubscriptionsTableTableManager(_db, _db.subscriptions);
+  $$CurrencyRatesTableTableManager get currencyRates =>
+      $$CurrencyRatesTableTableManager(_db, _db.currencyRates);
 }

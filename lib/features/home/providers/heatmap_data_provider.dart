@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../transactions/providers/transaction_providers.dart';
 import '../../transactions/domain/transaction_model.dart';
@@ -101,10 +103,26 @@ int _calculateIntensity(double amount) {
 }
 
 /// Provider that watches heatmap transactions and aggregates them.
+///
+/// Riverpod 3 removed `StreamProvider.stream`, so the source provider's
+/// [AsyncValue] emissions are bridged into a plain [Stream] to keep the
+/// previous behavior (no reload flicker between emissions).
 final heatmapDataProvider = StreamProvider.autoDispose<Map<DateTime, HeatmapDay>>((ref) {
-  final transactionsStream = ref.watch(heatmapTransactionsProvider.stream);
+  final controller = StreamController<Map<DateTime, HeatmapDay>>();
 
-  return transactionsStream.map((transactions) {
-    return aggregateHeatmap(transactions, weeks: 52);
-  });
+  ref.listen(
+    heatmapTransactionsProvider,
+    (_, next) {
+      next.when(
+        data: (transactions) =>
+            controller.add(aggregateHeatmap(transactions, weeks: 52)),
+        error: controller.addError,
+        loading: () {},
+      );
+    },
+    fireImmediately: true,
+  );
+
+  ref.onDispose(controller.close);
+  return controller.stream;
 });

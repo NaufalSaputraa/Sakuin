@@ -40,6 +40,10 @@ class TransactionModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Multi-currency: transaction currency + equivalent amount in IDR (base).
+  final String currency;
+  final double amountBase;
+
   // Joined presentation data (optional)
   final String? walletName;
   final String? categoryName;
@@ -61,6 +65,8 @@ class TransactionModel {
     required this.transactionDate,
     required this.createdAt,
     required this.updatedAt,
+    this.currency = 'IDR',
+    this.amountBase = 0.0,
     this.walletName,
     this.categoryName,
     this.categoryIcon,
@@ -87,6 +93,8 @@ class TransactionModel {
       transactionDate: entry.transactionDate,
       createdAt: entry.createdAt,
       updatedAt: entry.updatedAt,
+      currency: entry.currency as String? ?? 'IDR',
+      amountBase: (entry.amountBase as num?)?.toDouble() ?? 0.0,
     );
   }
 

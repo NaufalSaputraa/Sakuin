@@ -75,6 +75,7 @@ class WalletRepository implements WalletRepositoryInterface {
     double initialBalance = 0.0,
     String? icon,
     String? color,
+    String currency = 'IDR',
   }) async {
     try {
       final id = await _db.walletDao.insertWallet(
@@ -84,6 +85,7 @@ class WalletRepository implements WalletRepositoryInterface {
           parentId: Value(parentId),
           provider: Value(provider),
           balance: Value(initialBalance),
+          currency: Value(currency),
           icon: Value(icon),
           color: Value(color),
         ),
