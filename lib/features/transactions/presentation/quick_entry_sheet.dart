@@ -12,6 +12,7 @@ import '../../smart_rules/domain/smart_rule_model.dart';
 import '../../smart_rules/providers/smart_rule_providers.dart';
 import '../../wallets/domain/wallet_model.dart';
 import '../../wallets/providers/wallet_providers.dart';
+import '../../share/providers/share_import_provider.dart';
 import '../domain/transaction_model.dart';
 import '../providers/transaction_providers.dart';
 import '../presentation/receipt_scan_sheet.dart';
@@ -74,6 +75,16 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     if (widget.initialText != null && widget.initialText!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _triggerParse(widget.initialText!);
+      });
+    }
+
+    // Share Import: auto-fill from text shared into Sakuin from another app
+    // (banking / e-wallet) when this sheet was opened by that share.
+    final pendingShare = ref.read(shareImportProvider);
+    if (pendingShare.hasPending) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _applySharedImport(pendingShare);
       });
     }
   }
@@ -283,11 +294,32 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     });
   }
 
+  /// Applies a transaction shared from another app (Share Import) into the
+  /// form, then marks it consumed so it is not applied twice.
+  void _applySharedImport(ShareImportState shareState) {
+    final parsed = shareState.parsed;
+    if (parsed == null) return;
+
+    setState(() {
+      _textController.text = shareState.sharedText ?? _textController.text;
+    });
+    _applyParsed(parsed);
+
+    ref.read(shareImportProvider.notifier).consume();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    // Share Import: handle texts arriving while the sheet is already open.
+    ref.listen<ShareImportState>(shareImportProvider, (prev, next) {
+      if (next.hasPending && next.sharedText != prev?.sharedText) {
+        _applySharedImport(next);
+      }
+    });
+
     final walletsAsync = ref.watch(allWalletsProvider);
     final categoriesAsync = ref.watch(
       _transactionType == TransactionType.income
@@ -388,12 +420,12 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                 IconButton.filled(
                   onPressed: _submitTransaction,
                   icon: _isLoading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: theme.colorScheme.onPrimary,
                           ),
                         )
                       : const Icon(Icons.check_rounded, size: 20),
@@ -434,7 +466,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF232338) : const Color(0xFFFFF8F0),
+                color: theme.colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.08),
@@ -605,6 +637,7 @@ class _TypePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -618,7 +651,7 @@ class _TypePill extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : color,
+            color: isSelected ? theme.colorScheme.onPrimary : color,
             fontWeight: FontWeight.w600,
             fontSize: 12,
           ),

@@ -61,7 +61,6 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final transactionsAsync = ref.watch(recentTransactionsProvider);
 
     return Scaffold(
@@ -306,9 +305,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                                     child: LinearProgressIndicator(
                                       value: percentage,
                                       minHeight: 6,
-                                      backgroundColor: isDark
-                                          ? const Color(0xFF232338)
-                                          : const Color(0xFFF0E5DA),
+                                      backgroundColor: theme.colorScheme.outlineVariant,
                                       valueColor: AlwaysStoppedAnimation<Color>(cat.color),
                                     ),
                                   ),

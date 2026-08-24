@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../core/theme/color_schemes.dart';
 import '../../core/utils/result.dart';
 
 /// Wraps [ImagePicker] + [ImageCropper] into a single camera/crop pipeline.
@@ -32,8 +32,8 @@ class CameraService {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Receipt',
-            toolbarColor: const Color(0xFF6B5CE7),
-            toolbarWidgetColor: Colors.white,
+            toolbarColor: SakuinColors.lightPrimary,
+            toolbarWidgetColor: SakuinColors.lightOnBackground,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
           ),

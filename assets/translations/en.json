@@ -19,7 +19,8 @@
     "manage": "Manage",
     "activity": "Activity",
     "empty_transactions": "No transactions yet",
-    "empty_transactions_cta": "Tap input below to record your first expense"
+    "empty_transactions_cta": "Tap input below to record your first expense",
+    "days_remaining": "days remaining this month"
   },
   "input": {
     "placeholder": "Type: coffee 25k gopay...",
@@ -44,7 +45,8 @@
     "dana": "Dana",
     "shopeepay": "ShopeePay",
     "bank": "Bank Account",
-    "add_sub_wallet": "Add E-Wallet"
+    "add_sub_wallet": "Add E-Wallet",
+    "balance": "Balance"
   },
   "categories": {
     "food": "Food & Drinks",
@@ -132,6 +134,43 @@
     "remove": "Remove",
     "dismiss": "Dismiss"
   },
+  "settings": {
+    "title": "Settings & Preferences",
+    "default_user_name": "Sakuin User",
+    "edit_profile_name": "Edit Profile Name",
+    "nickname_label": "Nickname",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit_monthly_budget": "Set Monthly Budget Limit",
+    "budget_limit_label": "Limit Amount (Rp)",
+    "monthly_budget_name": "Monthly Budget",
+    "data_local_subtitle": "Data stored 100% locally on your phone",
+    "section_financial": "Financial Settings",
+    "manage_wallets": "Manage Wallets & Balance",
+    "manage_wallets_desc": "Physical Cash & Digital E-Wallets (GoPay, OVO, etc.)",
+    "manage_categories": "Manage Transaction Categories",
+    "manage_categories_desc": "Expense & Income Categories",
+    "monthly_budget_limit": "Monthly Budget Limit",
+    "budget_limit_per_month": "Limit: {{amount}} / month",
+    "section_ai": "AI & Machine Learning Engine",
+    "ocr_engine": "OCR Receipt Scan Engine",
+    "ocr_engine_desc": "Google ML Kit Text Recognition (Camera & Gallery)",
+    "clear_chat_history": "Clear AI Chat History",
+    "clear_chat_history_desc": "Clear conversation memory with the assistant",
+    "chat_cleared_snackbar": "AI chat history cleared!",
+    "smart_rules": "Smart Rules",
+    "smart_rules_desc": "Automate categories & wallets based on merchant",
+    "subscriptions": "Recurring Subscriptions",
+    "subscriptions_desc": "Detect & manage monthly subscriptions automatically",
+    "section_language": "Language & Display",
+    "app_language": "App Language",
+    "lang_indonesian": "Bahasa Indonesia",
+    "lang_english": "English",
+    "section_backup": "Backup & Restore",
+    "section_about": "About Sakuin",
+    "version": "Sakuin Version",
+    "version_desc": "v1.0.0 • Local-First Architecture • PennywiseAI-Inspired"
+  },
   "exportImport": {
     "exportCsv": "Export CSV",
     "exportCsvDesc": "Export transactions only (CSV format)",
@@ -176,6 +215,7 @@
     "scanning": "Scanning...",
     "preview": "Preview",
     "useResult": "Use Result",
+    "ready": "Ready",
     "errorPermission": "Camera permission denied. Enable it in settings or use Gallery.",
     "errorScan": "Could not read the receipt. Try a clearer photo."
   },
@@ -188,6 +228,12 @@
     "errorPermission": "Microphone permission denied. Enable it in settings to use voice input.",
     "errorInit": "Voice recognition is not available on this device.",
     "stop": "Stop"
+  },
+  "share": {
+    "importTitle": "Share to Sakuin",
+    "importDesc": "Receive transaction text shared from banking & e-wallet apps (BCA, GoPay, OVO, Dana)",
+    "received": "Transaction text received — review & save",
+    "error": "Failed to read the shared text"
   },
   "llm": {
     "modelTitle": "AI Model (On-Device)",
@@ -207,6 +253,11 @@
     "verifyFailed": "Model verification failed (SHA-256 mismatch). Please retry the download.",
     "errorGeneric": "Something went wrong. Please try again.",
     "notDownloadedBanner": "AI model not downloaded. Please download it from Settings to enable on-device AI."
+  },
+  "chat": {
+    "ai_subtitle": "On-Device Action Assistant",
+    "processing": "AI is processing...",
+    "input_hint": "Type a command / list expenses / question..."
   },
   "currency": {
     "section_title": "Currency & Offline Rates",

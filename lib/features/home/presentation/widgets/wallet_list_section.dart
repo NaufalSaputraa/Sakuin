@@ -101,7 +101,7 @@ class _WalletCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Saldo',
+                'wallets.balance'.tr(),
                 style: theme.textTheme.labelSmall,
               ),
               const SizedBox(height: 2),

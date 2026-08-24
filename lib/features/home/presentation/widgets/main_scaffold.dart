@@ -1,17 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MainScaffold extends StatefulWidget {
+import '../../../transactions/presentation/quick_entry_sheet.dart';
+import '../../../share/providers/share_import_provider.dart';
+
+class MainScaffold extends ConsumerStatefulWidget {
   final Widget child;
 
   const MainScaffold({super.key, required this.child});
 
   @override
-  State<MainScaffold> createState() => _MainScaffoldState();
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
+  @override
+  void initState() {
+    super.initState();
+    // Share Import: if a shared text is already pending when the scaffold
+    // first appears (e.g. cold start), open the entry sheet for it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _openSharedEntry(ref.read(shareImportProvider));
+    });
+  }
+
+  void _openSharedEntry(ShareImportState shareState) {
+    if (!shareState.hasPending) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('share.received'.tr()),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    QuickEntrySheet.show(context, initialText: shareState.sharedText);
+  }
+
   int _calculateSelectedIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/analytics')) return 1;
@@ -37,7 +64,14 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+
+    // Share Import: open the entry sheet whenever a new shared text
+    // arrives while the app is running (warm start).
+    ref.listen<ShareImportState>(shareImportProvider, (prev, next) {
+      if (next.hasPending && next.sharedText != prev?.sharedText) {
+        _openSharedEntry(next);
+      }
+    });
 
     return Scaffold(
       body: widget.child,
@@ -46,7 +80,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           color: theme.colorScheme.surface,
           border: Border(
             top: BorderSide(
-              color: isDark ? const Color(0xFF232338) : const Color(0xFFF0E5DA),
+              color: theme.colorScheme.outlineVariant,
               width: 1,
             ),
           ),

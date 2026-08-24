@@ -19,7 +19,8 @@
     "manage": "Kelola",
     "activity": "Aktivitas",
     "empty_transactions": "Belum ada transaksi",
-    "empty_transactions_cta": "Ketik di bawah untuk mencatat pengeluaran pertamamu"
+    "empty_transactions_cta": "Ketik di bawah untuk mencatat pengeluaran pertamamu",
+    "days_remaining": "hari tersisa bulan ini"
   },
   "input": {
     "placeholder": "Ketik: beli kopi 25rb gopay...",
@@ -44,7 +45,8 @@
     "dana": "Dana",
     "shopeepay": "ShopeePay",
     "bank": "Rekening Bank",
-    "add_sub_wallet": "Tambah E-Wallet"
+    "add_sub_wallet": "Tambah E-Wallet",
+    "balance": "Saldo"
   },
   "categories": {
     "food": "Makanan & Minuman",
@@ -132,6 +134,43 @@
     "remove": "Hapus",
     "dismiss": "Tutup"
   },
+  "settings": {
+    "title": "Setelan & Preferensi",
+    "default_user_name": "Pengguna Sakuin",
+    "edit_profile_name": "Ubah Nama Profil",
+    "nickname_label": "Nama Panggilan",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "edit_monthly_budget": "Atur Batas Anggaran Bulanan",
+    "budget_limit_label": "Nominal Limit (Rp)",
+    "monthly_budget_name": "Anggaran Bulanan",
+    "data_local_subtitle": "Data Tersimpan 100% Lokal di HP",
+    "section_financial": "Pengaturan Finansial",
+    "manage_wallets": "Kelola Dompet & Saldo",
+    "manage_wallets_desc": "Dompet Fisik & E-Wallet Digital (GoPay, OVO, dll)",
+    "manage_categories": "Kelola Kategori Transaksi",
+    "manage_categories_desc": "Kategori Pengeluaran & Pemasukan",
+    "monthly_budget_limit": "Batas Anggaran Bulanan",
+    "budget_limit_per_month": "Limit: {{amount}} / bulan",
+    "section_ai": "Mesin AI & Machine Learning",
+    "ocr_engine": "Engine Scan Struk OCR",
+    "ocr_engine_desc": "Google ML Kit Text Recognition (Kamera & Galeri)",
+    "clear_chat_history": "Hapus Riwayat Chat AI",
+    "clear_chat_history_desc": "Bersihkan memori percakapan dengan asisten",
+    "chat_cleared_snackbar": "Riwayat chat AI berhasil dibersihkan!",
+    "smart_rules": "Aturan Pintar (Smart Rules)",
+    "smart_rules_desc": "Otomatisasi kategori & dompet berdasarkan merchant",
+    "subscriptions": "Langganan Berulang",
+    "subscriptions_desc": "Deteksi & kelola subscription bulanan otomatis",
+    "section_language": "Bahasa & Tampilan",
+    "app_language": "Bahasa Aplikasi",
+    "lang_indonesian": "Bahasa Indonesia",
+    "lang_english": "English",
+    "section_backup": "Backup & Restore",
+    "section_about": "Tentang Sakuin",
+    "version": "Versi Sakuin",
+    "version_desc": "v1.0.0 • Local-First Architecture • PennywiseAI-Inspired"
+  },
   "exportImport": {
     "exportCsv": "Ekspor CSV",
     "exportCsvDesc": "Ekspor transaksi saja (format CSV)",
@@ -176,6 +215,7 @@
     "scanning": "Memindai...",
     "preview": "Pratinjau",
     "useResult": "Gunakan Hasil",
+    "ready": "Siap",
     "errorPermission": "Izin kamera ditolak. Aktifkan di pengaturan atau gunakan Galeri.",
     "errorScan": "Tidak dapat membaca struk. Coba foto yang lebih jelas."
   },
@@ -188,6 +228,12 @@
     "errorPermission": "Izin mikrofon ditolak. Aktifkan di pengaturan untuk menggunakan input suara.",
     "errorInit": "Pengenalan suara tidak tersedia di perangkat ini.",
     "stop": "Berhenti"
+  },
+  "share": {
+    "importTitle": "Bagikan ke Sakuin",
+    "importDesc": "Terima teks transaksi dari aplikasi banking & e-wallet (BCA, GoPay, OVO, Dana)",
+    "received": "Teks transaksi diterima — periksa & simpan",
+    "error": "Gagal membaca teks yang dibagikan"
   },
   "llm": {
     "modelTitle": "Model AI (On-Device)",
@@ -207,6 +253,11 @@
     "verifyFailed": "Verifikasi model gagal (SHA-256 tidak cocok). Silakan ulangi unduhan.",
     "errorGeneric": "Terjadi kesalahan. Silakan coba lagi.",
     "notDownloadedBanner": "Model AI belum diunduh. Unduh dari Setelan untuk mengaktifkan AI on-device."
+  },
+  "chat": {
+    "ai_subtitle": "Asisten Aksi On-Device",
+    "processing": "AI sedang memproses...",
+    "input_hint": "Ketik perintah / list pengeluaran / pertanyaan..."
   },
   "currency": {
     "section_title": "Mata Uang & Kurs Offline",

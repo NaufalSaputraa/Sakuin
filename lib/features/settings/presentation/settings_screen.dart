@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  String _userName = 'Pengguna Sakuin';
+  String _userName = 'settings.default_user_name'.tr();
 
   @override
   void initState() {
@@ -44,18 +44,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Ubah Nama Profil'),
+        title: Text('settings.edit_profile_name'.tr()),
         content: TextField(
           controller: controller,
-          decoration: const InputDecoration(
-            labelText: 'Nama Panggilan',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: 'settings.nickname_label'.tr(),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text('settings.cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
@@ -67,7 +67,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
               if (context.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Simpan'),
+            child: Text('settings.save'.tr()),
           ),
         ],
       ),
@@ -82,20 +82,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Atur Batas Anggaran Bulanan'),
+        title: Text('settings.edit_monthly_budget'.tr()),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Nominal Limit (Rp)',
+          decoration: InputDecoration(
+            labelText: 'settings.budget_limit_label'.tr(),
             prefixText: 'Rp ',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text('settings.cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
@@ -106,7 +106,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   await repo.updateBudget(budget.copyWith(amount: val));
                 } else {
                   await repo.createBudget(
-                    name: 'Anggaran Bulanan',
+                    name: 'settings.monthly_budget_name'.tr(),
                     budgetType: BudgetType.limit,
                     amount: val,
                   );
@@ -114,7 +114,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
               if (context.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Simpan'),
+            child: Text('settings.save'.tr()),
           ),
         ],
       ),
@@ -129,7 +129,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Setelan & Preferensi'),
+        title: Text('settings.title'.tr()),
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -163,7 +163,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Data Tersimpan 100% Lokal di HP',
+                          'settings.data_local_subtitle'.tr(),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w500,
@@ -183,13 +183,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 2. Financial Management Section
-          Text('Pengaturan Finansial', style: theme.textTheme.titleSmall),
+          Text('settings.section_financial'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
           ListTile(
             leading: const Icon(Icons.account_balance_wallet_outlined),
-            title: const Text('Kelola Dompet & Saldo'),
-            subtitle: const Text('Dompet Fisik & E-Wallet Digital (GoPay, OVO, dll)'),
+            title: Text('settings.manage_wallets'.tr()),
+            subtitle: Text('settings.manage_wallets_desc'.tr()),
             trailing: const Icon(Icons.chevron_right_rounded),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () => context.push('/wallets'),
@@ -198,8 +198,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.category_outlined),
-            title: const Text('Kelola Kategori Transaksi'),
-            subtitle: const Text('Kategori Pengeluaran & Pemasukan'),
+            title: Text('settings.manage_categories'.tr()),
+            subtitle: Text('settings.manage_categories_desc'.tr()),
             trailing: const Icon(Icons.chevron_right_rounded),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () => context.push('/categories'),
@@ -208,8 +208,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.track_changes_outlined),
-            title: const Text('Batas Anggaran Bulanan'),
-            subtitle: Text('Limit: ${RupiahFormatter.format(budgetAmount)} / bulan'),
+            title: Text('settings.monthly_budget_limit'.tr()),
+            subtitle: Text('settings.budget_limit_per_month'.tr(namedArgs: {'amount': RupiahFormatter.format(budgetAmount)})),
             trailing: const Icon(Icons.edit_outlined, size: 20),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: _showEditBudgetDialog,
@@ -223,7 +223,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 3. AI & OCR Engine Section
-          Text('Mesin AI & Machine Learning', style: theme.textTheme.titleSmall),
+          Text('settings.section_ai'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
           const AiModelSection(),
@@ -231,10 +231,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.document_scanner_outlined),
-            title: const Text('Engine Scan Struk OCR'),
-            subtitle: const Text('Google ML Kit Text Recognition (Kamera & Galeri)'),
+            title: Text('settings.ocr_engine'.tr()),
+            subtitle: Text('settings.ocr_engine_desc'.tr()),
             trailing: Chip(
-              label: const Text('Siap', style: TextStyle(fontSize: 11)),
+              label: Text('ocr.ready'.tr(), style: const TextStyle(fontSize: 11)),
               backgroundColor: theme.colorScheme.secondaryContainer,
             ),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -243,15 +243,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.cleaning_services_outlined),
-            title: const Text('Hapus Riwayat Chat AI'),
-            subtitle: const Text('Bersihkan memori percakapan dengan asisten'),
+            title: Text('settings.clear_chat_history'.tr()),
+            subtitle: Text('settings.clear_chat_history_desc'.tr()),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () async {
               final chatRepo = ref.read(chatRepositoryProvider);
               await chatRepo.clearHistory();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Riwayat chat AI berhasil dibersihkan!')),
+                  SnackBar(content: Text('settings.chat_cleared_snackbar'.tr())),
                 );
               }
             },
@@ -260,8 +260,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
           ListTile(
             leading: const Icon(Icons.auto_fix_high_rounded),
-            title: const Text('Aturan Pintar (Smart Rules)'),
-            subtitle: const Text('Otomatisasi kategori & dompet berdasarkan merchant'),
+            title: Text('settings.smart_rules'.tr()),
+            subtitle: Text('settings.smart_rules_desc'.tr()),
             trailing: const Icon(Icons.chevron_right_rounded),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () => context.push('/smart-rules'),
@@ -269,8 +269,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 4),
           ListTile(
             leading: const Icon(Icons.subscriptions_rounded),
-            title: const Text('Langganan Berulang'),
-            subtitle: const Text('Deteksi & kelola subscription bulanan otomatis'),
+            title: Text('settings.subscriptions'.tr()),
+            subtitle: Text('settings.subscriptions_desc'.tr()),
             trailing: const Icon(Icons.chevron_right_rounded),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () => context.push('/subscriptions'),
@@ -278,13 +278,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 4. Language & System
-          Text('Bahasa & Tampilan', style: theme.textTheme.titleSmall),
+          Text('settings.section_language'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
           ListTile(
             leading: const Icon(Icons.language_rounded),
-            title: const Text('Bahasa Aplikasi'),
-            subtitle: Text(context.locale.languageCode == 'id' ? 'Bahasa Indonesia' : 'English'),
+            title: Text('settings.app_language'.tr()),
+            subtitle: Text(context.locale.languageCode == 'id'
+                ? 'settings.lang_indonesian'.tr()
+                : 'settings.lang_english'.tr()),
             trailing: const Icon(Icons.swap_horiz_rounded),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             onTap: () {
@@ -295,20 +297,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const SizedBox(height: 24),
 
           // 5. Backup & Restore
-          Text('Backup & Restore', style: theme.textTheme.titleSmall),
+          Text('settings.section_backup'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
           _BackupSection(),
           const SizedBox(height: 24),
 
           // 6. About Sakuin
-          Text('Tentang Sakuin', style: theme.textTheme.titleSmall),
+          Text('settings.section_about'.tr(), style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
 
           ListTile(
             leading: const Icon(Icons.info_outline_rounded),
-            title: const Text('Versi Sakuin'),
-            subtitle: const Text('v1.0.0 • Local-First Architecture • PennywiseAI-Inspired'),
+            title: Text('settings.version'.tr()),
+            subtitle: Text('settings.version_desc'.tr()),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           const SizedBox(height: 40),

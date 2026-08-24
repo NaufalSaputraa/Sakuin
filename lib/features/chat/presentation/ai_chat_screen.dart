@@ -303,9 +303,9 @@ Financial facts (absolute, do not contradict):
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Sakuin AI (On-Device)', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                const Text('Sakuin AI', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 Text(
-                  'On-Device Action Assistant',
+                  'chat.ai_subtitle'.tr(),
                   style: TextStyle(fontSize: 11, color: theme.colorScheme.primary, fontWeight: FontWeight.w600),
                 ),
               ],
@@ -383,14 +383,14 @@ Financial facts (absolute, do not contradict):
             if (_isTyping)
               Padding(
                 padding: const EdgeInsets.only(left: 20, bottom: 8),
-                child: Row(
-                  children: [
-                    Text(
-                      'AI sedang memproses...',
-                      style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                    child: Row(
+                      children: [
+                        Text(
+                          'chat.processing'.tr(),
+                          style: theme.textTheme.bodySmall?.copyWith(fontStyle: FontStyle.italic),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
               ),
 
             // Bottom Input Bar
@@ -400,7 +400,7 @@ Financial facts (absolute, do not contradict):
                 color: theme.colorScheme.surface,
                 border: Border(
                   top: BorderSide(
-                    color: isDark ? const Color(0xFF232338) : const Color(0xFFF0E5DA),
+                    color: theme.colorScheme.outlineVariant,
                   ),
                 ),
               ),
@@ -411,13 +411,13 @@ Financial facts (absolute, do not contradict):
                       controller: _controller,
                       maxLines: null,
                       decoration: InputDecoration(
-                        hintText: 'Ketik perintah / list pengeluaran / pertanyaan...',
+                        hintText: 'chat.input_hint'.tr(),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide.none,
                         ),
                         filled: true,
-                        fillColor: isDark ? const Color(0xFF232338) : const Color(0xFFFFF8F0),
+                        fillColor: theme.colorScheme.surfaceContainerHighest,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
                       ),
                       onSubmitted: _handleSend,
@@ -488,7 +488,7 @@ class _MessageBubble extends StatelessWidget {
           decoration: BoxDecoration(
             color: isUser
                 ? theme.colorScheme.primary
-                : (isDark ? const Color(0xFF232338) : const Color(0xFFFFF1E6)),
+                : theme.colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(18),
               topRight: const Radius.circular(18),
@@ -505,8 +505,8 @@ class _MessageBubble extends StatelessWidget {
             message.content,
             style: TextStyle(
               color: isUser
-                  ? Colors.white
-                  : (isDark ? Colors.white : const Color(0xFF1A1A2E)),
+                  ? theme.colorScheme.onPrimary
+                  : theme.colorScheme.onSurface,
               fontSize: 14,
               height: 1.4,
             ),

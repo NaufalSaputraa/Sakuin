@@ -107,7 +107,7 @@ class BudgetProgressWidget extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$daysRemaining hari tersisa bulan ini',
+                  '$daysRemaining ${'home.days_remaining'.tr()}',
                   style: theme.textTheme.bodySmall,
                 ),
               ],

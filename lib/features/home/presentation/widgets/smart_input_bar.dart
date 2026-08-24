@@ -27,14 +27,12 @@ class SmartInputBar extends StatelessWidget {
           color: theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(26),
           border: Border.all(
-            color: isDark
-                ? const Color(0xFF2D2D44)
-                : theme.colorScheme.onSurface.withValues(alpha: 0.08),
+            color: theme.colorScheme.outlineVariant,
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.06),
+              color: theme.colorScheme.onSurface.withValues(alpha: isDark ? 0.25 : 0.06),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

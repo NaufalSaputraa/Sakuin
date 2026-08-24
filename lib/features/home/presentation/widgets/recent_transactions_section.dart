@@ -18,7 +18,6 @@ class RecentTransactionsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final transactionsAsync = ref.watch(recentTransactionsProvider);
 
     return Column(
@@ -89,7 +88,7 @@ class RecentTransactionsSection extends ConsumerWidget {
                 separatorBuilder: (_, __) => Divider(
                   height: 1,
                   indent: 64,
-                  color: isDark ? const Color(0xFF232338) : const Color(0xFFF0E5DA),
+                  color: theme.colorScheme.outlineVariant,
                 ),
                 itemBuilder: (context, index) {
                   final tx = transactions[index];

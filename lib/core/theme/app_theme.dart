@@ -50,7 +50,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: SakuinColors.lightPrimary,
-        foregroundColor: Colors.white,
+        foregroundColor: Colors.white, // onPrimary for light purple FAB
         elevation: 3,
         shape: CircleBorder(),
       ),
