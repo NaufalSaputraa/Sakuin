@@ -22,6 +22,14 @@
     "empty_transactions_cta": "Tap input below to record your first expense",
     "days_remaining": "days remaining this month"
   },
+  "trend": {
+    "title": "Spending Forecast",
+    "projectedBalance": "Projected balance",
+    "willBust": "Over budget",
+    "safe": "On track",
+    "topCategory": "Top category",
+    "adviceTemplate": "Your biggest spend is on {{category}} ({{amount}}). Cut ~20% → balance becomes {{saved}}."
+  },
   "input": {
     "placeholder": "Type: coffee 25k gopay...",
     "confirm": "Confirm Transaction",

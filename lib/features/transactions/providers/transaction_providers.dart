@@ -4,6 +4,8 @@ import '../../../core/utils/result.dart';
 import '../data/transaction_repository.dart';
 import '../domain/transaction_model.dart';
 import '../domain/transaction_repository_interface.dart';
+import '../../budget/domain/budget_period.dart';
+import '../../budget/providers/budget_providers.dart';
 import '../../categories/providers/category_providers.dart';
 import '../../wallets/providers/wallet_providers.dart';
 
@@ -159,5 +161,21 @@ final heatmapTransactionsProvider = StreamProvider.autoDispose<List<TransactionM
         categoryColor: category?.color,
       );
     }).toList();
+  });
+});
+
+/// Total expense within the active budget period (or current month when no
+/// budget is set). Period-aware: aligns to the budget's [BudgetModel.startDate]
+/// and [BudgetModel.period] so weekly/daily budgets forecast correctly instead
+/// of always using the calendar month.
+final periodExpenseProvider = StreamProvider.autoDispose<double>((ref) {
+  final budgetAsync = ref.watch(primaryBudgetProvider);
+  final bounds = computePeriodBounds(budgetAsync.value);
+  final repo = ref.watch(transactionRepositoryProvider);
+
+  return repo.watchByDateRange(bounds.start, DateTime.now()).map((list) {
+    return list
+        .where((t) => t.isExpense)
+        .fold(0.0, (sum, t) => sum + t.amount);
   });
 });

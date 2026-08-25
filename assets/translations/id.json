@@ -22,6 +22,14 @@
     "empty_transactions_cta": "Ketik di bawah untuk mencatat pengeluaran pertamamu",
     "days_remaining": "hari tersisa bulan ini"
   },
+  "trend": {
+    "title": "Proyeksi Pengeluaran",
+    "projectedBalance": "Saldo Proyeksi",
+    "willBust": "Akan Lewat Batas",
+    "safe": "Masih Aman",
+    "topCategory": "Kategori Teratas",
+    "adviceTemplate": "Pengeluaran terbesarmu di {{category}} ({{amount}}). Kurangi ~20% → sisa jadi {{saved}}."
+  },
   "input": {
     "placeholder": "Ketik: beli kopi 25rb gopay...",
     "confirm": "Simpan Transaksi",

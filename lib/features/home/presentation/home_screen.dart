@@ -6,7 +6,7 @@ import 'widgets/balance_hero_card.dart';
 import 'widgets/budget_progress_widget.dart';
 import 'widgets/recent_transactions_section.dart';
 import 'widgets/wallet_list_section.dart';
-import 'widgets/activity_heatmap_widget.dart';
+import 'widgets/ai_spending_recommendation_widget.dart';
 import 'widgets/smart_input_bar.dart';
 import '../../transactions/presentation/quick_entry_sheet.dart';
 import '../../transactions/providers/transaction_providers.dart';
@@ -265,8 +265,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const RepaintBoundary(child: WalletListSection()),
                         const SizedBox(height: 24),
 
-                        // Activity Heatmap Grid
-                        const RepaintBoundary(child: ActivityHeatmapWidget()),
+                        // AI Spending Recommendation
+                        const RepaintBoundary(child: AiSpendingRecommendationWidget()),
                         const SizedBox(height: 140),
                       ],
                     ),
