@@ -94,6 +94,44 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
     });
   }
 
+  /// Updates a transaction row, reverting the old wallet balance deltas and
+  /// applying the new ones so wallet balances stay consistent after an edit.
+  Future<int> updateTransaction(int id, TransactionsCompanion companion) {
+    return db.transaction(() async {
+      final old = await (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
+      if (old == null) return 0;
+
+      // Revert old balance effect (amountBase = IDR-equivalent amount)
+      if (old.transactionType == 'expense') {
+        await db.walletDao.updateBalance(old.walletId, old.amountBase);
+      } else if (old.transactionType == 'income') {
+        await db.walletDao.updateBalance(old.walletId, -old.amountBase);
+      } else if (old.transactionType == 'transfer' && old.transferToWalletId != null) {
+        await db.walletDao.updateBalance(old.walletId, old.amountBase);
+        await db.walletDao.updateBalance(old.transferToWalletId!, -old.amountBase);
+      }
+
+      // Apply new balance effect
+      final walletId = companion.walletId.present ? companion.walletId.value : old.walletId;
+      final amountBase = companion.amountBase.present ? companion.amountBase.value : old.amountBase;
+      final type = companion.transactionType.present ? companion.transactionType.value : old.transactionType;
+      final transferToWalletId = companion.transferToWalletId.present
+          ? companion.transferToWalletId.value
+          : old.transferToWalletId;
+
+      if (type == 'expense') {
+        await db.walletDao.updateBalance(walletId, -amountBase);
+      } else if (type == 'income') {
+        await db.walletDao.updateBalance(walletId, amountBase);
+      } else if (type == 'transfer' && transferToWalletId != null) {
+        await db.walletDao.updateBalance(walletId, -amountBase);
+        await db.walletDao.updateBalance(transferToWalletId, amountBase);
+      }
+
+      return (update(transactions)..where((t) => t.id.equals(id))).write(companion);
+    });
+  }
+
   Stream<double> watchTotalIncomeForMonth(DateTime month) {
     final start = DateTime(month.year, month.month, 1);
     final end = DateTime(month.year, month.month + 1, 0, 23, 59, 59);

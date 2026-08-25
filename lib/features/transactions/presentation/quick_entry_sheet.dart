@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/result.dart';
 import '../../../core/theme/color_schemes.dart';
 import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
@@ -24,17 +25,21 @@ import '../../../services/ml/parsed_transaction.dart';
 class QuickEntrySheet extends ConsumerStatefulWidget {
   final String? initialText;
   final bool startInNumpadMode;
+  final TransactionModel? transaction;
 
   const QuickEntrySheet({
     super.key,
     this.initialText,
     this.startInNumpadMode = false,
-  });
+    this.transaction,
+  }) : assert(initialText == null || transaction == null,
+            'Cannot open the sheet in both parse and edit mode at once');
 
   static Future<void> show(
     BuildContext context, {
     String? initialText,
     bool startInNumpadMode = false,
+    TransactionModel? transaction,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -43,6 +48,7 @@ class QuickEntrySheet extends ConsumerStatefulWidget {
       builder: (context) => QuickEntrySheet(
         initialText: initialText,
         startInNumpadMode: startInNumpadMode,
+        transaction: transaction,
       ),
     );
   }
@@ -64,6 +70,9 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
   String? _parsedMerchant; // From parser/OCR/voice/share; feeds subscriptions & smart rules
   bool _isLoading = false;
   String _selectedCurrency = 'IDR';
+  DateTime _transactionDate = DateTime.now();
+
+  bool get _isEditMode => widget.transaction != null;
 
   @override
   void initState() {
@@ -71,8 +80,22 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     _textController = TextEditingController(text: widget.initialText ?? '');
     _titleController = TextEditingController(text: 'Transaksi');
     _amountController = TextEditingController();
-    _isNumpadMode = widget.startInNumpadMode;
+    _isNumpadMode = widget.startInNumpadMode || _isEditMode;
     _selectedCurrency = ref.read(selectedCurrencyProvider);
+
+    // Edit mode: pre-fill the form from the existing transaction.
+    final existing = widget.transaction;
+    if (existing != null) {
+      _transactionType = existing.transactionType;
+      _titleController.text = existing.title;
+      _parsedAmount = existing.amount;
+      _amountController.text = existing.amount.toStringAsFixed(0);
+      _selectedWalletId = existing.walletId;
+      _selectedCategoryId = existing.categoryId;
+      _selectedCurrency = existing.currency;
+      _parsedMerchant = existing.merchant;
+      _transactionDate = existing.transactionDate;
+    }
 
     if (widget.initialText != null && widget.initialText!.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -168,62 +191,83 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       return;
     }
 
-    // Apply smart rules evaluation for auto-suggestions
-    final merchant = _textController.text.trim();
     final title = _titleController.text.trim().isEmpty ? 'Transaksi' : _titleController.text.trim();
-    final evaluationAsync = ref.read(
-      smartRuleEvaluationProvider(
-        (merchant: merchant, title: title, amount: amount, categoryId: _selectedCategoryId),
-      ).future,
-    );
-    final evaluation = await evaluationAsync;
 
     int? finalCategoryId = _selectedCategoryId;
     int? finalWalletId = walletId;
 
-    if (evaluation.hasMatch && evaluation.action != null) {
-      final action = evaluation.action!;
-      if (action.type == RuleActionType.categorize) {
-        final actionData = _parseActionValue(action.value);
-        final categoryId = actionData['categoryId'] as int?;
-        if (categoryId != null) {
-          finalCategoryId = categoryId;
-        }
-      } else if (action.type == RuleActionType.wallet) {
-        final actionData = _parseActionValue(action.value);
-        final walletProvider = actionData['walletProvider'] as String?;
-        if (walletProvider != null) {
-          final match = wallets.where((w) {
-            if (walletProvider == 'physical') return w.isPhysical;
-            return w.provider == walletProvider;
-          }).firstOrNull;
-          if (match != null) {
-            finalWalletId = match.id;
+    if (!_isEditMode) {
+      // Apply smart rules evaluation for auto-suggestions. In edit mode we skip
+      // this so the user's explicit category/wallet choices are preserved.
+      final merchant = _textController.text.trim();
+      final evaluationAsync = ref.read(
+        smartRuleEvaluationProvider(
+          (merchant: merchant, title: title, amount: amount, categoryId: _selectedCategoryId),
+        ).future,
+      );
+      final evaluation = await evaluationAsync;
+
+        if (evaluation.hasMatch && evaluation.action != null) {
+          final action = evaluation.action!;
+          if (action.type == RuleActionType.categorize) {
+            final actionData = _parseActionValue(action.value);
+            final categoryId = actionData['categoryId'] as int?;
+            if (categoryId != null) {
+              finalCategoryId = categoryId;
+            }
+          } else if (action.type == RuleActionType.wallet) {
+            final actionData = _parseActionValue(action.value);
+            final walletProvider = actionData['walletProvider'] as String?;
+            if (walletProvider != null) {
+              final match = wallets.where((w) {
+                if (walletProvider == 'physical') return w.isPhysical;
+                return w.provider == walletProvider;
+              }).firstOrNull;
+              if (match != null) {
+                finalWalletId = match.id;
+              }
+            }
           }
         }
       }
-    }
 
     setState(() => _isLoading = true);
 
     // Persist selected currency for next entry.
     ref.read(selectedCurrencyProvider.notifier).set(_selectedCurrency);
 
-    final repo = ref.read(transactionRepositoryProvider);
     final merchantForTx = (_parsedMerchant?.trim().isNotEmpty ?? false)
         ? _parsedMerchant!.trim()
         : title;
-    final result = await repo.createTransaction(
-      walletId: finalWalletId,
-      categoryId: finalCategoryId,
-      amount: amount,
-      transactionType: _transactionType,
-      title: title,
-      merchant: merchantForTx,
-      sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
-      rawInput: _textController.text.trim(),
-      currency: _selectedCurrency,
-    );
+
+    final Result<int, AppError> result;
+    if (_isEditMode) {
+      result = await ref.read(transactionActionsProvider.notifier).updateTransaction(
+            id: widget.transaction!.id,
+            walletId: finalWalletId,
+            categoryId: finalCategoryId,
+            amount: amount,
+            transactionType: _transactionType,
+            title: title,
+            merchant: merchantForTx,
+            transferToWalletId: widget.transaction!.transferToWalletId,
+            transactionDate: _transactionDate,
+            currency: _selectedCurrency,
+          );
+    } else {
+      final repo = ref.read(transactionRepositoryProvider);
+      result = await repo.createTransaction(
+        walletId: finalWalletId,
+        categoryId: finalCategoryId,
+        amount: amount,
+        transactionType: _transactionType,
+        title: title,
+        merchant: merchantForTx,
+        sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
+        rawInput: _textController.text.trim(),
+        currency: _selectedCurrency,
+      );
+    }
 
     setState(() => _isLoading = false);
 
@@ -447,29 +491,31 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             Builder(
               builder: (context) {
                 final isDark = Theme.of(context).brightness == Brightness.dark;
-                return Row(
-                  children: [
-                    _TypePill(
-                      label: 'input.type_expense'.tr(),
-                      isSelected: _transactionType == TransactionType.expense,
-                      color: isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense,
-                      onTap: () => setState(() => _transactionType = TransactionType.expense),
-                    ),
-                    const SizedBox(width: 8),
-                    _TypePill(
-                      label: 'input.type_income'.tr(),
-                      isSelected: _transactionType == TransactionType.income,
-                      color: isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome,
-                      onTap: () => setState(() => _transactionType = TransactionType.income),
-                    ),
-                    const SizedBox(width: 8),
-                    _TypePill(
-                      label: 'input.type_transfer'.tr(),
-                      isSelected: _transactionType == TransactionType.transfer,
-                      color: isDark ? SakuinColors.darkSecondary : SakuinColors.lightSecondary,
-                      onTap: () => setState(() => _transactionType = TransactionType.transfer),
-                    ),
-                  ],
+                return RepaintBoundary(
+                  child: Row(
+                    children: [
+                      _TypePill(
+                        label: 'input.type_expense'.tr(),
+                        isSelected: _transactionType == TransactionType.expense,
+                        color: isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense,
+                        onTap: () => setState(() => _transactionType = TransactionType.expense),
+                      ),
+                      const SizedBox(width: 8),
+                      _TypePill(
+                        label: 'input.type_income'.tr(),
+                        isSelected: _transactionType == TransactionType.income,
+                        color: isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome,
+                        onTap: () => setState(() => _transactionType = TransactionType.income),
+                      ),
+                      const SizedBox(width: 8),
+                      _TypePill(
+                        label: 'input.type_transfer'.tr(),
+                        isSelected: _transactionType == TransactionType.transfer,
+                        color: isDark ? SakuinColors.darkSecondary : SakuinColors.lightSecondary,
+                        onTap: () => setState(() => _transactionType = TransactionType.transfer),
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
@@ -607,7 +653,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: Text('input.confirm'.tr()),
+              child: Text(_isEditMode ? 'common.update'.tr() : 'input.confirm'.tr()),
             ),
             const SizedBox(height: 8),
 
@@ -656,6 +702,7 @@ class _TypePill extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected ? color : color.withValues(alpha: 0.1),

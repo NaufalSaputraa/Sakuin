@@ -122,4 +122,50 @@ class TransactionRepository implements TransactionRepositoryInterface {
       return Failure(AppError.database(e.toString()));
     }
   }
+
+  @override
+  Future<Result<int, AppError>> updateTransaction({
+    required int id,
+    required int walletId,
+    int? categoryId,
+    required double amount,
+    required TransactionType transactionType,
+    required String title,
+    String? description,
+    String? merchant,
+    int? transferToWalletId,
+    DateTime? transactionDate,
+    String currency = 'IDR',
+  }) async {
+    try {
+      // Compute equivalent amount in IDR (base) using the DB rate
+      // (single authority: CurrencyRateSource).
+      final amountBase = await CurrencyRateSource.computeAmountBase(
+        amount,
+        currency,
+        _db.currencyRatesDao,
+      );
+
+      final count = await _db.transactionDao.updateTransaction(
+        id,
+        TransactionsCompanion(
+          walletId: Value(walletId),
+          categoryId: Value(categoryId),
+          amount: Value(amount),
+          transactionType: Value(transactionType.toDbString()),
+          title: Value(title),
+          description: Value(description),
+          merchant: Value(merchant),
+          transferToWalletId: Value(transferToWalletId),
+          currency: Value(currency),
+          amountBase: Value(amountBase),
+          transactionDate: transactionDate == null ? const Value.absent() : Value(transactionDate),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+      return Success(count);
+    } catch (e) {
+      return Failure(AppError.database(e.toString()));
+    }
+  }
 }

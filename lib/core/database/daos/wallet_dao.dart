@@ -34,6 +34,9 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
     return update(wallets).replace(entry);
   }
 
+  Future<int> deleteWallet(int id) =>
+      (delete(wallets)..where((t) => t.id.equals(id))).go();
+
   Future<int> updateBalance(int walletId, double delta) async {
     final wallet = await getById(walletId);
     if (wallet == null) return 0;
@@ -48,18 +51,12 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
 
   Stream<double> watchTotalBalance() {
     return select(wallets).watch().map((list) {
-      // Sum root physical wallet + all digital wallets (root + sub-wallets)
-      // Note: If sub-wallets exist, sum sub-wallets + physical wallet
-      final subWallets = list.where((w) => w.parentId != null && w.isActive);
-      final physical = list.where((w) => w.walletType == 'physical' && w.isActive);
-      
-      if (subWallets.isNotEmpty) {
-        final subTotal = subWallets.fold(0.0, (sum, w) => sum + w.balance);
-        final physTotal = physical.fold(0.0, (sum, w) => sum + w.balance);
-        return subTotal + physTotal;
-      } else {
-        return list.where((w) => w.isActive).fold(0.0, (sum, w) => sum + w.balance);
-      }
+      // Sum all active wallets regardless of parentId/walletType.
+      // Previous conditional excluded digital root when sub-wallets exist,
+      // causing balance mismatch (e.g. digital root balance dropped).
+      // Now consistently sum all active wallets (physical + digital root + sub-wallets)
+      // so total is always accurate even after seeding multiple sub-wallets.
+      return list.where((w) => w.isActive).fold(0.0, (sum, w) => sum + w.balance);
     });
   }
 }

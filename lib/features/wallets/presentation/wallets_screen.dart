@@ -174,8 +174,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         );
                       }).toList(),
                       onChanged: (val) {
-                        if (val != null)
+                        if (val != null) {
                           setSheetState(() => selectedCurrency = val);
+                        }
                       },
                     ),
                     const SizedBox(height: 16),
@@ -367,8 +368,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         );
                         if (amount == null ||
                             amount <= 0 ||
-                            sourceWallet.id == targetWallet.id)
+                            sourceWallet.id == targetWallet.id) {
                           return;
+                        }
 
                         final repo = ref.read(walletRepositoryProvider);
                         // Update balances
@@ -392,6 +394,58 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  Future<void> _showDeleteConfirmDialog(
+    BuildContext context,
+    WalletModel wallet,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus Dompet?'),
+        content: Text(
+          'Yakin ingin menghapus dompet ${wallet.name}? Saldo akan hilang',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Batal'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Hapus'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && context.mounted) {
+      await _deleteWallet(context, wallet);
+    }
+  }
+
+  Future<void> _deleteWallet(BuildContext context, WalletModel wallet) async {
+    final repo = ref.read(walletRepositoryProvider);
+    final result = await repo.deleteWallet(wallet.id);
+    if (!context.mounted) return;
+
+    result.when(
+      success: (_) {
+        ref.invalidate(allWalletsProvider);
+        ref.invalidate(digitalSubWalletsProvider);
+        ref.invalidate(physicalWalletProvider);
+        ref.invalidate(digitalRootWalletProvider);
+        ref.invalidate(totalBalanceProvider);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Dompet ${wallet.name} dihapus')),
+        );
+      },
+      failure: (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
         );
       },
     );
@@ -495,12 +549,24 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     'Provider: ${wallet.provider ?? "Custom"}',
                     style: theme.textTheme.bodySmall,
                   ),
-                  trailing: Text(
-                    RupiahFormatter.format(wallet.balance),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        RupiahFormatter.format(wallet.balance),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        color: theme.colorScheme.error,
+                        tooltip: 'Hapus Dompet',
+                        onPressed: () =>
+                            _showDeleteConfirmDialog(context, wallet),
+                      ),
+                    ],
                   ),
                   onTap: () => _showAdjustBalanceDialog(context, wallet),
                 ),

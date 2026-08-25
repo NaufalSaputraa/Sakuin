@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -303,6 +304,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           );
         },
       ),
+      const SizedBox(height: 24),
+
+      // 4b. Appearance & Accent Color
+      Text('settings.section_appearance'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
+      const _AppearanceSection(),
       const SizedBox(height: 24),
 
       // 5. Backup & Restore
@@ -706,4 +713,194 @@ class _CurrencyRatesSection extends ConsumerWidget {
       ),
     );
   }
+}
+
+// ── Appearance & Accent Color Section ──────────────────────────────
+
+class _AppearanceSection extends ConsumerWidget {
+  const _AppearanceSection();
+
+  // Rose Pine accent names and their representative primary colors.
+  // These match the 12 palettes in rose_pine_colors.dart.
+  static const _accents = <_AccentSwatch>[
+    _AccentSwatch('default', Color(0xFF6B5CE7), Color(0xFF8B7CF7)),
+    _AccentSwatch('rose', Color(0xFFD4687A), Color(0xFFF2A0B0)),
+    _AccentSwatch('love', Color(0xFFC9493D), Color(0xFFEB756A)),
+    _AccentSwatch('gold', Color(0xFFD4A72C), Color(0xFFF2D06B)),
+    _AccentSwatch('iris', Color(0xFF7B6EBF), Color(0xFFB8ACE6)),
+    _AccentSwatch('pine', Color(0xFF286983), Color(0xFF5CB8D4)),
+    _AccentSwatch('foam', Color(0xFF3ABFA0), Color(0xFF6DDCC5)),
+    _AccentSwatch('moss', Color(0xFF56943B), Color(0xFF8ACD6B)),
+    _AccentSwatch('coral', Color(0xFFE07A5F), Color(0xFFF0A48C)),
+    _AccentSwatch('blush', Color(0xFFBE50A0), Color(0xFFE88FCC)),
+    _AccentSwatch('teal', Color(0xFF00796B), Color(0xFF4DB6AC)),
+    _AccentSwatch('lavender', Color(0xFF9575CD), Color(0xFFC9A8F0)),
+    _AccentSwatch('peach', Color(0xFFEF6C00), Color(0xFFFFAB40)),
+  ];
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final accentState = ref.watch(accentColorProvider);
+    final dynamicState = ref.watch(dynamicWallpaperProvider);
+
+    return Column(
+      children: [
+        // Dynamic Wallpaper Toggle
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.wallpaper_rounded,
+                  color: colorScheme.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'settings.dynamic_wallpaper'.tr(),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'settings.dynamic_wallpaper_desc'.tr(),
+                        style: theme.textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Switch.adaptive(
+                  value: dynamicState.enabled,
+                  onChanged: (_) {
+                    ref.read(dynamicWallpaperProvider.notifier).toggle();
+                  },
+                  activeThumbColor: colorScheme.primary,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Accent Color Label
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'settings.accent_color'.tr(),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
+            ),
+          ),
+        ),
+
+        // Accent Color Grid — 4 columns, wrapping
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+          ),
+          itemCount: _accents.length,
+          itemBuilder: (context, index) {
+            final swatch = _accents[index];
+            final isSelected = accentState.accentName == swatch.name;
+            final displayColor =
+                isDark ? swatch.darkPrimary : swatch.lightPrimary;
+
+            return GestureDetector(
+              onTap: () {
+                ref.read(accentColorProvider.notifier).setAccent(swatch.name);
+              },
+              child: AnimatedScale(
+                scale: isSelected ? 1.0 : 0.92,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOutCubic,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: displayColor,
+                        shape: BoxShape.circle,
+                        border: isSelected
+                            ? Border.all(
+                                color: colorScheme.onSurface,
+                                width: 2.5,
+                              )
+                            : null,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: displayColor.withValues(alpha: 0.45),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: isSelected
+                          ? Icon(
+                              Icons.check_rounded,
+                              color: _contrastIcon(displayColor),
+                              size: 20,
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      swatch.name == 'default'
+                          ? 'settings.accent_default'.tr()
+                          : swatch.name[0].toUpperCase() +
+                              swatch.name.substring(1),
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: isSelected
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurface.withValues(alpha: 0.5),
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  /// Returns white or dark icon color depending on the background luminance.
+  static Color _contrastIcon(Color bg) {
+    return bg.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
+  }
+}
+
+class _AccentSwatch {
+  final String name;
+  final Color lightPrimary;
+  final Color darkPrimary;
+
+  const _AccentSwatch(this.name, this.lightPrimary, this.darkPrimary);
 }

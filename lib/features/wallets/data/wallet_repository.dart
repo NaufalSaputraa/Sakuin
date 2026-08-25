@@ -119,4 +119,33 @@ class WalletRepository implements WalletRepositoryInterface {
       return Failure(AppError.database(e.toString()));
     }
   }
+
+  @override
+  Future<Result<void, AppError>> deleteWallet(int id) async {
+    try {
+      final entry = await _db.walletDao.getById(id);
+      if (entry == null) {
+        return Failure(AppError.notFound('Wallet tidak ditemukan'));
+      }
+
+      // Protect the two root wallets: physical root and digital root
+      // (digital wallet with no parent). These must never be deleted.
+      final isPhysical = entry.walletType == 'physical';
+      final isDigitalRoot = entry.walletType == 'digital' && entry.parentId == null;
+      if (isPhysical || isDigitalRoot) {
+        return Failure(
+          AppError.validation(
+            'Dompet root (Fisik/Digital) tidak dapat dihapus',
+          ),
+        );
+      }
+
+      // Note: warning about losing a non-zero balance is handled by the
+      // confirmation dialog in the UI before this method is called.
+      await _db.walletDao.deleteWallet(id);
+      return const Success(null);
+    } catch (e) {
+      return Failure(AppError.database(e.toString()));
+    }
+  }
 }

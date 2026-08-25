@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/database/app_database.dart';
+import '../../../core/utils/result.dart';
 import '../data/transaction_repository.dart';
 import '../domain/transaction_model.dart';
 import '../domain/transaction_repository_interface.dart';
@@ -10,6 +11,62 @@ final transactionRepositoryProvider = Provider<TransactionRepositoryInterface>((
   final db = ref.watch(databaseProvider);
   return TransactionRepository(db);
 });
+
+/// Exposes update/delete mutations for transactions and invalidates the
+/// dependent streams (recent list, monthly totals, heatmap) so the UI refreshes.
+final transactionActionsProvider = NotifierProvider<TransactionActionsNotifier, void>(() {
+  return TransactionActionsNotifier();
+});
+
+class TransactionActionsNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  Future<Result<int, AppError>> deleteTransaction(int id) async {
+    final repo = ref.read(transactionRepositoryProvider);
+    final result = await repo.deleteTransaction(id);
+    if (result.isSuccess) _invalidateDependent();
+    return result;
+  }
+
+  Future<Result<int, AppError>> updateTransaction({
+    required int id,
+    required int walletId,
+    int? categoryId,
+    required double amount,
+    required TransactionType transactionType,
+    required String title,
+    String? description,
+    String? merchant,
+    int? transferToWalletId,
+    DateTime? transactionDate,
+    String currency = 'IDR',
+  }) async {
+    final repo = ref.read(transactionRepositoryProvider);
+    final result = await repo.updateTransaction(
+      id: id,
+      walletId: walletId,
+      categoryId: categoryId,
+      amount: amount,
+      transactionType: transactionType,
+      title: title,
+      description: description,
+      merchant: merchant,
+      transferToWalletId: transferToWalletId,
+      transactionDate: transactionDate,
+      currency: currency,
+    );
+    if (result.isSuccess) _invalidateDependent();
+    return result;
+  }
+
+  void _invalidateDependent() {
+    ref.invalidate(recentTransactionsProvider);
+    ref.invalidate(currentMonthIncomeProvider);
+    ref.invalidate(currentMonthExpenseProvider);
+    ref.invalidate(heatmapTransactionsProvider);
+  }
+}
 
 final recentTransactionsProvider = StreamProvider.autoDispose<List<TransactionModel>>((ref) {
   final repo = ref.watch(transactionRepositoryProvider);

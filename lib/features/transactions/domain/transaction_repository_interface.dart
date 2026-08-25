@@ -23,4 +23,17 @@ abstract class TransactionRepositoryInterface {
     String currency = 'IDR',
   });
   Future<Result<int, AppError>> deleteTransaction(int id);
+  Future<Result<int, AppError>> updateTransaction({
+    required int id,
+    required int walletId,
+    int? categoryId,
+    required double amount,
+    required TransactionType transactionType,
+    required String title,
+    String? description,
+    String? merchant,
+    int? transferToWalletId,
+    DateTime? transactionDate,
+    String currency,
+  });
 }

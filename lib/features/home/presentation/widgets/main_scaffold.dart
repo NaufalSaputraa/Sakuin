@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -64,6 +66,8 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   Widget build(BuildContext context) {
     final selectedIndex = _calculateSelectedIndex(context);
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     // Share Import: open the entry sheet whenever a new shared text
     // arrives while the app is running (warm start).
@@ -75,41 +79,50 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: theme.colorScheme.outlineVariant,
-              width: 1,
+      bottomNavigationBar: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+          child: Container(
+            decoration: BoxDecoration(
+              // Pennywise-style haze: semi-transparent surface with tinted overlay
+              color: isDark
+                  ? colorScheme.surface.withValues(alpha: 0.75)
+                  : colorScheme.surface.withValues(alpha: 0.82),
+              // Subtle top border for definition
+              border: Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                  width: 0.5,
+                ),
+              ),
             ),
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _NavBarItem(
-                  icon: Icons.home_rounded,
-                  label: 'nav.home'.tr(),
-                  isSelected: selectedIndex == 0,
-                  onTap: () => _onItemTapped(0, context),
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _NavBarItem(
+                      icon: Icons.home_rounded,
+                      label: 'nav.home'.tr(),
+                      isSelected: selectedIndex == 0,
+                      onTap: () => _onItemTapped(0, context),
+                    ),
+                    _NavBarItem(
+                      icon: Icons.bar_chart_rounded,
+                      label: 'nav.analytics'.tr(),
+                      isSelected: selectedIndex == 1,
+                      onTap: () => _onItemTapped(1, context),
+                    ),
+                    _NavBarItem(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      label: 'nav.chat'.tr(),
+                      isSelected: selectedIndex == 2,
+                      onTap: () => _onItemTapped(2, context),
+                    ),
+                  ],
                 ),
-                _NavBarItem(
-                  icon: Icons.bar_chart_rounded,
-                  label: 'nav.analytics'.tr(),
-                  isSelected: selectedIndex == 1,
-                  onTap: () => _onItemTapped(1, context),
-                ),
-                _NavBarItem(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: 'nav.chat'.tr(),
-                  isSelected: selectedIndex == 2,
-                  onTap: () => _onItemTapped(2, context),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -134,21 +147,22 @@ class _NavBarItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final activeColor = theme.colorScheme.primary;
-    final inactiveColor = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final colorScheme = theme.colorScheme;
+    final activeColor = colorScheme.primary;
+    final inactiveColor = colorScheme.onSurface.withValues(alpha: 0.55);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(16),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primaryContainer
+              ? colorScheme.primaryContainer.withValues(alpha: 0.65)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

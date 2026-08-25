@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 import 'core/routing/app_router.dart';
 import 'features/share/providers/share_import_provider.dart';
 
@@ -45,11 +46,14 @@ class _SakuinAppState extends ConsumerState<SakuinApp> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    final colorScheme = ref.watch(resolvedColorSchemeProvider(brightness));
+
     return MaterialApp.router(
       title: 'Sakuin',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.light(scheme: colorScheme),
+      darkTheme: AppTheme.dark(scheme: colorScheme),
       themeMode: ThemeMode.system,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,

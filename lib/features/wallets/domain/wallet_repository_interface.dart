@@ -18,4 +18,5 @@ abstract class WalletRepositoryInterface {
     String currency = 'IDR',
   });
   Future<Result<bool, AppError>> updateWallet(WalletModel wallet);
+  Future<Result<void, AppError>> deleteWallet(int id);
 }

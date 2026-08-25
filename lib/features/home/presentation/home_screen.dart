@@ -30,6 +30,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _initQuickActions();
+    // Initial home-widget sync after first frame (providers may still be
+    // loading). Subsequent syncs are driven by ref.listen below.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncWidgetData();
+    });
   }
 
   void _initQuickActions() {
@@ -146,12 +151,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _syncWidgetData() {
-    final balance = ref.watch(totalBalanceProvider).asData?.value ?? 0.0;
-    final expense = ref.watch(currentMonthExpenseProvider).asData?.value ?? 0.0;
-    final budget = ref.watch(primaryBudgetProvider).asData?.value;
+    // Use ref.read (not ref.watch) — this is invoked from listeners /
+    // post-frame callback, never during build.
+    final balance = ref.read(totalBalanceProvider).asData?.value ?? 0.0;
+    final expense = ref.read(currentMonthExpenseProvider).asData?.value ?? 0.0;
+    final budget = ref.read(primaryBudgetProvider).asData?.value;
     final limit = budget?.amount ?? 3000000.0;
     final remaining = limit - expense;
-    final recent = ref.watch(recentTransactionsProvider).asData?.value;
+    final recent = ref.read(recentTransactionsProvider).asData?.value;
     final latest = recent?.firstOrNull;
 
     HomeWidgetService.updateWidgetData(
@@ -165,7 +172,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    _syncWidgetData();
+
+    // Sync home-screen widget data reactively — only when the underlying
+    // providers actually change — instead of running a side-effect on every
+    // rebuild (which caused main-thread jank). This also decouples HomeScreen
+    // rebuilds from balance/expense/budget changes.
+    ref.listen(totalBalanceProvider, (_, _) => _syncWidgetData());
+    ref.listen(currentMonthExpenseProvider, (_, _) => _syncWidgetData());
+    ref.listen(primaryBudgetProvider, (_, _) => _syncWidgetData());
+    ref.listen(recentTransactionsProvider, (_, _) => _syncWidgetData());
 
     return Scaffold(
       body: SafeArea(
@@ -230,26 +245,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Balance Hero Card
-                        const BalanceHeroCard(),
+                        // Balance Hero Card (NumberFlow animation)
+                        const RepaintBoundary(child: BalanceHeroCard()),
                         const SizedBox(height: 16),
 
-                        // Budget Progress Widget
-                        const BudgetProgressWidget(),
+                        // Budget Progress Widget (NumberFlow + progress ring)
+                        const RepaintBoundary(child: BudgetProgressWidget()),
                         const SizedBox(height: 24),
 
                         // Recent Transactions List
-                        RecentTransactionsSection(
-                          onViewAllTap: () => context.go('/analytics'),
+                        RepaintBoundary(
+                          child: RecentTransactionsSection(
+                            onViewAllTap: () => context.go('/analytics'),
+                          ),
                         ),
                         const SizedBox(height: 24),
 
                         // Wallets Carousel
-                        const WalletListSection(),
+                        const RepaintBoundary(child: WalletListSection()),
                         const SizedBox(height: 24),
 
                         // Activity Heatmap Grid
-                        const ActivityHeatmapWidget(),
+                        const RepaintBoundary(child: ActivityHeatmapWidget()),
                         const SizedBox(height: 140),
                       ],
                     ),
@@ -281,6 +298,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onCameraTap: () {
                       _showScanOptions(context, ref);
                     },
+                    useBlur: true,
                   ),
                 ],
               ),

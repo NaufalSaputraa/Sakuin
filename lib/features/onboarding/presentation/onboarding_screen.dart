@@ -35,22 +35,32 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   // Step 1: Profile
   final TextEditingController _nameController = TextEditingController(text: 'Pengguna');
 
-  // Step 2: Initial Balances
+  // Step 2: Initial Balances - Simplified to 1 wallet (Dompet Fisik + Dompet Digital)
   final TextEditingController _cashBalanceController = TextEditingController(text: '100000');
-  final TextEditingController _gopayBalanceController = TextEditingController(text: '50000');
-  final TextEditingController _ovoBalanceController = TextEditingController(text: '0');
+  final TextEditingController _digitalBalanceController = TextEditingController(text: '50000');
 
   // Step 3: Monthly Budget
   double _monthlyBudget = 3000000.0;
   final TextEditingController _budgetController = TextEditingController(text: '3000000');
 
   @override
+  void initState() {
+    super.initState();
+    // Load persisted name if exists (fix: nama tidak berganti)
+    SharedPreferences.getInstance().then((prefs) {
+      final savedName = prefs.getString(AppConstants.userNameKey);
+      if (savedName != null && savedName.isNotEmpty && mounted) {
+        setState(() => _nameController.text = savedName);
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _nameController.dispose();
     _cashBalanceController.dispose();
-    _gopayBalanceController.dispose();
-    _ovoBalanceController.dispose();
+    _digitalBalanceController.dispose();
     _budgetController.dispose();
     super.dispose();
   }
@@ -69,23 +79,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.hasCompletedOnboardingKey, true);
-    await prefs.setString('user_name', _nameController.text.trim());
+    await prefs.setString(AppConstants.userNameKey, _nameController.text.trim());
 
     // Update initial wallet balances if entered
     final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
     final walletRepo = ref.read(walletRepositoryProvider);
 
     final cashAmount = double.tryParse(_cashBalanceController.text) ?? 0.0;
-    final gopayAmount = double.tryParse(_gopayBalanceController.text) ?? 0.0;
-    final ovoAmount = double.tryParse(_ovoBalanceController.text) ?? 0.0;
+    final digitalAmount = double.tryParse(_digitalBalanceController.text) ?? 0.0;
 
     for (final w in wallets) {
       if (w.isPhysical && cashAmount > 0) {
         await walletRepo.updateWallet(w.copyWith(balance: cashAmount));
-      } else if (w.provider == 'gopay' && gopayAmount > 0) {
-        await walletRepo.updateWallet(w.copyWith(balance: gopayAmount));
-      } else if (w.provider == 'ovo' && ovoAmount > 0) {
-        await walletRepo.updateWallet(w.copyWith(balance: ovoAmount));
+      } else if (w.walletType == 'digital' && w.parentId == null && digitalAmount > 0) {
+        // Dompet Digital root - user can customize name later (e.g. DANA/ShopeePay)
+        await walletRepo.updateWallet(w.copyWith(balance: digitalAmount));
       }
     }
 
@@ -255,20 +263,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           const SizedBox(height: 16),
 
-          // GoPay
+          // Dompet Digital - user bisa customize nama nanti (DANA/ShopeePay/dll)
           _WalletInputRow(
-            icon: '📱',
-            name: 'GoPay',
-            controller: _gopayBalanceController,
-            theme: theme,
-          ),
-          const SizedBox(height: 16),
-
-          // OVO
-          _WalletInputRow(
-            icon: '📱',
-            name: 'OVO',
-            controller: _ovoBalanceController,
+            icon: '💳',
+            name: 'Dompet Digital',
+            controller: _digitalBalanceController,
             theme: theme,
           ),
         ],

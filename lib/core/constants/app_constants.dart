@@ -16,4 +16,8 @@ class AppConstants {
   static const String localeKey = 'sakuin_locale_code';
   static const String hasCompletedOnboardingKey = 'sakuin_onboarding_done';
   static const String userNameKey = 'sakuin_user_name';
+
+  // Theme / Appearance Keys
+  static const String accentColorKey = 'sakuin_accent_color';
+  static const String dynamicWallpaperKey = 'sakuin_dynamic_wallpaper';
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../domain/category_model.dart';
 import '../providers/category_providers.dart';
+import '../../../core/utils/result.dart';
 
 class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
@@ -41,6 +42,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
 
   void _showAddCategorySheet(BuildContext context, {bool isIncome = false}) {
     final theme = Theme.of(context);
+    final scaffoldContext = context;
     final nameController = TextEditingController();
     final nameIdController = TextEditingController();
     String selectedEmoji = isIncome ? '💰' : '🛒';
@@ -55,8 +57,10 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
+        return Consumer(
+          builder: (ctx, ref, _) {
+            return StatefulBuilder(
+              builder: (context, setSheetState) {
             return Padding(
               padding: EdgeInsets.only(
                 left: 20,
@@ -207,36 +211,74 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                       child: FilledButton(
                         onPressed: () async {
                           final name = nameController.text.trim();
-                          if (name.isEmpty) return;
+                          if (name.isEmpty) {
+                            ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('Nama kategori tidak boleh kosong'),
+                              ),
+                            );
+                            return;
+                          }
 
                           final key = name.toLowerCase().replaceAll(RegExp(r'\s+'), '_');
                           final repo = ref.read(categoryRepositoryProvider);
 
-                          await repo.createCategory(
-                            key: key,
-                            name: name,
-                            nameId: nameIdController.text.trim().isNotEmpty
-                                ? nameIdController.text.trim()
-                                : name,
-                            icon: selectedEmoji,
-                            color: selectedColor,
-                            isIncome: currentIsIncome,
-                          );
+                          try {
+                            final result = await repo.createCategory(
+                              key: key,
+                              name: name,
+                              nameId: nameIdController.text.trim().isNotEmpty
+                                  ? nameIdController.text.trim()
+                                  : name,
+                              icon: selectedEmoji,
+                              color: selectedColor,
+                              isIncome: currentIsIncome,
+                            );
 
-                          if (context.mounted) Navigator.of(context).pop();
+                            if (result case Failure(:final error)) {
+                              if (scaffoldContext.mounted) {
+                                ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Gagal menambah kategori: ${error.message}',
+                                    ),
+                                  ),
+                                );
+                              }
+                              return;
+                            }
+
+                            ref.invalidate(expenseCategoriesProvider);
+                            ref.invalidate(incomeCategoriesProvider);
+                            ref.invalidate(allCategoriesProvider);
+
+                            if (scaffoldContext.mounted) {
+                              Navigator.of(scaffoldContext).pop();
+                            }
+                          } catch (e) {
+                            if (scaffoldContext.mounted) {
+                              ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                                SnackBar(
+                                  content: Text('Terjadi kesalahan: $e'),
+                                ),
+                              );
+                            }
+                          }
                         },
                         child: const Text('Simpan Kategori'),
                       ),
                     ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+                   ],
+                 ),
+               ),
+             );
+           },
+         );
+       },
+     );
+   },
+);
+   }
 
   @override
   Widget build(BuildContext context) {

@@ -3,72 +3,57 @@ import 'color_schemes.dart';
 import 'typography.dart';
 
 class AppTheme {
-  static ThemeData get lightTheme {
-    final scheme = SakuinColors.lightScheme;
+  /// Build a [ThemeData] from an explicit [ColorScheme].
+  ///
+  /// If [scheme] is `null` the legacy static palette is used (backward
+  /// compatible with the current `main.dart` until it switches over).
+  static ThemeData light({ColorScheme? scheme}) {
+    final s = scheme ?? SakuinColors.lightScheme;
     final typography = SakuinTypography.textTheme(
       SakuinColors.lightOnBackground,
       SakuinColors.lightMuted,
     );
 
-    return ThemeData(
-      useMaterial3: true,
+    return _build(
+      scheme: s,
+      typography: typography,
+      scaffoldBg: SakuinColors.lightBackground,
       brightness: Brightness.light,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: SakuinColors.lightBackground,
-      textTheme: typography,
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        titleTextStyle: typography.headlineSmall,
-        iconTheme: const IconThemeData(color: SakuinColors.lightOnBackground),
-      ),
-      cardTheme: CardThemeData(
-        color: SakuinColors.lightSurface,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        margin: EdgeInsets.zero,
-      ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: SakuinColors.lightSurface,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-      ),
-      chipTheme: ChipThemeData(
-        backgroundColor: SakuinColors.lightSurface,
-        selectedColor: SakuinColors.lightPrimaryContainer,
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        labelStyle: typography.labelMedium,
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: SakuinColors.lightPrimary,
-        foregroundColor: Colors.white, // onPrimary for light purple FAB
-        elevation: 3,
-        shape: CircleBorder(),
-      ),
     );
   }
 
-  static ThemeData get darkTheme {
-    final scheme = SakuinColors.darkScheme;
+  static ThemeData dark({ColorScheme? scheme}) {
+    final s = scheme ?? SakuinColors.darkScheme;
     final typography = SakuinTypography.textTheme(
       SakuinColors.darkOnBackground,
       SakuinColors.darkMuted,
     );
 
+    return _build(
+      scheme: s,
+      typography: typography,
+      scaffoldBg: SakuinColors.darkBackground,
+      brightness: Brightness.dark,
+    );
+  }
+
+  // ── Keep the old getters for backward compat ──────────────────────
+  static ThemeData get lightTheme => light();
+  static ThemeData get darkTheme => dark();
+
+  // ── Shared builder ──────────────────────────────────────────────
+
+  static ThemeData _build({
+    required ColorScheme scheme,
+    required TextTheme typography,
+    required Color scaffoldBg,
+    required Brightness brightness,
+  }) {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: SakuinColors.darkBackground,
+      scaffoldBackgroundColor: scaffoldBg,
       textTheme: typography,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -76,37 +61,41 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: typography.headlineSmall,
-        iconTheme: const IconThemeData(color: SakuinColors.darkOnBackground),
+        iconTheme: IconThemeData(
+          color: scheme.brightness == Brightness.light
+              ? SakuinColors.lightOnBackground
+              : SakuinColors.darkOnBackground,
+        ),
       ),
       cardTheme: CardThemeData(
-        color: SakuinColors.darkSurface,
+        color: scheme.surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
         ),
         margin: EdgeInsets.zero,
       ),
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: SakuinColors.darkSurface,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surface,
         elevation: 4,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: SakuinColors.darkSurface,
-        selectedColor: SakuinColors.darkPrimaryContainer,
+        backgroundColor: scheme.surface,
+        selectedColor: scheme.primaryContainer,
         side: BorderSide.none,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         labelStyle: typography.labelMedium,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: SakuinColors.darkPrimary,
-        foregroundColor: Colors.black,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
         elevation: 3,
-        shape: CircleBorder(),
+        shape: const CircleBorder(),
       ),
     );
   }

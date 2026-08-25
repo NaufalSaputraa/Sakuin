@@ -7,6 +7,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/theme/color_schemes.dart';
 import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../../../transactions/domain/transaction_model.dart';
+import '../../../transactions/presentation/quick_entry_sheet.dart';
 import '../../../transactions/providers/transaction_providers.dart';
 
 class RecentTransactionsSection extends ConsumerWidget {
@@ -117,6 +118,29 @@ class _TransactionTile extends ConsumerWidget {
 
   const _TransactionTile({required this.tx});
 
+  Future<bool> _confirmDelete(BuildContext context, TransactionModel tx) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('common.delete'.tr()),
+        content: Text(
+          'smartRules.delete_confirm_message'.tr(namedArgs: {'name': tx.title}),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text('common.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text('common.delete'.tr()),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
@@ -141,10 +165,12 @@ class _TransactionTile extends ConsumerWidget {
         color: theme.colorScheme.error,
         child: Icon(Icons.delete_outline_rounded, color: theme.colorScheme.onError),
       ),
+      confirmDismiss: (_) => _confirmDelete(context, tx),
       onDismissed: (_) {
-        ref.read(transactionRepositoryProvider).deleteTransaction(tx.id);
+        ref.read(transactionActionsProvider.notifier).deleteTransaction(tx.id);
       },
       child: ListTile(
+        onTap: () => QuickEntrySheet.show(context, transaction: tx),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: CircleAvatar(
           radius: 20,
