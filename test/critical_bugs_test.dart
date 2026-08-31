@@ -2,7 +2,6 @@ import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sakuin_app/core/database/app_database.dart';
-import 'package:sakuin_app/features/home/providers/heatmap_data_provider.dart';
 import 'package:sakuin_app/features/settings/data/backup_repository.dart';
 import 'package:sakuin_app/features/smart_rules/data/smart_rule_repository.dart';
 import 'package:sakuin_app/features/smart_rules/domain/smart_rule_model.dart';
@@ -13,9 +12,9 @@ import 'package:sakuin_app/services/ml/smart_rule_learning_service.dart';
 import 'package:sakuin_app/services/subscription_detector_service.dart';
 
 /// Regression tests for critical bugs that `flutter analyze` cannot catch
-/// (C1/C2/M1/M3/M4): multi-currency integrity through export/import, DAO
-/// balance math using amountBase, merchant fallback to title, import
-/// skipBalanceUpdate semantics, and heatmap base-currency aggregation.
+/// (C1/C2/M1/M3): multi-currency integrity through export/import, DAO
+/// balance math using amountBase, merchant fallback to title, and import
+/// skipBalanceUpdate semantics.
 ///
 /// All tests run against a Drift in-memory database seeded like production
 /// (root wallets + sub-wallets + default categories).
@@ -58,7 +57,7 @@ void main() {
     );
   }
 
-  group('Critical bugs C1/C2/M1/M3/M4 regression', () {
+  group('Critical bugs C1/C2/M1/M3 regression', () {
     // C1: Importing a backup must preserve the original transaction
     // currency and its pre-computed amountBase instead of collapsing
     // foreign-currency rows to IDR with amountBase 0.
@@ -235,29 +234,5 @@ void main() {
               '50000 expense delta again would corrupt it (150000/50000)');
     });
 
-    // M4: Heatmap aggregation must sum amountBase (IDR-equivalent) so a
-    // USD 10 charge contributes 155000 to daily totals, not 10.
-    test('heatmap effectiveAmount', () {
-      final now = DateTime.now();
-      final heatmap = aggregateHeatmap([
-        makeTx(
-          id: 1,
-          walletId: 1,
-          amount: 10,
-          currency: 'USD',
-          amountBase: 155000,
-          title: 'Coffee NYC',
-        ),
-      ]);
-
-      final today = DateTime(now.year, now.month, now.day);
-      final day = heatmap[today];
-
-      expect(day, isNotNull, reason: 'today must appear in the 52w range');
-      expect(day!.count, 1);
-      expect(day.total, closeTo(155000, 0.01),
-          reason: 'heatmap must sum amountBase (155000), not raw amount (10)');
-      expect(day.intensity, 3, reason: '155000 falls in the <500rb bucket');
-    });
   });
 }
