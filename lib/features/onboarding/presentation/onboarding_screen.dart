@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/thousands_separator_formatter.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -36,8 +37,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final TextEditingController _nameController = TextEditingController(text: 'Pengguna');
 
   // Step 2: Initial Balances - Simplified to 1 wallet (Dompet Fisik + Dompet Digital)
-  final TextEditingController _cashBalanceController = TextEditingController(text: '100000');
-  final TextEditingController _digitalBalanceController = TextEditingController(text: '50000');
+  final TextEditingController _cashBalanceController = TextEditingController(
+    text: RupiahFormatter.formatWithoutSymbol(100000),
+  );
+  final TextEditingController _digitalBalanceController = TextEditingController(
+    text: RupiahFormatter.formatWithoutSymbol(50000),
+  );
 
   // Step 3: Monthly Budget
   double _monthlyBudget = 3000000.0;
@@ -85,8 +90,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
     final walletRepo = ref.read(walletRepositoryProvider);
 
-    final cashAmount = double.tryParse(_cashBalanceController.text) ?? 0.0;
-    final digitalAmount = double.tryParse(_digitalBalanceController.text) ?? 0.0;
+    final cashAmount = double.tryParse(_cashBalanceController.text.replaceAll('.', '').replaceAll(',', '')) ?? 0.0;
+    final digitalAmount = double.tryParse(_digitalBalanceController.text.replaceAll('.', '').replaceAll(',', '')) ?? 0.0;
 
     for (final w in wallets) {
       if (w.isPhysical && cashAmount > 0) {
@@ -368,6 +373,7 @@ class _WalletInputRow extends StatelessWidget {
           TextField(
             controller: controller,
             keyboardType: TextInputType.number,
+            inputFormatters: [ThousandsSeparatorInputFormatter()],
             decoration: InputDecoration(
               prefixText: 'Rp ',
               filled: true,

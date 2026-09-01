@@ -495,12 +495,12 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       ),
       const SizedBox(height: 24),
 
-      // 2. Dompet Digital Section
+      // 2. Dompet Digital Root Section - balance mirroring fisik
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Dompet Digital (E-Wallet & Bank)',
+            'Dompet Digital Root',
             style: theme.textTheme.titleMedium,
           ),
           TextButton.icon(
@@ -515,13 +515,64 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       ),
       const SizedBox(height: 8),
 
+      digitalRootAsync.when(
+        data: (rootWallet) {
+          if (rootWallet == null) return const SizedBox.shrink();
+          return Card(
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: theme.brightness == Brightness.dark
+                    ? SakuinColors.darkIncome
+                    : SakuinColors.lightIncome,
+                child: const Text('📱', style: TextStyle(fontSize: 18)),
+              ),
+              title: Text(
+                rootWallet.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text('Dompet digital utama'),
+              trailing: Text(
+                RupiahFormatter.format(rootWallet.balance),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+              onTap: () => _showAdjustBalanceDialog(context, rootWallet),
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Text('Error: $e'),
+      ),
+      const SizedBox(height: 24),
+
+      // 3. Sub-Wallets Section
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Sub-Dompet',
+            style: theme.textTheme.titleMedium,
+          ),
+          TextButton.icon(
+            onPressed: () {
+              final root = digitalRootAsync.asData?.value;
+              _showAddWalletSheet(context, root?.id);
+            },
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Tambah'),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
       subWalletsAsync.when(
         data: (subWallets) {
           if (subWallets.isEmpty) {
             return const Card(
               child: Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('Belum ada e-wallet terdaftar'),
+                child: Text('Belum ada sub-dompet, tambah manual'),
               ),
             );
           }
@@ -605,6 +656,8 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         },
         icon: const Icon(Icons.swap_horiz_rounded),
         label: const Text('Transfer Saldo'),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
     );
   }

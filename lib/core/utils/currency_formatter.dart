@@ -92,6 +92,12 @@ class RupiahFormatter {
     }
   }
 
+  /// Formats amount without the "Rp" symbol prefix.
+  /// e.g., 100000 → "100.000", 50000 → "50.000"
+  static String formatWithoutSymbol(double amount) {
+    return format(amount, showSymbol: false);
+  }
+
   /// Compact representation: "50 rb", "1,5 jt" (Indonesian locale comma decimal)
   static String compact(double amount) {
     if (amount >= 1000000000) {

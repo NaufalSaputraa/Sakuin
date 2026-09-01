@@ -63,7 +63,7 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
 
-    final digitalRootId = await into(wallets).insert(
+    await into(wallets).insert(
       WalletsCompanion.insert(
         name: 'Dompet Digital',
         walletType: 'digital',
@@ -73,54 +73,54 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
 
-    // 2. Seed Default Sub-Wallets under Digital Root
-    await into(wallets).insert(
-      WalletsCompanion.insert(
-        name: 'GoPay',
-        walletType: 'digital',
-        parentId: Value(digitalRootId),
-        provider: const Value('gopay'),
-        currency: const Value('IDR'),
-        icon: const Value('📱'),
-        color: const Value('#00AED6'),
-      ),
-    );
-
-    await into(wallets).insert(
-      WalletsCompanion.insert(
-        name: 'OVO',
-        walletType: 'digital',
-        parentId: Value(digitalRootId),
-        provider: const Value('ovo'),
-        currency: const Value('IDR'),
-        icon: const Value('📱'),
-        color: const Value('#4C2A86'),
-      ),
-    );
-
-    await into(wallets).insert(
-      WalletsCompanion.insert(
-        name: 'Dana',
-        walletType: 'digital',
-        parentId: Value(digitalRootId),
-        provider: const Value('dana'),
-        currency: const Value('IDR'),
-        icon: const Value('📱'),
-        color: const Value('#118EEA'),
-      ),
-    );
-
-    await into(wallets).insert(
-      WalletsCompanion.insert(
-        name: 'ShopeePay',
-        walletType: 'digital',
-        parentId: Value(digitalRootId),
-        provider: const Value('shopeepay'),
-        currency: const Value('IDR'),
-        icon: const Value('📱'),
-        color: const Value('#EE4D2D'),
-      ),
-    );
+    // 2. Seed Default Sub-Wallets under Digital Root (commented out - optional)
+    // await into(wallets).insert(
+    //   WalletsCompanion.insert(
+    //     name: 'GoPay',
+    //     walletType: 'digital',
+    //     parentId: Value(digitalRootId),
+    //     provider: const Value('gopay'),
+    //     currency: const Value('IDR'),
+    //     icon: const Value('📱'),
+    //     color: const Value('#00AED6'),
+    //   ),
+    // );
+    //
+    // await into(wallets).insert(
+    //   WalletsCompanion.insert(
+    //     name: 'OVO',
+    //     walletType: 'digital',
+    //     parentId: Value(digitalRootId),
+    //     provider: const Value('ovo'),
+    //     currency: const Value('IDR'),
+    //     icon: const Value('📱'),
+    //     color: const Value('#4C2A86'),
+    //   ),
+    // );
+    //
+    // await into(wallets).insert(
+    //   WalletsCompanion.insert(
+    //     name: 'Dana',
+    //     walletType: 'digital',
+    //     parentId: Value(digitalRootId),
+    //     provider: const Value('dana'),
+    //     currency: const Value('IDR'),
+    //     icon: const Value('📱'),
+    //     color: const Value('#118EEA'),
+    //   ),
+    // );
+    //
+    // await into(wallets).insert(
+    //   WalletsCompanion.insert(
+    //     name: 'ShopeePay',
+    //     walletType: 'digital',
+    //     parentId: Value(digitalRootId),
+    //     provider: const Value('shopeepay'),
+    //     currency: const Value('IDR'),
+    //     icon: const Value('📱'),
+    //     color: const Value('#EE4D2D'),
+    //   ),
+    // );
 
     // 3. Seed Default Categories
     for (final item in CategoryDefaults.defaults) {
