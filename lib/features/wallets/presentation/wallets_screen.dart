@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/theme/color_schemes.dart';
-import '../../currency/providers/currency_providers.dart';
 import '../domain/wallet_model.dart';
 import '../providers/wallet_providers.dart';
 
@@ -18,7 +17,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
     final controller = TextEditingController(
       text: wallet.balance.toInt().toString(),
     );
-    String selectedCurrency = wallet.currency;
+    const String selectedCurrency = 'IDR';
 
     showDialog(
       context: context,
@@ -31,26 +30,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               controller: controller,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
-                prefixText: CurrencyFormatter.symbol(selectedCurrency),
-                border: const OutlineInputBorder(),
+                prefixText: 'Rp ',
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 12),
-            DropdownButton<String>(
-              value: selectedCurrency,
-              isExpanded: true,
-              items: const [
-                DropdownMenuItem(value: 'IDR', child: Text('IDR (Rp)')),
-                DropdownMenuItem(value: 'USD', child: Text('USD (\$)')),
-                DropdownMenuItem(value: 'SGD', child: Text('SGD (S\$)')),
-                DropdownMenuItem(value: 'EUR', child: Text('EUR (€)')),
-                DropdownMenuItem(value: 'JPY', child: Text('JPY (¥)')),
-                DropdownMenuItem(value: 'MYR', child: Text('MYR (RM)')),
-              ],
-              onChanged: (val) {
-                if (val != null) selectedCurrency = val;
-              },
-            ),
           ],
         ),
         actions: [
@@ -104,13 +88,6 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            String selectedCurrency = 'IDR';
-            final ratesAsync = ref.watch(currencyRatesProvider);
-            final currencyCodes = ratesAsync.when(
-              data: (rates) => rates.map((r) => r.code).toList(),
-              loading: () => <String>['IDR'],
-              error: (_, _) => <String>['IDR'],
-            );
             return Padding(
               padding: EdgeInsets.only(
                 left: 20,
@@ -160,25 +137,12 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Text('Mata Uang Dompet', style: theme.textTheme.titleSmall),
-                    const SizedBox(height: 8),
-                    DropdownButton<String>(
-                      value: selectedCurrency,
-                      isExpanded: true,
-                      items: currencyCodes.map((code) {
-                        return DropdownMenuItem(
-                          value: code,
-                          child: Text(
-                            '$code (${CurrencyFormatter.symbol(code)})',
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) {
-                          setSheetState(() => selectedCurrency = val);
-                        }
-                      },
+                    Text(
+                      'Mata Uang Dompet',
+                      style: theme.textTheme.titleSmall,
                     ),
+                    const SizedBox(height: 8),
+                    // Currency dropdown removed, locked to IDR
                     const SizedBox(height: 16),
                     Text(
                       'Pilih Warna Badge',
@@ -240,7 +204,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                             initialBalance: bal,
                             icon: selectedIcon,
                             color: selectedColor,
-                            currency: selectedCurrency,
+                            currency: 'IDR',
                           );
 
                           if (context.mounted) Navigator.of(context).pop();

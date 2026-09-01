@@ -232,10 +232,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       const SizedBox(height: 24),
 
-      // 2b. Currency & Offline Rates Section
+      // 2b. Currency & Offline Rates Section (hidden, IDR only)
       Text('currency.section_title'.tr(), style: theme.textTheme.titleSmall),
       const SizedBox(height: 8),
-      const _CurrencyRatesSection(),
+      // const _CurrencyRatesSection(),
       const SizedBox(height: 24),
 
       // 3. AI & OCR Engine Section
@@ -637,6 +637,7 @@ class _BackupSection extends ConsumerWidget {
   }
 }
 
+// ignore: unused_element
 class _CurrencyRatesSection extends ConsumerWidget {
   const _CurrencyRatesSection();
 
