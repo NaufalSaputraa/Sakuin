@@ -282,6 +282,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final expenseCategoriesAsync = ref.watch(expenseCategoriesProvider);
     final incomeCategoriesAsync = ref.watch(incomeCategoriesProvider);
 
@@ -330,8 +331,11 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
         onPressed: () {
           _showAddCategorySheet(context, isIncome: _tabController.index == 1);
         },
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Kategori Baru'),
+        icon: Icon(Icons.add_rounded, color: theme.colorScheme.onPrimary),
+        label: Text(
+          'Kategori Baru',
+          style: TextStyle(color: theme.colorScheme.onPrimary),
+        ),
       ),
     );
   }

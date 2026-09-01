@@ -4,6 +4,63 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 import 'color_schemes.dart';
 
+// ── Theme Mode ───────────────────────────────────────────────────────
+
+class ThemeModeState {
+  final ThemeMode mode;
+
+  const ThemeModeState({this.mode = ThemeMode.system});
+
+  ThemeModeState copyWith({ThemeMode? mode}) {
+    return ThemeModeState(mode: mode ?? this.mode);
+  }
+}
+
+class ThemeModeNotifier extends Notifier<ThemeModeState> {
+  @override
+  ThemeModeState build() {
+    _loadFromPrefs();
+    return const ThemeModeState();
+  }
+
+  Future<void> _loadFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString(AppConstants.themeKey) ?? 'system';
+    state = ThemeModeState(mode: _parseMode(value));
+  }
+
+  Future<void> setMode(ThemeMode mode) async {
+    state = ThemeModeState(mode: mode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.themeKey, _serializeMode(mode));
+  }
+
+  static ThemeMode _parseMode(String value) {
+    switch (value) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      default:
+        return ThemeMode.system;
+    }
+  }
+
+  static String _serializeMode(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'light';
+      case ThemeMode.dark:
+        return 'dark';
+      case ThemeMode.system:
+        return 'system';
+    }
+  }
+}
+
+final themeModeProvider =
+    NotifierProvider<ThemeModeNotifier, ThemeModeState>(ThemeModeNotifier.new);
+
 // ── Accent Color ─────────────────────────────────────────────────────
 
 /// Stored accent name (one of the 12 Rose Pine names or 'default').

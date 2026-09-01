@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
@@ -24,11 +25,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _userName = 'settings.default_user_name'.tr();
+  String _appVersion = '';
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
+    _loadAppVersion();
   }
 
   Future<void> _loadUserName() async {
@@ -36,6 +39,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final name = prefs.getString(AppConstants.userNameKey);
     if (name != null && name.isNotEmpty && mounted) {
       setState(() => _userName = name);
+    }
+  }
+
+  Future<void> _loadAppVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() => _appVersion = 'Versi ${info.version}+${info.buildNumber}');
     }
   }
 
@@ -326,7 +336,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ListTile(
         leading: const Icon(Icons.info_outline_rounded),
         title: Text('settings.version'.tr()),
-        subtitle: Text('settings.version_desc'.tr()),
+        subtitle: Text(_appVersion.isNotEmpty ? _appVersion : 'settings.version_desc'.tr()),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       const SizedBox(height: 40),
@@ -334,10 +344,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text('settings.title'.tr())),
-      body: ListView.builder(
+      body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        itemCount: sections.length,
-        itemBuilder: (context, index) => sections[index],
+        children: sections,
       ),
     );
   }
@@ -745,10 +754,66 @@ class _AppearanceSection extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final accentState = ref.watch(accentColorProvider);
     final dynamicState = ref.watch(dynamicWallpaperProvider);
+    final themeModeState = ref.watch(themeModeProvider);
 
     return Column(
       children: [
-        // Dynamic Wallpaper Toggle
+        // Theme Mode Toggle
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.brightness_6_rounded,
+                  color: colorScheme.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    'settings.theme_mode'.tr(),
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        SegmentedButton<ThemeMode>(
+          segments: [
+            ButtonSegment(
+              value: ThemeMode.light,
+              label: Text('settings.theme_light'.tr()),
+              icon: const Icon(Icons.light_mode_rounded, size: 18),
+            ),
+            ButtonSegment(
+              value: ThemeMode.system,
+              label: Text('settings.theme_system'.tr()),
+              icon: const Icon(Icons.brightness_auto_rounded, size: 18),
+            ),
+            ButtonSegment(
+              value: ThemeMode.dark,
+              label: Text('settings.theme_dark'.tr()),
+              icon: const Icon(Icons.dark_mode_rounded, size: 18),
+            ),
+          ],
+          selected: {themeModeState.mode},
+          onSelectionChanged: (selected) {
+            ref.read(themeModeProvider.notifier).setMode(selected.first);
+          },
+          style: ButtonStyle(
+            visualDensity: VisualDensity.compact,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            padding: WidgetStateProperty.all(
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         Card(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

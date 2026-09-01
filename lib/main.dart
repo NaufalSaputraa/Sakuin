@@ -48,13 +48,14 @@ class _SakuinAppState extends ConsumerState<SakuinApp> {
   Widget build(BuildContext context) {
     final brightness = MediaQuery.platformBrightnessOf(context);
     final colorScheme = ref.watch(resolvedColorSchemeProvider(brightness));
+    final themeModeState = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Sakuin',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(scheme: colorScheme),
       darkTheme: AppTheme.dark(scheme: colorScheme),
-      themeMode: ThemeMode.system,
+      themeMode: themeModeState.mode,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,

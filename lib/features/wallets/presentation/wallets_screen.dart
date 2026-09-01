@@ -508,8 +508,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               final root = digitalRootAsync.asData?.value;
               _showAddWalletSheet(context, root?.id);
             },
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Tambah'),
+            icon: Icon(Icons.add, size: 16, color: theme.colorScheme.primary),
+            label: Text(
+              'Tambah',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -560,8 +563,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
               final root = digitalRootAsync.asData?.value;
               _showAddWalletSheet(context, root?.id);
             },
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Tambah'),
+            icon: Icon(Icons.add, size: 16, color: theme.colorScheme.primary),
+            label: Text(
+              'Tambah',
+              style: TextStyle(color: theme.colorScheme.primary),
+            ),
           ),
         ],
       ),
@@ -635,7 +641,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         title: const Text('Kelola Dompet & Saldo'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.swap_horiz_rounded),
+            icon: Icon(Icons.swap_horiz_rounded, color: theme.colorScheme.onSurface),
             tooltip: 'Transfer Antar Dompet',
             onPressed: () {
               final wallets = allWalletsAsync.asData?.value ?? [];
@@ -654,8 +660,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
           final wallets = allWalletsAsync.asData?.value ?? [];
           _showTransferSheet(context, wallets);
         },
-        icon: const Icon(Icons.swap_horiz_rounded),
-        label: const Text('Transfer Saldo'),
+        icon: Icon(Icons.swap_horiz_rounded, color: theme.colorScheme.onPrimary),
+        label: Text(
+          'Transfer Saldo',
+          style: TextStyle(color: theme.colorScheme.onPrimary),
+        ),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
       ),

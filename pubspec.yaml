@@ -1,4 +1,4 @@
-﻿name: sakuin_app
+name: sakuin_app
 description: "Sakuin (ç´¢å¼•) - Indonesian personal finance tracker with dual-wallet and on-device AI."
 publish_to: 'none'
 
@@ -45,6 +45,7 @@ dependencies:
   dynamic_color: ^1.7.0
   flutter_secure_storage: ^11.0.0
   share_plus: ^13.3.0
+  package_info_plus: ^10.2.1
   # Share Import: receive text shared from banking/e-wallet apps (BCA, GoPay, OVO, Dana)
   receive_sharing_intent: ^1.8.2
   speech_to_text: ^7.1.0
