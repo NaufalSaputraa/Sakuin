@@ -29,7 +29,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 prefixText: 'Rp ',
                 border: OutlineInputBorder(),
               ),
