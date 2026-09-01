@@ -318,19 +318,54 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               _BudgetChip(
                 amount: 1500000,
                 isSelected: _monthlyBudget == 1500000,
-                onTap: (val) => setState(() => _monthlyBudget = val),
+                onTap: (val) => setState(() {
+                  _monthlyBudget = val;
+                  _budgetController.text = RupiahFormatter.formatWithoutSymbol(val);
+                }),
               ),
               _BudgetChip(
                 amount: 3000000,
                 isSelected: _monthlyBudget == 3000000,
-                onTap: (val) => setState(() => _monthlyBudget = val),
+                onTap: (val) => setState(() {
+                  _monthlyBudget = val;
+                  _budgetController.text = RupiahFormatter.formatWithoutSymbol(val);
+                }),
               ),
               _BudgetChip(
                 amount: 5000000,
                 isSelected: _monthlyBudget == 5000000,
-                onTap: (val) => setState(() => _monthlyBudget = val),
+                onTap: (val) => setState(() {
+                  _monthlyBudget = val;
+                  _budgetController.text = RupiahFormatter.formatWithoutSymbol(val);
+                }),
               ),
             ],
+          ),
+          const SizedBox(height: 24),
+          TextField(
+            controller: _budgetController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [ThousandsSeparatorInputFormatter()],
+            decoration: InputDecoration(
+              labelText: 'Atau ketik manual',
+              hintText: 'Contoh: 2.500.000',
+              prefixText: 'Rp ',
+              filled: true,
+              fillColor: theme.colorScheme.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.1),
+                ),
+              ),
+            ),
+            onChanged: (val) {
+              final digits = val.replaceAll('.', '').replaceAll(',', '');
+              final parsed = double.tryParse(digits);
+              if (parsed != null && parsed > 0) {
+                setState(() => _monthlyBudget = parsed);
+              }
+            },
           ),
         ],
       ),

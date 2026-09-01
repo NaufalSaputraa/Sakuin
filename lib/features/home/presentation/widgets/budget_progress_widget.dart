@@ -47,14 +47,14 @@ class BudgetProgressWidget extends ConsumerWidget {
         children: [
           // Circular Progress Ring
           SizedBox(
-            width: 78,
-            height: 78,
+            width: 84,
+            height: 84,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 CircularProgressIndicator(
                   value: progress,
-                  strokeWidth: 8,
+                  strokeWidth: 6,
                   backgroundColor: isDark
                       ? theme.colorScheme.outline
                       : theme.colorScheme.primary.withValues(alpha: 0.12),
@@ -131,7 +131,7 @@ class BudgetProgressWidget extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      ' / ${RupiahFormatter.compact(limit)}',
+                      ' / ${RupiahFormatter.format(limit)}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
