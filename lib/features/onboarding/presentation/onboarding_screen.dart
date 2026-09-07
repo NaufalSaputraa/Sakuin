@@ -87,20 +87,43 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await prefs.setString(AppConstants.userNameKey, _nameController.text.trim());
 
     // Update initial wallet balances if entered
-    final wallets = ref.read(allWalletsProvider).asData?.value ?? [];
     final walletRepo = ref.read(walletRepositoryProvider);
 
     final cashAmount = double.tryParse(_cashBalanceController.text.replaceAll('.', '').replaceAll(',', '')) ?? 0.0;
     final digitalAmount = double.tryParse(_digitalBalanceController.text.replaceAll('.', '').replaceAll(',', '')) ?? 0.0;
 
-    for (final w in wallets) {
-      if (w.isPhysical && cashAmount > 0) {
-        await walletRepo.updateWallet(w.copyWith(balance: cashAmount));
-      } else if (w.walletType == 'digital' && w.parentId == null && digitalAmount > 0) {
-        // Dompet Digital root - user can customize name later (e.g. DANA/ShopeePay)
-        await walletRepo.updateWallet(w.copyWith(balance: digitalAmount));
+    final walletsResult = await walletRepo.getAll();
+    final wallets = walletsResult.valueOrNull ?? [];
+    if (wallets.isEmpty) {
+      await walletRepo.createWallet(
+        name: 'Dompet Fisik',
+        walletType: 'physical',
+        initialBalance: cashAmount,
+        currency: 'IDR',
+        icon: '💵',
+        color: '#2ECC71',
+      );
+      await walletRepo.createWallet(
+        name: 'Dompet Digital',
+        walletType: 'digital',
+        initialBalance: digitalAmount,
+        currency: 'IDR',
+        icon: '📱',
+        color: '#3B82C4',
+      );
+    } else {
+      for (final w in wallets) {
+        if (w.isPhysical) {
+          await walletRepo.updateWallet(w.copyWith(balance: cashAmount));
+        } else if (w.walletType == 'digital' && w.parentId == null) {
+          await walletRepo.updateWallet(w.copyWith(balance: digitalAmount));
+        }
       }
     }
+
+    // Invalidate wallet providers so home screen reads updated balances immediately
+    ref.invalidate(allWalletsProvider);
+    ref.invalidate(totalBalanceProvider);
 
     // Create Initial Budget
     if (_monthlyBudget > 0) {

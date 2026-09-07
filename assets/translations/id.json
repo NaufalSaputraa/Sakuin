@@ -28,7 +28,7 @@
     "willBust": "Akan Lewat Batas",
     "safe": "Masih Aman",
     "topCategory": "Kategori Teratas",
-    "adviceTemplate": "Pengeluaran terbesarmu di {{category}} ({{amount}}). Kurangi ~20% → sisa jadi {{saved}}."
+    "adviceTemplate": "Pengeluaran terbesar ada pada {category} ({amount}). Kamu bisa berhemat {saved} jika memangkas 20% pengeluaran ini."
   },
   "input": {
     "placeholder": "Ketik: beli kopi 25rb gopay...",
@@ -43,6 +43,8 @@
     "type_expense": "Pengeluaran",
     "type_income": "Pemasukan",
     "type_transfer": "Transfer",
+    "transfer_from": "Dari Dompet Asal",
+    "transfer_to": "Ke Dompet Tujuan",
     "transaction_saved": "Transaksi tersimpan"
   },
   "wallets": {
@@ -116,22 +118,22 @@
     "action_categorize_label": "Kategorikan",
     "action_wallet_label": "Tetapkan Dompet",
     "action_tag_label": "Tag",
-    "action_categorize": "Kategorikan sebagai {{categoryId}}",
-    "action_wallet": "Tetapkan ke {{walletProvider}}",
+    "action_categorize": "Kategorikan sebagai {categoryId}",
+    "action_wallet": "Tetapkan ke {walletProvider}",
     "action_tag": "Tambah Tag",
     "select_category": "Pilih Kategori",
     "category_required": "Kategori wajib dipilih",
     "select_wallet": "Pilih Dompet",
     "wallet_required": "Dompet wajib dipilih",
     "priority": "Prioritas",
-    "priority_hint": "Prioritas lebih rendah dijalankan dulu. Saat ini: {{priority}}",
+    "priority_hint": "Prioritas lebih rendah dijalankan dulu. Saat ini: {priority}",
     "edit": "Edit",
     "delete": "Hapus",
     "delete_confirm_title": "Hapus Aturan?",
-    "delete_confirm_message": "Yakin ingin menghapus \"{{name}}\"?",
+    "delete_confirm_message": "Yakin ingin menghapus \"{name}\"?",
     "created_success": "Aturan pintar berhasil dibuat",
     "updated_success": "Aturan pintar berhasil diperbarui",
-    "save_error": "Gagal menyimpan aturan: {{error}}",
+    "save_error": "Gagal menyimpan aturan: {error}",
     "error_loading": "Gagal memuat aturan pintar"
   },
   "common": {
@@ -159,7 +161,7 @@
     "manage_categories": "Kelola Kategori Transaksi",
     "manage_categories_desc": "Kategori Pengeluaran & Pemasukan",
     "monthly_budget_limit": "Batas Anggaran Bulanan",
-    "budget_limit_per_month": "Limit: {{amount}} / bulan",
+    "budget_limit_per_month": "Limit: {amount} / bulan",
     "section_ai": "Mesin AI & Machine Learning",
     "ocr_engine": "Engine Scan Struk OCR",
     "ocr_engine_desc": "Google ML Kit Text Recognition (Kamera & Galeri)",
@@ -281,7 +283,7 @@
     "base_currency": "Mata uang dasar (IDR)",
     "base": "Dasar",
     "load_error": "Gagal memuat kurs mata uang",
-    "edit_rate": "Ubah Kurs {{code}}",
-    "rate_to_idr": "Kurs ke IDR (1 {{code}} = ? IDR)"
+    "edit_rate": "Ubah Kurs {code}",
+    "rate_to_idr": "Kurs ke IDR (1 {code} = ? IDR)"
   }
 }

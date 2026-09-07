@@ -51,7 +51,7 @@ SpendingForecast computeForecast({
   final safeDaysElapsed = daysElapsed < 1 ? 1 : daysElapsed;
   final dailyAvg = spentSoFar / safeDaysElapsed;
   final forecastSpend = dailyAvg * daysInPeriod;
-  final daysRemaining = (daysInPeriod - daysElapsed).clamp(0, daysInPeriod);
+  final daysRemaining = (daysInPeriod - safeDaysElapsed).clamp(0, daysInPeriod);
   final projectedBalance = balance - dailyAvg * daysRemaining;
   final willBustBudget = budgetLimit != null && forecastSpend > budgetLimit;
 

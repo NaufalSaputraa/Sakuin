@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/thousands_separator_formatter.dart';
 import '../../../core/utils/result.dart';
 import '../../../core/theme/color_schemes.dart';
 import '../../categories/domain/category_model.dart';
 import '../../categories/providers/category_providers.dart';
-import '../../currency/providers/currency_providers.dart';
 import '../../smart_rules/domain/smart_rule_model.dart';
 import '../../smart_rules/providers/smart_rule_providers.dart';
 import '../../wallets/domain/wallet_model.dart';
@@ -65,10 +65,12 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
 
   TransactionType _transactionType = TransactionType.expense;
   int? _selectedWalletId;
+  int? _selectedTransferToWalletId;
   int? _selectedCategoryId;
   double _parsedAmount = 0.0;
   String? _parsedMerchant; // From parser/OCR/voice/share; feeds subscriptions & smart rules
   bool _isLoading = false;
+  // Currency fixed to IDR - no currency picker
   String _selectedCurrency = 'IDR';
   DateTime _transactionDate = DateTime.now();
 
@@ -81,7 +83,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     _titleController = TextEditingController(text: 'Transaksi');
     _amountController = TextEditingController();
     _isNumpadMode = widget.startInNumpadMode || _isEditMode;
-    _selectedCurrency = ref.read(selectedCurrencyProvider);
+    _selectedCurrency = 'IDR';
 
     // Edit mode: pre-fill the form from the existing transaction.
     final existing = widget.transaction;
@@ -89,10 +91,11 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       _transactionType = existing.transactionType;
       _titleController.text = existing.title;
       _parsedAmount = existing.amount;
-      _amountController.text = existing.amount.toStringAsFixed(0);
+      _amountController.text = RupiahFormatter.formatWithoutSymbol(existing.amount);
       _selectedWalletId = existing.walletId;
+      _selectedTransferToWalletId = existing.transferToWalletId;
       _selectedCategoryId = existing.categoryId;
-      _selectedCurrency = existing.currency;
+      // Currency locked to IDR for new transactions
       _parsedMerchant = existing.merchant;
       _transactionDate = existing.transactionDate;
     }
@@ -191,12 +194,32 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       return;
     }
 
-    final title = _titleController.text.trim().isEmpty ? 'Transaksi' : _titleController.text.trim();
+    int? transferToId;
+    if (_transactionType == TransactionType.transfer) {
+      transferToId = _selectedTransferToWalletId ??
+          wallets.where((w) => w.id != walletId).firstOrNull?.id;
+      if (transferToId == null || transferToId == walletId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Pilih dompet tujuan yang berbeda')),
+        );
+        return;
+      }
+    }
 
-    int? finalCategoryId = _selectedCategoryId;
+    String title = _titleController.text.trim();
+    if (title.isEmpty || title == 'Transaksi') {
+      if (_transactionType == TransactionType.transfer) {
+        final toWallet = wallets.where((w) => w.id == transferToId).firstOrNull;
+        title = toWallet != null ? 'Transfer ke ${toWallet.name}' : 'Transfer';
+      } else {
+        title = 'Transaksi';
+      }
+    }
+
+    int? finalCategoryId = _transactionType == TransactionType.transfer ? null : _selectedCategoryId;
     int? finalWalletId = walletId;
 
-    if (!_isEditMode) {
+    if (!_isEditMode && _transactionType != TransactionType.transfer) {
       // Apply smart rules evaluation for auto-suggestions. In edit mode we skip
       // this so the user's explicit category/wallet choices are preserved.
       final merchant = _textController.text.trim();
@@ -207,34 +230,31 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       );
       final evaluation = await evaluationAsync;
 
-        if (evaluation.hasMatch && evaluation.action != null) {
-          final action = evaluation.action!;
-          if (action.type == RuleActionType.categorize) {
-            final actionData = _parseActionValue(action.value);
-            final categoryId = actionData['categoryId'] as int?;
-            if (categoryId != null) {
-              finalCategoryId = categoryId;
-            }
-          } else if (action.type == RuleActionType.wallet) {
-            final actionData = _parseActionValue(action.value);
-            final walletProvider = actionData['walletProvider'] as String?;
-            if (walletProvider != null) {
-              final match = wallets.where((w) {
-                if (walletProvider == 'physical') return w.isPhysical;
-                return w.provider == walletProvider;
-              }).firstOrNull;
-              if (match != null) {
-                finalWalletId = match.id;
-              }
+      if (evaluation.hasMatch && evaluation.action != null) {
+        final action = evaluation.action!;
+        if (action.type == RuleActionType.categorize) {
+          final actionData = _parseActionValue(action.value);
+          final categoryId = actionData['categoryId'] as int?;
+          if (categoryId != null) {
+            finalCategoryId = categoryId;
+          }
+        } else if (action.type == RuleActionType.wallet) {
+          final actionData = _parseActionValue(action.value);
+          final walletProvider = actionData['walletProvider'] as String?;
+          if (walletProvider != null) {
+            final match = wallets.where((w) {
+              if (walletProvider == 'physical') return w.isPhysical;
+              return w.provider == walletProvider;
+            }).firstOrNull;
+            if (match != null) {
+              finalWalletId = match.id;
             }
           }
         }
       }
+    }
 
     setState(() => _isLoading = true);
-
-    // Persist selected currency for next entry.
-    ref.read(selectedCurrencyProvider.notifier).set(_selectedCurrency);
 
     final merchantForTx = (_parsedMerchant?.trim().isNotEmpty ?? false)
         ? _parsedMerchant!.trim()
@@ -250,7 +270,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             transactionType: _transactionType,
             title: title,
             merchant: merchantForTx,
-            transferToWalletId: widget.transaction!.transferToWalletId,
+            transferToWalletId: _transactionType == TransactionType.transfer ? transferToId : null,
             transactionDate: _transactionDate,
             currency: _selectedCurrency,
           );
@@ -265,6 +285,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
         merchant: merchantForTx,
         sourceInput: _isNumpadMode ? 'manual' : 'text_parse',
         rawInput: _textController.text.trim(),
+        transferToWalletId: _transactionType == TransactionType.transfer ? transferToId : null,
         currency: _selectedCurrency,
       );
     }
@@ -277,7 +298,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${'input.transaction_saved'.tr()} ${CurrencyFormatter.format(amount, _selectedCurrency)}'),
+            content: Text('${'input.transaction_saved'.tr()} ${RupiahFormatter.format(amount)}'),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -426,13 +447,14 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                       ? TextField(
                           controller: _amountController,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [ThousandsSeparatorInputFormatter()],
                           autofocus: true,
                           style: theme.textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.primary,
                           ),
                           decoration: InputDecoration(
-                            prefixText: CurrencyFormatter.symbol(_selectedCurrency),
+                            prefixText: 'Rp ',
                             hintText: '0',
                             border: InputBorder.none,
                             hintStyle: TextStyle(
@@ -440,8 +462,9 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                             ),
                           ),
                           onChanged: (val) {
+                            final digits = val.replaceAll('.', '').replaceAll(',', '');
                             setState(() {
-                              _parsedAmount = double.tryParse(val) ?? 0.0;
+                              _parsedAmount = double.tryParse(digits) ?? 0.0;
                             });
                           },
                         )
@@ -498,21 +521,40 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                         label: 'input.type_expense'.tr(),
                         isSelected: _transactionType == TransactionType.expense,
                         color: isDark ? SakuinColors.darkExpense : SakuinColors.lightExpense,
-                        onTap: () => setState(() => _transactionType = TransactionType.expense),
+                        onTap: () => setState(() {
+                          _transactionType = TransactionType.expense;
+                          if (_titleController.text == 'Transfer') {
+                            _titleController.text = 'Transaksi';
+                          }
+                        }),
                       ),
                       const SizedBox(width: 8),
                       _TypePill(
                         label: 'input.type_income'.tr(),
                         isSelected: _transactionType == TransactionType.income,
                         color: isDark ? SakuinColors.darkIncome : SakuinColors.lightIncome,
-                        onTap: () => setState(() => _transactionType = TransactionType.income),
+                        onTap: () => setState(() {
+                          _transactionType = TransactionType.income;
+                          if (_titleController.text == 'Transfer') {
+                            _titleController.text = 'Transaksi';
+                          }
+                        }),
                       ),
                       const SizedBox(width: 8),
                       _TypePill(
                         label: 'input.type_transfer'.tr(),
                         isSelected: _transactionType == TransactionType.transfer,
                         color: isDark ? SakuinColors.darkSecondary : SakuinColors.lightSecondary,
-                        onTap: () => setState(() => _transactionType = TransactionType.transfer),
+                        onTap: () => setState(() {
+                          _transactionType = TransactionType.transfer;
+                          final activeSource = _selectedWalletId ?? (wallets.isNotEmpty ? wallets.first.id : null);
+                          if (_selectedTransferToWalletId == null || _selectedTransferToWalletId == activeSource) {
+                            _selectedTransferToWalletId = wallets.where((w) => w.id != activeSource).firstOrNull?.id;
+                          }
+                          if (_titleController.text == 'Transaksi') {
+                            _titleController.text = 'Transfer';
+                          }
+                        }),
                       ),
                     ],
                   ),
@@ -544,16 +586,11 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
                       Row(
                         children: [
                           Text(
-                            CurrencyFormatter.format(_parsedAmount, _selectedCurrency),
+                            RupiahFormatter.format(_parsedAmount),
                             style: theme.textTheme.titleLarge?.copyWith(
                               color: theme.colorScheme.primary,
                               fontWeight: FontWeight.bold,
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          _CurrencyPicker(
-                            value: _selectedCurrency,
-                            onChanged: (code) => setState(() => _selectedCurrency = code),
                           ),
                         ],
                       ),
@@ -586,62 +623,133 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             ),
             const SizedBox(height: 16),
 
-            // Wallet Selector Pills (Horizontal Scroll)
-            Text(
-              'input.wallet'.tr(),
-              style: theme.textTheme.labelMedium,
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: wallets.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final w = wallets[index];
-                  final isSelected = _selectedWalletId == w.id;
-                  return ChoiceChip(
-                    label: Text('${w.icon ?? '💳'} ${w.name}'),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      if (selected) setState(() => _selectedWalletId = w.id);
-                    },
+            // Wallet & Category Selection UI
+            if (_transactionType == TransactionType.transfer) ...[
+              // Transfer: Source Wallet
+              Text(
+                'input.transfer_from'.tr(),
+                style: theme.textTheme.labelMedium,
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: wallets.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final w = wallets[index];
+                    final isSelected = (_selectedWalletId ?? (wallets.isNotEmpty ? wallets.first.id : null)) == w.id;
+                    return ChoiceChip(
+                      label: Text('${w.icon ?? '💳'} ${w.name}'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            _selectedWalletId = w.id;
+                            if (_selectedTransferToWalletId == w.id) {
+                              _selectedTransferToWalletId = wallets.where((x) => x.id != w.id).firstOrNull?.id;
+                            }
+                          });
+                        }
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Transfer: Destination Wallet
+              Text(
+                'input.transfer_to'.tr(),
+                style: theme.textTheme.labelMedium,
+              ),
+              const SizedBox(height: 8),
+              Builder(
+                builder: (context) {
+                  final activeSourceId = _selectedWalletId ?? (wallets.isNotEmpty ? wallets.first.id : null);
+                  final availableTargets = wallets.where((w) => w.id != activeSourceId).toList();
+                  final targetId = _selectedTransferToWalletId ?? availableTargets.firstOrNull?.id;
+
+                  return SizedBox(
+                    height: 38,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: availableTargets.length,
+                      separatorBuilder: (_, _) => const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final w = availableTargets[index];
+                        final isSelected = targetId == w.id;
+                        return ChoiceChip(
+                          label: Text('${w.icon ?? '💳'} ${w.name}'),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            if (selected) setState(() => _selectedTransferToWalletId = w.id);
+                          },
+                        );
+                      },
+                    ),
                   );
                 },
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Category Suggestion Chips (Horizontal Grid/Scroll)
-            Text(
-              'input.category'.tr(),
-              style: theme.textTheme.labelMedium,
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              height: 38,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: categories.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final c = categories[index];
-                  final isSelected = _selectedCategoryId == c.id;
-                  final localeCode = context.locale.languageCode;
-
-                  return ChoiceChip(
-                    label: Text('${c.icon} ${c.localizedName(localeCode)}'),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedCategoryId = selected ? c.id : null;
-                      });
-                    },
-                  );
-                },
+            ] else ...[
+              // Expense / Income: Single Wallet Selector
+              Text(
+                'input.wallet'.tr(),
+                style: theme.textTheme.labelMedium,
               ),
-            ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: wallets.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final w = wallets[index];
+                    final isSelected = (_selectedWalletId ?? (wallets.isNotEmpty ? wallets.first.id : null)) == w.id;
+                    return ChoiceChip(
+                      label: Text('${w.icon ?? '💳'} ${w.name}'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        if (selected) setState(() => _selectedWalletId = w.id);
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Category Suggestion Chips (Horizontal Grid/Scroll) - ONLY for Expense/Income
+              Text(
+                'input.category'.tr(),
+                style: theme.textTheme.labelMedium,
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 38,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 8),
+                  itemBuilder: (context, index) {
+                    final c = categories[index];
+                    final isSelected = _selectedCategoryId == c.id;
+                    final localeCode = context.locale.languageCode;
+
+                    return ChoiceChip(
+                      label: Text('${c.icon} ${c.localizedName(localeCode)}'),
+                      selected: isSelected,
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedCategoryId = selected ? c.id : null;
+                        });
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
 
             // Action Buttons
@@ -721,48 +829,3 @@ class _TypePill extends StatelessWidget {
   }
 }
 
-class _CurrencyPicker extends ConsumerWidget {
-  final String value;
-  final ValueChanged<String> onChanged;
-
-  const _CurrencyPicker({
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final ratesAsync = ref.watch(currencyRatesProvider);
-
-    final codes = ratesAsync.when(
-      data: (rates) => rates.map((r) => r.code).toList(),
-      loading: () => <String>['IDR'],
-      error: (_, _) => <String>['IDR'],
-    );
-
-    if (!codes.contains(value)) codes.add(value);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        border: Border.all(color: theme.colorScheme.onSurface.withValues(alpha: 0.15)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: DropdownButton<String>(
-        value: value,
-        underline: const SizedBox.shrink(),
-        isDense: true,
-        items: codes.map((code) {
-          return DropdownMenuItem(
-            value: code,
-            child: Text(code),
-          );
-        }).toList(),
-        onChanged: (code) {
-          if (code != null) onChanged(code);
-        },
-      ),
-    );
-  }
-}

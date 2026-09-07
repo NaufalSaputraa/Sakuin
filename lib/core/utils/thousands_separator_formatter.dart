@@ -27,22 +27,21 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   }
 
   /// Formats a string of digits with '.' as thousand separator.
-  /// e.g., "1000000" → "1.000.000", "100000" → "100.000", "1000" → "1.000", "0" → "0"
+  /// e.g., "1000000" → "1.000.000", "100000" → "100.000", "1000" → "1.000", "" → ""
   String _formatWithDotSeparator(String digits) {
     if (digits.isEmpty) return '';
 
-    // Remove leading zeros but keep at least one digit
+    // Remove leading zeros but keep '0' if all zeros
     final normalized = digits.replaceAll(RegExp(r'^0+'), '');
-    final numStr = normalized.isEmpty ? '0' : normalized;
+    if (normalized.isEmpty) return '0';
 
     // Parse as int to handle grouping
-    final intValue = int.tryParse(numStr);
-    if (intValue == null) return numStr;
+    final intValue = int.tryParse(normalized);
+    if (intValue == null) return normalized;
 
-    // Format using NumberFormat.id_ID for grouping
-    final formatted = NumberFormat('#.###', 'id_ID').format(intValue);
-    // NumberFormat.id_ID may use '.' as separator already, but ensure consistency
-    return formatted;
+    // In ICU patterns, ',' represents the grouping separator which
+    // locale 'id_ID' renders as '.' (e.g. 100000 -> 100.000)
+    return NumberFormat('#,###', 'id_ID').format(intValue);
   }
 }
 

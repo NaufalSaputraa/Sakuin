@@ -35,6 +35,19 @@ class AnalyticsScreen extends ConsumerStatefulWidget {
   ConsumerState<AnalyticsScreen> createState() => _AnalyticsScreenState();
 }
 
+const _fallbackPalette = [
+  Color(0xFF6B5CE7), // Primary Purple
+  Color(0xFF00CEC9), // Teal
+  Color(0xFFFF7675), // Coral Red
+  Color(0xFFFFA502), // Amber
+  Color(0xFF2ED573), // Emerald Green
+  Color(0xFF1E90FF), // Dodger Blue
+  Color(0xFFFF4757), // Crimson
+  Color(0xFF9B59B6), // Amethyst
+  Color(0xFFFD79A8), // Pink
+  Color(0xFF70A1FF), // Soft Blue
+];
+
 class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   TimeFilter _selectedFilter = TimeFilter.thisMonth;
   int _touchedPieIndex = -1;
@@ -62,7 +75,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final transactionsAsync = ref.watch(recentTransactionsProvider);
+    final transactionsAsync = ref.watch(allTransactionsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -81,12 +94,17 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             final daysCount = _selectedFilter == TimeFilter.thisMonth ? now.day : 30;
             final dailyAvg = daysCount > 0 ? totalSpent / daysCount : 0.0;
 
-            // Group by category
+            // Group by category with distinct fallback color palette
             final Map<String, _CategoryStats> categoryMap = {};
             for (final tx in expenses) {
               final catName = tx.categoryName ?? 'Other';
               final icon = tx.categoryIcon ?? '📦';
-              final color = tx.categoryColor?.toColor() ?? theme.colorScheme.primary;
+              final Color color;
+              if (tx.categoryColor != null && tx.categoryColor!.isNotEmpty) {
+                color = tx.categoryColor!.toColor();
+              } else {
+                color = _fallbackPalette[categoryMap.length % _fallbackPalette.length];
+              }
 
               final current = categoryMap[catName];
               if (current == null) {
@@ -199,7 +217,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  if (categoryList.isEmpty)
+                  if (categoryList.isEmpty || totalSpent <= 0)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(32),
@@ -227,44 +245,103 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                       child: Column(
                         children: [
                           SizedBox(
-                            height: 180,
-                            child: PieChart(
-                              PieChartData(
-                                pieTouchData: PieTouchData(
-                                  touchCallback: (event, response) {
-                                    setState(() {
-                                      if (!event.isInterestedForInteractions ||
-                                          response == null ||
-                                          response.touchedSection == null) {
-                                        _touchedPieIndex = -1;
-                                        return;
-                                      }
-                                      _touchedPieIndex = response.touchedSection!.touchedSectionIndex;
-                                    });
-                                  },
-                                ),
-                                borderData: FlBorderData(show: false),
-                                sectionsSpace: 3,
-                                centerSpaceRadius: 44,
-                                sections: categoryList.asMap().entries.map((entry) {
-                                  final idx = entry.key;
-                                  final cat = entry.value;
-                                  final isTouched = idx == _touchedPieIndex;
-                                  final percentage = (cat.amount / totalSpent) * 100;
-
-                                  return PieChartSectionData(
-                                    color: cat.color,
-                                    value: cat.amount,
-                                    title: '${percentage.toInt()}%',
-                                    radius: isTouched ? 38 : 32,
-                                    titleStyle: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: theme.colorScheme.surface,
+                            height: 200,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                PieChart(
+                                  PieChartData(
+                                    pieTouchData: PieTouchData(
+                                      touchCallback: (event, response) {
+                                        setState(() {
+                                          if (!event.isInterestedForInteractions ||
+                                              response == null ||
+                                              response.touchedSection == null) {
+                                            _touchedPieIndex = -1;
+                                            return;
+                                          }
+                                          _touchedPieIndex = response.touchedSection!.touchedSectionIndex;
+                                        });
+                                      },
                                     ),
-                                  );
-                                }).toList(),
-                              ),
+                                    borderData: FlBorderData(show: false),
+                                    sectionsSpace: categoryList.length > 1 ? 2 : 0,
+                                    centerSpaceRadius: 52,
+                                    sections: categoryList.asMap().entries.map((entry) {
+                                      final idx = entry.key;
+                                      final cat = entry.value;
+                                      final isTouched = idx == _touchedPieIndex;
+                                      final percentage = totalSpent > 0 ? (cat.amount / totalSpent) * 100 : 0.0;
+                                      final showTitle = percentage >= 8.0;
+
+                                      return PieChartSectionData(
+                                        color: cat.color,
+                                        value: cat.amount,
+                                        title: showTitle ? '${percentage.toInt()}%' : '',
+                                        radius: isTouched ? 36 : 30,
+                                        titleStyle: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                          shadows: [
+                                            Shadow(
+                                              color: Colors.black45,
+                                              blurRadius: 4,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                                // Centered Donut Content
+                                IgnorePointer(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_touchedPieIndex >= 0 && _touchedPieIndex < categoryList.length) ...[
+                                        Text(
+                                          categoryList[_touchedPieIndex].icon,
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          categoryList[_touchedPieIndex].name,
+                                          style: theme.textTheme.labelSmall?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        Text(
+                                          RupiahFormatter.compact(categoryList[_touchedPieIndex].amount),
+                                          style: theme.textTheme.titleSmall?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: categoryList[_touchedPieIndex].color,
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        Text(
+                                          'Total',
+                                          style: theme.textTheme.labelSmall?.copyWith(
+                                            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          RupiahFormatter.compact(totalSpent),
+                                          style: theme.textTheme.titleSmall?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(height: 16),

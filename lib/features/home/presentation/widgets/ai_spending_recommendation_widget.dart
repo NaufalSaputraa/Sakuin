@@ -106,11 +106,10 @@ class _ForecastContent extends StatelessWidget {
       adviceText = willBust ? 'trend.willBust'.tr() : 'trend.safe'.tr();
     } else {
       final saved = forecast.topCategoryAmount * 0.2;
-      final newBalance = forecast.projectedBalance + saved;
       adviceText = 'trend.adviceTemplate'.tr(namedArgs: {
         'category': forecast.topCategory!,
         'amount': RupiahFormatter.format(forecast.topCategoryAmount),
-        'saved': RupiahFormatter.format(newBalance),
+        'saved': RupiahFormatter.format(saved),
       });
     }
 

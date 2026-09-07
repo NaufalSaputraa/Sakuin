@@ -28,7 +28,7 @@
     "willBust": "Over budget",
     "safe": "On track",
     "topCategory": "Top category",
-    "adviceTemplate": "Your biggest spend is on {{category}} ({{amount}}). Cut ~20% → balance becomes {{saved}}."
+    "adviceTemplate": "Highest spend is on {category} ({amount}). You could save {saved} by cutting back 20%."
   },
   "input": {
     "placeholder": "Type: coffee 25k gopay...",
@@ -43,6 +43,8 @@
     "type_expense": "Expense",
     "type_income": "Income",
     "type_transfer": "Transfer",
+    "transfer_from": "From Source Wallet",
+    "transfer_to": "To Destination Wallet",
     "transaction_saved": "Transaction saved"
   },
   "wallets": {
@@ -116,22 +118,22 @@
     "action_categorize_label": "Categorize",
     "action_wallet_label": "Assign Wallet",
     "action_tag_label": "Tag",
-    "action_categorize": "Categorize as {{categoryId}}",
-    "action_wallet": "Assign to {{walletProvider}}",
+    "action_categorize": "Categorize as {categoryId}",
+    "action_wallet": "Assign to {walletProvider}",
     "action_tag": "Add Tag",
     "select_category": "Select Category",
     "category_required": "Category is required",
     "select_wallet": "Select Wallet",
     "wallet_required": "Wallet is required",
     "priority": "Priority",
-    "priority_hint": "Lower priority runs first. Current: {{priority}}",
+    "priority_hint": "Lower priority runs first. Current: {priority}",
     "edit": "Edit",
     "delete": "Delete",
     "delete_confirm_title": "Delete Rule?",
-    "delete_confirm_message": "Are you sure you want to delete \"{{name}}\"?",
+    "delete_confirm_message": "Are you sure you want to delete \"{name}\"?",
     "created_success": "Smart rule created successfully",
     "updated_success": "Smart rule updated successfully",
-    "save_error": "Failed to save rule: {{error}}",
+    "save_error": "Failed to save rule: {error}",
     "error_loading": "Failed to load smart rules"
   },
   "common": {
@@ -159,7 +161,7 @@
     "manage_categories": "Manage Transaction Categories",
     "manage_categories_desc": "Expense & Income Categories",
     "monthly_budget_limit": "Monthly Budget Limit",
-    "budget_limit_per_month": "Limit: {{amount}} / month",
+    "budget_limit_per_month": "Limit: {amount} / month",
     "section_ai": "AI & Machine Learning Engine",
     "ocr_engine": "OCR Receipt Scan Engine",
     "ocr_engine_desc": "Google ML Kit Text Recognition (Camera & Gallery)",
@@ -281,7 +283,7 @@
     "base_currency": "Base currency (IDR)",
     "base": "Base",
     "load_error": "Failed to load currency rates",
-    "edit_rate": "Edit Rate for {{code}}",
-    "rate_to_idr": "Rate to IDR (1 {{code}} = ? IDR)"
+    "edit_rate": "Edit Rate for {code}",
+    "rate_to_idr": "Rate to IDR (1 {code} = ? IDR)"
   }
 }
