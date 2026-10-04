@@ -20,7 +20,13 @@
     "activity": "Activity",
     "empty_transactions": "No transactions yet",
     "empty_transactions_cta": "Tap input below to record your first expense",
-    "days_remaining": "days remaining this month"
+    "days_remaining": "days remaining this month",
+    "scan_title": "Scan Receipt / Payment Proof",
+    "scan_desc": "Supports physical paper receipts and digital transfer screenshots.",
+    "scan_camera_title": "Physical Receipt (Camera)",
+    "scan_camera_desc": "Indomaret, Pertamina, Restaurants, Supermarkets",
+    "scan_gallery_title": "Online Proof / E-Receipt (Gallery)",
+    "scan_gallery_desc": "Transfer screenshots: BCA, GoPay, OVO, ShopeePay"
   },
   "trend": {
     "title": "Spending Forecast",
@@ -45,7 +51,11 @@
     "type_transfer": "Transfer",
     "transfer_from": "From Source Wallet",
     "transfer_to": "To Destination Wallet",
-    "transaction_saved": "Transaction saved"
+    "transaction_saved": "Transaction saved",
+    "invalid_amount": "Please enter a valid transaction amount",
+    "select_wallet_first": "Please select a wallet first",
+    "different_wallet_required": "Please select a different destination wallet",
+    "save_failed": "Failed to save: {error}"
   },
   "wallets": {
     "physical": "Cash / Physical",
@@ -56,7 +66,28 @@
     "shopeepay": "ShopeePay",
     "bank": "Bank Account",
     "add_sub_wallet": "Add E-Wallet",
-    "balance": "Balance"
+    "balance": "Balance",
+    "manage_title": "Manage Wallets & Balances",
+    "physical_title": "Physical Wallet (Cash)",
+    "physical_desc": "Physical cash on hand",
+    "digital_root_title": "Digital Wallet Root",
+    "digital_root_desc": "Main digital wallet",
+    "sub_wallets_title": "Sub-Wallets",
+    "no_sub_wallets": "No sub-wallets yet, add manually",
+    "add_button": "Add",
+    "add_new_title": "Add New Sub-Wallet",
+    "name_label": "Wallet Name (GoPay, OVO, etc.)",
+    "initial_balance_label": "Initial Balance (Rp)",
+    "save_wallet": "Save Wallet",
+    "adjust_balance_title": "Adjust Balance for {name}",
+    "transfer_title": "Transfer Between Wallets",
+    "transfer_from": "Source Wallet",
+    "transfer_to": "Destination Wallet",
+    "transfer_amount": "Transfer Amount (Rp)",
+    "send_transfer": "Send Transfer",
+    "delete_title": "Delete Wallet?",
+    "delete_message": "Are you sure you want to delete {name}? Its balance will be lost.",
+    "deleted_snack": "Wallet {name} deleted"
   },
   "categories": {
     "food": "Food & Drinks",
@@ -74,7 +105,24 @@
     "salary": "Salary",
     "freelance": "Freelance",
     "transfer_in": "Transfer In",
-    "other_income": "Other Income"
+    "other_income": "Other Income",
+    "manage_title": "Manage Categories",
+    "tab_expense": "Expense",
+    "tab_income": "Income",
+    "new_category": "New Category",
+    "add_title": "Add New Category",
+    "pick_icon": "Choose Emoji Icon",
+    "pick_color": "Choose Theme Color",
+    "name_label": "Category Name (e.g., Gaming / Coffee)",
+    "name_id_label": "Indonesian Category Name (e.g., Main Game / Kopi)",
+    "name_empty": "Category name cannot be empty",
+    "save_category": "Save Category",
+    "empty": "No categories found",
+    "default_badge": "Default",
+    "delete_title": "Delete Category?",
+    "delete_message": "Are you sure you want to delete category \"{name}\"?",
+    "save_error": "Failed to add category: {error}",
+    "generic_error": "An error occurred: {error}"
   },
   "analytics": {
     "title": "Analytics",
@@ -134,7 +182,11 @@
     "created_success": "Smart rule created successfully",
     "updated_success": "Smart rule updated successfully",
     "save_error": "Failed to save rule: {error}",
-    "error_loading": "Failed to load smart rules"
+    "error_loading": "Failed to load smart rules",
+    "auto_generate": "Auto-Detect from History",
+    "no_patterns_found": "No recurring merchant patterns found in history",
+    "patterns_generated": "Created {count} smart rule(s) from your history",
+    "learn_from_history": "Learn from History"
   },
   "common": {
     "save": "Save",
@@ -225,7 +277,12 @@
     "empty": "No Subscriptions Found",
     "empty_description": "No recurring subscriptions detected yet. Add more transactions to enable detection.",
     "monthly": "Monthly",
-    "confidence": "Confidence"
+    "confidence": "Confidence",
+    "refresh_tooltip": "Refresh detection",
+    "active_status": "Active",
+    "ignored_status": "Ignored",
+    "ignore_confirm_title": "Ignore Subscription?",
+    "ignore_confirm_message": "Ignore \"{merchant}\"? This will hide it from the active list."
   },
   "ocr": {
     "cameraTitle": "Scan Receipt",
@@ -276,7 +333,11 @@
   "chat": {
     "ai_subtitle": "On-Device Action Assistant",
     "processing": "AI is processing...",
-    "input_hint": "Type a command / list expenses / question..."
+    "input_hint": "Type a command / list expenses / question...",
+    "delete_history_title": "Clear Chat History?",
+    "delete_history_desc": "All conversation messages with the AI assistant will be removed. Recorded financial transactions in the database remain safe.",
+    "delete_message_title": "Delete This Message?",
+    "delete_message_desc": "This message will be removed from your chat history."
   },
   "currency": {
     "section_title": "Currency & Offline Rates",

@@ -37,8 +37,9 @@ class ImportService {
 
   Future<Result<ExportBundle, AppError>> parseCsv(String csvString) async {
     try {
-      final lines = csvString.trim().split('\n');
-      if (lines.isEmpty) {
+      final normalizedCsv = csvString.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+      final lines = normalizedCsv.trim().split('\n');
+      if (lines.isEmpty || (lines.length == 1 && lines.first.trim().isEmpty)) {
         return Failure(AppError.parse('Empty CSV'));
       }
 
@@ -118,13 +119,13 @@ class ImportService {
           inQuotes = !inQuotes;
         }
       } else if (char == ',' && !inQuotes) {
-        fields.add(buffer.toString());
+        fields.add(buffer.toString().trim());
         buffer.clear();
       } else {
         buffer.write(char);
       }
     }
-    fields.add(buffer.toString());
+    fields.add(buffer.toString().trim());
     return fields;
   }
 

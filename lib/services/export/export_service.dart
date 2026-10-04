@@ -13,8 +13,8 @@ class ExportService {
   Future<String> toCsv(ExportBundle bundle) async {
     final buffer = StringBuffer();
 
-    // CSV Header for transactions only
-    buffer.writeln('id,walletId,categoryId,amount,type,title,date');
+    // CSV Header for transactions with all exported columns
+    buffer.writeln('id,walletId,categoryId,amount,type,title,date,description,merchant,sourceInput,rawInput,transferToWalletId,createdAt,updatedAt');
 
     for (final tx in bundle.transactions) {
       final categoryId = tx.categoryId?.toString() ?? '';

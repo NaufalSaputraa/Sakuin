@@ -35,7 +35,11 @@ class WalletDao extends DatabaseAccessor<AppDatabase> with _$WalletDaoMixin {
   }
 
   Future<int> deleteWallet(int id) =>
-      (delete(wallets)..where((t) => t.id.equals(id))).go();
+      (update(wallets)..where((t) => t.id.equals(id))).write(
+        const WalletsCompanion(
+          isActive: Value(false),
+        ),
+      );
 
   Future<int> updateBalance(int walletId, double delta) async {
     final wallet = await getById(walletId);

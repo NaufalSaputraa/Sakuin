@@ -24,7 +24,7 @@ class SubscriptionsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             onPressed: () => ref.read(subscriptionsNotifierProvider.notifier).detectAndSave(),
-            tooltip: 'Refresh detection',
+            tooltip: 'subscription.refresh_tooltip'.tr(),
           ),
         ],
       ),
@@ -268,7 +268,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 ] else ...[
                   Chip(
                     label: Text(
-                      sub.isActive ? 'Active' : 'Ignored',
+                      sub.isActive ? 'subscription.active_status'.tr() : 'subscription.ignored_status'.tr(),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: sub.isActive ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
@@ -299,8 +299,8 @@ class SubscriptionsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('subscription.ignore'.tr()),
-        content: Text('Ignore "${sub.merchant}"? This will hide it from the list.'),
+        title: Text('subscription.ignore_confirm_title'.tr()),
+        content: Text('subscription.ignore_confirm_message'.tr(namedArgs: {'merchant': sub.merchant})),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),

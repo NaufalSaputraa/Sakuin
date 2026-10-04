@@ -179,7 +179,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
 
     if (amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Masukkan nominal transaksi yang valid')),
+        SnackBar(content: Text('input.invalid_amount'.tr())),
       );
       return;
     }
@@ -189,7 +189,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
 
     if (walletId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pilih dompet terlebih dahulu')),
+        SnackBar(content: Text('input.select_wallet_first'.tr())),
       );
       return;
     }
@@ -200,7 +200,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
           wallets.where((w) => w.id != walletId).firstOrNull?.id;
       if (transferToId == null || transferToId == walletId) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Pilih dompet tujuan yang berbeda')),
+          SnackBar(content: Text('input.different_wallet_required'.tr())),
         );
         return;
       }
@@ -221,8 +221,11 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
 
     if (!_isEditMode && _transactionType != TransactionType.transfer) {
       // Apply smart rules evaluation for auto-suggestions. In edit mode we skip
-      // this so the user's explicit category/wallet choices are preserved.
-      final merchant = _textController.text.trim();
+      final merchant = (_parsedMerchant?.trim().isNotEmpty ?? false)
+          ? _parsedMerchant!.trim()
+          : (_textController.text.trim().isNotEmpty
+              ? _textController.text.trim()
+              : title);
       final evaluationAsync = ref.read(
         smartRuleEvaluationProvider(
           (merchant: merchant, title: title, amount: amount, categoryId: _selectedCategoryId),
@@ -275,8 +278,7 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
             currency: _selectedCurrency,
           );
     } else {
-      final repo = ref.read(transactionRepositoryProvider);
-      result = await repo.createTransaction(
+      result = await ref.read(transactionActionsProvider.notifier).createTransaction(
         walletId: finalWalletId,
         categoryId: finalCategoryId,
         amount: amount,
@@ -306,7 +308,11 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan: ${result.errorOrNull?.message}')),
+          SnackBar(
+            content: Text(
+              'input.save_failed'.tr(namedArgs: {'error': result.errorOrNull?.message ?? ''}),
+            ),
+          ),
         );
       }
     }

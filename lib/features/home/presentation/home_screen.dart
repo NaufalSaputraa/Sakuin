@@ -91,12 +91,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Scan Struk / Bukti Pembayaran',
+                  'home.scan_title'.tr(),
                   style: theme.textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Mendukung struk fisik kertas dan screenshot e-wallet/m-banking online.',
+                  'home.scan_desc'.tr(),
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 20),
@@ -105,8 +105,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     backgroundColor: theme.colorScheme.primaryContainer,
                     child: Icon(Icons.camera_alt_rounded, color: theme.colorScheme.primary),
                   ),
-                  title: const Text('Foto Struk Fisik (Kamera)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Indomaret, SPBU, Restoran, Supermarket'),
+                  title: Text('home.scan_camera_title'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text('home.scan_camera_desc'.tr()),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   onTap: () async {
                     Navigator.of(ctx).pop();
@@ -126,8 +126,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     backgroundColor: theme.colorScheme.primaryContainer,
                     child: Icon(Icons.photo_library_rounded, color: theme.colorScheme.primary),
                   ),
-                  title: const Text('Pilih Bukti Online / E-Receipt (Galeri)', style: TextStyle(fontWeight: FontWeight.w600)),
-                  subtitle: const Text('Screenshot Transfer BCA, GoPay, OVO, ShopeePay'),
+                  title: Text('home.scan_gallery_title'.tr(), style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text('home.scan_gallery_desc'.tr()),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   onTap: () async {
                     Navigator.of(ctx).pop();

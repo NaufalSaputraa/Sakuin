@@ -62,12 +62,47 @@ class TransactionActionsNotifier extends Notifier<void> {
     return result;
   }
 
+  Future<Result<int, AppError>> createTransaction({
+    required int walletId,
+    int? categoryId,
+    required double amount,
+    required TransactionType transactionType,
+    required String title,
+    String? description,
+    String? merchant,
+    String sourceInput = 'manual',
+    String? rawInput,
+    int? transferToWalletId,
+    DateTime? transactionDate,
+    String currency = 'IDR',
+  }) async {
+    final repo = ref.read(transactionRepositoryProvider);
+    final result = await repo.createTransaction(
+      walletId: walletId,
+      categoryId: categoryId,
+      amount: amount,
+      transactionType: transactionType,
+      title: title,
+      description: description,
+      merchant: merchant,
+      sourceInput: sourceInput,
+      rawInput: rawInput,
+      transferToWalletId: transferToWalletId,
+      transactionDate: transactionDate,
+      currency: currency,
+    );
+    if (result.isSuccess) _invalidateDependent();
+    return result;
+  }
+
   void _invalidateDependent() {
     ref.invalidate(recentTransactionsProvider);
     ref.invalidate(allTransactionsProvider);
     ref.invalidate(currentMonthIncomeProvider);
     ref.invalidate(currentMonthExpenseProvider);
     ref.invalidate(heatmapTransactionsProvider);
+    ref.invalidate(allWalletsProvider);
+    ref.invalidate(totalBalanceProvider);
   }
 }
 

@@ -92,7 +92,6 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
       final parser = ref.read(textParserServiceProvider);
       final wallets = ref.read(allWalletsProvider).asData?.value ?? <WalletModel>[];
       final categories = ref.read(allCategoriesProvider).asData?.value ?? <CategoryModel>[];
-      final txRepo = ref.read(transactionRepositoryProvider);
 
       final batchResults = await parser.parseBatchText(text: text);
 
@@ -118,7 +117,7 @@ class _AiChatScreenState extends ConsumerState<AiChatScreen> {
           if (match != null) categoryId = match.id;
         }
 
-        final res = await txRepo.createTransaction(
+        final res = await ref.read(transactionActionsProvider.notifier).createTransaction(
           walletId: walletId,
           categoryId: categoryId,
           amount: item.amount!,
@@ -258,12 +257,12 @@ Financial facts (absolute, do not contradict):
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Riwayat Chat?'),
-        content: const Text('Semua pesan percakapan dengan asisten AI akan dihapus. Transaksi keuangan yang sudah tercatat di database tetap aman.'),
+        title: Text('chat.delete_history_title'.tr()),
+        content: Text('chat.delete_history_desc'.tr()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text('common.cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
@@ -276,7 +275,7 @@ Financial facts (absolute, do not contradict):
                 isUser: false,
               );
             },
-            child: const Text('Hapus'),
+            child: Text('common.delete'.tr()),
           ),
         ],
       ),
@@ -459,19 +458,19 @@ class _MessageBubble extends StatelessWidget {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            title: const Text('Hapus Pesan Ini?'),
-            content: const Text('Pesan ini akan dihapus dari riwayat chat.'),
+            title: Text('chat.delete_message_title'.tr()),
+            content: Text('chat.delete_message_desc'.tr()),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Batal'),
+                child: Text('common.cancel'.tr()),
               ),
               FilledButton(
                 onPressed: () {
                   Navigator.of(ctx).pop();
                   onDelete();
                 },
-                child: const Text('Hapus'),
+                child: Text('common.delete'.tr()),
               ),
             ],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/widgets/shimmer_skeleton.dart';
 import '../domain/category_model.dart';
 import '../providers/category_providers.dart';
@@ -85,16 +86,16 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tambah Kategori Baru',
+                      'categories.add_title'.tr(),
                       style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 16),
 
                     // Type Toggle (Pengeluaran vs Pemasukan)
                     SegmentedButton<bool>(
-                      segments: const [
-                        ButtonSegment(value: false, label: Text('Pengeluaran')),
-                        ButtonSegment(value: true, label: Text('Pemasukan')),
+                      segments: [
+                        ButtonSegment(value: false, label: Text('categories.tab_expense'.tr())),
+                        ButtonSegment(value: true, label: Text('categories.tab_income'.tr())),
                       ],
                       selected: {currentIsIncome},
                       onSelectionChanged: (set) {
@@ -125,23 +126,23 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                     // Name Fields
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nama Kategori (Contoh: Gaming / Coffee)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'categories.name_label'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: nameIdController,
-                      decoration: const InputDecoration(
-                        labelText: 'Nama Kategori ID (Contoh: Main Game / Kopi)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'categories.name_id_label'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 16),
 
                     // Emoji Picker Grid
-                    Text('Pilih Ikon Emoji', style: theme.textTheme.titleSmall),
+                    Text('categories.pick_icon'.tr(), style: theme.textTheme.titleSmall),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 110,
@@ -178,7 +179,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                     const SizedBox(height: 12),
 
                     // Color Palette Selector
-                    Text('Pilih Warna Tema', style: theme.textTheme.titleSmall),
+                    Text('categories.pick_color'.tr(), style: theme.textTheme.titleSmall),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 40,
@@ -213,8 +214,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                           final name = nameController.text.trim();
                           if (name.isEmpty) {
                             ScaffoldMessenger.of(scaffoldContext).showSnackBar(
-                              const SnackBar(
-                                content: Text('Nama kategori tidak boleh kosong'),
+                              SnackBar(
+                                content: Text('categories.name_empty'.tr()),
                               ),
                             );
                             return;
@@ -240,7 +241,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                                 ScaffoldMessenger.of(scaffoldContext).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'Gagal menambah kategori: ${error.message}',
+                                      'categories.save_error'.tr(namedArgs: {'error': error.message}),
                                     ),
                                   ),
                                 );
@@ -259,13 +260,13 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
                             if (scaffoldContext.mounted) {
                               ScaffoldMessenger.of(scaffoldContext).showSnackBar(
                                 SnackBar(
-                                  content: Text('Terjadi kesalahan: $e'),
+                                  content: Text('categories.generic_error'.tr(namedArgs: {'error': e.toString()})),
                                 ),
                               );
                             }
                           }
                         },
-                        child: const Text('Simpan Kategori'),
+                        child: Text('categories.save_category'.tr()),
                       ),
                     ),
                    ],
@@ -288,12 +289,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Kategori'),
+        title: Text('categories.manage_title'.tr()),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Pengeluaran'),
-            Tab(text: 'Pemasukan'),
+          tabs: [
+            Tab(text: 'categories.tab_expense'.tr()),
+            Tab(text: 'categories.tab_income'.tr()),
           ],
         ),
       ),
@@ -306,7 +307,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
               categories: categories,
               onDelete: (cat) async {
                 final repo = ref.read(categoryRepositoryProvider);
-                await repo.deleteCategory(cat.id);
+                final res = await repo.deleteCategory(cat.id);
+                if (res.isSuccess) {
+                  ref.invalidate(expenseCategoriesProvider);
+                  ref.invalidate(incomeCategoriesProvider);
+                  ref.invalidate(allCategoriesProvider);
+                }
               },
             ),
             loading: () => const ShimmerLoadingSection(section: ShimmerSection.categoriesList),
@@ -319,7 +325,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
               categories: categories,
               onDelete: (cat) async {
                 final repo = ref.read(categoryRepositoryProvider);
-                await repo.deleteCategory(cat.id);
+                final res = await repo.deleteCategory(cat.id);
+                if (res.isSuccess) {
+                  ref.invalidate(expenseCategoriesProvider);
+                  ref.invalidate(incomeCategoriesProvider);
+                  ref.invalidate(allCategoriesProvider);
+                }
               },
             ),
             loading: () => const ShimmerLoadingSection(section: ShimmerSection.categoriesList),
@@ -333,7 +344,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> with Single
         },
         icon: Icon(Icons.add_rounded, color: theme.colorScheme.onPrimary),
         label: Text(
-          'Kategori Baru',
+          'categories.new_category'.tr(),
           style: TextStyle(color: theme.colorScheme.onPrimary),
         ),
       ),
@@ -352,7 +363,7 @@ class _CategoryList extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (categories.isEmpty) {
-      return const Center(child: Text('Belum ada kategori'));
+      return Center(child: Text('categories.empty'.tr()));
     }
 
     return ListView.separated(
@@ -373,8 +384,8 @@ class _CategoryList extends StatelessWidget {
               ? Text(cat.nameId!, style: theme.textTheme.bodySmall)
               : null,
           trailing: cat.isDefault
-              ? const Chip(
-                  label: Text('Bawaan', style: TextStyle(fontSize: 11)),
+              ? Chip(
+                  label: Text('categories.default_badge'.tr(), style: const TextStyle(fontSize: 11)),
                   padding: EdgeInsets.zero,
                   visualDensity: VisualDensity.compact,
                 )
@@ -384,19 +395,19 @@ class _CategoryList extends StatelessWidget {
                     showDialog(
                       context: context,
                       builder: (ctx) => AlertDialog(
-                        title: const Text('Hapus Kategori?'),
-                        content: Text('Yakin ingin menghapus kategori "${cat.name}"?'),
+                        title: Text('categories.delete_title'.tr()),
+                        content: Text('categories.delete_message'.tr(namedArgs: {'name': cat.name})),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(ctx).pop(),
-                            child: const Text('Batal'),
+                            child: Text('common.cancel'.tr()),
                           ),
                           FilledButton(
                             onPressed: () {
                               Navigator.of(ctx).pop();
                               onDelete(cat);
                             },
-                            child: const Text('Hapus'),
+                            child: Text('common.delete'.tr()),
                           ),
                         ],
                       ),

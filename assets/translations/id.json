@@ -20,7 +20,13 @@
     "activity": "Aktivitas",
     "empty_transactions": "Belum ada transaksi",
     "empty_transactions_cta": "Ketik di bawah untuk mencatat pengeluaran pertamamu",
-    "days_remaining": "hari tersisa bulan ini"
+    "days_remaining": "hari tersisa bulan ini",
+    "scan_title": "Scan Struk / Bukti Pembayaran",
+    "scan_desc": "Mendukung struk fisik kertas dan screenshot e-wallet/m-banking online.",
+    "scan_camera_title": "Foto Struk Fisik (Kamera)",
+    "scan_camera_desc": "Indomaret, SPBU, Restoran, Supermarket",
+    "scan_gallery_title": "Pilih Bukti Online / E-Receipt (Galeri)",
+    "scan_gallery_desc": "Screenshot Transfer BCA, GoPay, OVO, ShopeePay"
   },
   "trend": {
     "title": "Proyeksi Pengeluaran",
@@ -45,7 +51,11 @@
     "type_transfer": "Transfer",
     "transfer_from": "Dari Dompet Asal",
     "transfer_to": "Ke Dompet Tujuan",
-    "transaction_saved": "Transaksi tersimpan"
+    "transaction_saved": "Transaksi tersimpan",
+    "invalid_amount": "Masukkan nominal transaksi yang valid",
+    "select_wallet_first": "Pilih dompet terlebih dahulu",
+    "different_wallet_required": "Pilih dompet tujuan yang berbeda",
+    "save_failed": "Gagal menyimpan: {error}"
   },
   "wallets": {
     "physical": "Uang Fisik / Tunai",
@@ -56,7 +66,28 @@
     "shopeepay": "ShopeePay",
     "bank": "Rekening Bank",
     "add_sub_wallet": "Tambah E-Wallet",
-    "balance": "Saldo"
+    "balance": "Saldo",
+    "manage_title": "Kelola Dompet & Saldo",
+    "physical_title": "Dompet Fisik (Tunai)",
+    "physical_desc": "Uang tunai fisik / cash on hand",
+    "digital_root_title": "Dompet Digital Root",
+    "digital_root_desc": "Dompet digital utama",
+    "sub_wallets_title": "Sub-Dompet",
+    "no_sub_wallets": "Belum ada sub-dompet, tambah manual",
+    "add_button": "Tambah",
+    "add_new_title": "Tambah Sub-Dompet Baru",
+    "name_label": "Nama Dompet (GoPay, OVO, dll)",
+    "initial_balance_label": "Saldo Awal (Rp)",
+    "save_wallet": "Simpan Dompet",
+    "adjust_balance_title": "Sesuaikan Saldo {name}",
+    "transfer_title": "Transfer Antar Dompet",
+    "transfer_from": "Dari Dompet Asal",
+    "transfer_to": "Ke Dompet Tujuan",
+    "transfer_amount": "Nominal Transfer (Rp)",
+    "send_transfer": "Kirim Transfer",
+    "delete_title": "Hapus Dompet?",
+    "delete_message": "Yakin ingin menghapus dompet {name}? Saldo akan hilang.",
+    "deleted_snack": "Dompet {name} dihapus"
   },
   "categories": {
     "food": "Makanan & Minuman",
@@ -74,7 +105,24 @@
     "salary": "Gaji",
     "freelance": "Freelance",
     "transfer_in": "Transfer Masuk",
-    "other_income": "Lainnya"
+    "other_income": "Lainnya",
+    "manage_title": "Kelola Kategori",
+    "tab_expense": "Pengeluaran",
+    "tab_income": "Pemasukan",
+    "new_category": "Kategori Baru",
+    "add_title": "Tambah Kategori Baru",
+    "pick_icon": "Pilih Ikon Emoji",
+    "pick_color": "Pilih Warna Tema",
+    "name_label": "Nama Kategori (Contoh: Gaming / Coffee)",
+    "name_id_label": "Nama Kategori ID (Contoh: Main Game / Kopi)",
+    "name_empty": "Nama kategori tidak boleh kosong",
+    "save_category": "Simpan Kategori",
+    "empty": "Belum ada kategori",
+    "default_badge": "Bawaan",
+    "delete_title": "Hapus Kategori?",
+    "delete_message": "Yakin ingin menghapus kategori \"{name}\"?",
+    "save_error": "Gagal menambah kategori: {error}",
+    "generic_error": "Terjadi kesalahan: {error}"
   },
   "analytics": {
     "title": "Analisis Keuangan",
@@ -134,7 +182,11 @@
     "created_success": "Aturan pintar berhasil dibuat",
     "updated_success": "Aturan pintar berhasil diperbarui",
     "save_error": "Gagal menyimpan aturan: {error}",
-    "error_loading": "Gagal memuat aturan pintar"
+    "error_loading": "Gagal memuat aturan pintar",
+    "auto_generate": "Deteksi Otomatis dari Riwayat",
+    "no_patterns_found": "Belum ada pola transaksi berulang yang ditemukan",
+    "patterns_generated": "Berhasil membuat {count} aturan cerdas dari riwayat transaksi",
+    "learn_from_history": "Pelajari dari Riwayat"
   },
   "common": {
     "save": "Simpan",
@@ -225,7 +277,12 @@
     "empty": "Belum Ada Langganan",
     "empty_description": "Belum ada langganan berulang terdeteksi. Tambah lebih banyak transaksi untuk mengaktifkan deteksi.",
     "monthly": "Bulanan",
-    "confidence": "Kepercayaan"
+    "confidence": "Kepercayaan",
+    "refresh_tooltip": "Segarkan deteksi",
+    "active_status": "Aktif",
+    "ignored_status": "Diabaikan",
+    "ignore_confirm_title": "Abaikan Langganan?",
+    "ignore_confirm_message": "Abaikan \"{merchant}\"? Ini akan menyembunyikannya dari daftar aktif."
   },
   "ocr": {
     "cameraTitle": "Pindai Struk",
@@ -276,7 +333,11 @@
   "chat": {
     "ai_subtitle": "Asisten Aksi On-Device",
     "processing": "AI sedang memproses...",
-    "input_hint": "Ketik perintah / list pengeluaran / pertanyaan..."
+    "input_hint": "Ketik perintah / list pengeluaran / pertanyaan...",
+    "delete_history_title": "Hapus Riwayat Chat?",
+    "delete_history_desc": "Semua pesan percakapan dengan asisten AI akan dihapus. Transaksi keuangan yang sudah tercatat di database tetap aman.",
+    "delete_message_title": "Hapus Pesan Ini?",
+    "delete_message_desc": "Pesan ini akan dihapus dari riwayat chat."
   },
   "currency": {
     "section_title": "Mata Uang & Kurs Offline",

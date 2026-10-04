@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/utils/thousands_separator_formatter.dart';
 import '../../../core/theme/color_schemes.dart';
+import '../../transactions/domain/transaction_model.dart';
+import '../../transactions/providers/transaction_providers.dart';
 import '../domain/wallet_model.dart';
 import '../providers/wallet_providers.dart';
 
@@ -15,20 +19,21 @@ class WalletsScreen extends ConsumerStatefulWidget {
 class _WalletsScreenState extends ConsumerState<WalletsScreen> {
   void _showAdjustBalanceDialog(BuildContext context, WalletModel wallet) {
     final controller = TextEditingController(
-      text: wallet.balance.toInt().toString(),
+      text: RupiahFormatter.formatWithoutSymbol(wallet.balance),
     );
     const String selectedCurrency = 'IDR';
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Sesuaikan Saldo ${wallet.name}'),
+        title: Text('wallets.adjust_balance_title'.tr(namedArgs: {'name': wallet.name})),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
+              inputFormatters: [ThousandsSeparatorInputFormatter()],
               decoration: const InputDecoration(
                 prefixText: 'Rp ',
                 border: OutlineInputBorder(),
@@ -40,20 +45,23 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
+            child: Text('common.cancel'.tr()),
           ),
           FilledButton(
             onPressed: () async {
-              final newBal = double.tryParse(controller.text.trim());
+              final cleaned = controller.text.trim().replaceAll('.', '').replaceAll(',', '.');
+              final newBal = double.tryParse(cleaned);
               if (newBal != null) {
                 final repo = ref.read(walletRepositoryProvider);
                 await repo.updateWallet(
                   wallet.copyWith(balance: newBal, currency: selectedCurrency),
                 );
+                ref.invalidate(allWalletsProvider);
+                ref.invalidate(totalBalanceProvider);
               }
               if (context.mounted) Navigator.of(ctx).pop();
             },
-            child: const Text('Simpan'),
+            child: Text('common.save'.tr()),
           ),
         ],
       ),
@@ -114,26 +122,26 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Tambah E-Wallet / Rekening Baru',
+                      'wallets.add_new_title'.tr(),
                       style: theme.textTheme.headlineMedium,
                     ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText:
-                            'Nama Dompet (Contoh: Bank BCA / LinkAja / Jago)',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'wallets.name_label'.tr(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: balanceController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Saldo Awal (Rp)',
+                      inputFormatters: [ThousandsSeparatorInputFormatter()],
+                      decoration: InputDecoration(
+                        labelText: 'wallets.initial_balance_label'.tr(),
                         prefixText: 'Rp ',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -209,7 +217,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
 
                           if (context.mounted) Navigator.of(context).pop();
                         },
-                        child: const Text('Simpan Dompet'),
+                        child: Text('wallets.save_wallet'.tr()),
                       ),
                     ),
                   ],
@@ -265,13 +273,13 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Transfer Antar Dompet',
+                    'wallets.transfer_title'.tr(),
                     style: theme.textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 16),
 
                   // From Wallet
-                  Text('Dari Dompet Asal', style: theme.textTheme.titleSmall),
+                  Text('wallets.transfer_from'.tr(), style: theme.textTheme.titleSmall),
                   DropdownButton<int>(
                     value: sourceWallet.id,
                     isExpanded: true,
@@ -292,7 +300,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                   const SizedBox(height: 12),
 
                   // To Wallet
-                  Text('Ke Dompet Tujuan', style: theme.textTheme.titleSmall),
+                  Text('wallets.transfer_to'.tr(), style: theme.textTheme.titleSmall),
                   DropdownButton<int>(
                     value: targetWallet.id,
                     isExpanded: true,
@@ -315,10 +323,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                   TextField(
                     controller: amountController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Nominal Transfer (Rp)',
+                    inputFormatters: [ThousandsSeparatorInputFormatter()],
+                    decoration: InputDecoration(
+                      labelText: 'wallets.transfer_amount'.tr(),
                       prefixText: 'Rp ',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -327,31 +336,33 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () async {
-                        final amount = double.tryParse(
-                          amountController.text.trim(),
-                        );
+                        final cleaned = amountController.text.trim().replaceAll('.', '').replaceAll(',', '.');
+                        final amount = double.tryParse(cleaned);
                         if (amount == null ||
                             amount <= 0 ||
                             sourceWallet.id == targetWallet.id) {
                           return;
                         }
 
-                        final repo = ref.read(walletRepositoryProvider);
-                        // Update balances
-                        await repo.updateWallet(
-                          sourceWallet.copyWith(
-                            balance: sourceWallet.balance - amount,
-                          ),
+                        final txRepo = ref.read(transactionRepositoryProvider);
+                        await txRepo.createTransaction(
+                          walletId: sourceWallet.id,
+                          transferToWalletId: targetWallet.id,
+                          amount: amount,
+                          transactionType: TransactionType.transfer,
+                          title: 'Transfer ${sourceWallet.name} -> ${targetWallet.name}',
+                          sourceInput: 'manual',
+                          currency: 'IDR',
                         );
-                        await repo.updateWallet(
-                          targetWallet.copyWith(
-                            balance: targetWallet.balance + amount,
-                          ),
-                        );
+
+                        ref.invalidate(allWalletsProvider);
+                        ref.invalidate(totalBalanceProvider);
+                        ref.invalidate(recentTransactionsProvider);
+                        ref.invalidate(allTransactionsProvider);
 
                         if (context.mounted) Navigator.of(context).pop();
                       },
-                      child: const Text('Kirim Transfer'),
+                      child: Text('wallets.send_transfer'.tr()),
                     ),
                   ),
                 ],
@@ -370,18 +381,18 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hapus Dompet?'),
+        title: Text('wallets.delete_title'.tr()),
         content: Text(
-          'Yakin ingin menghapus dompet ${wallet.name}? Saldo akan hilang',
+          'wallets.delete_message'.tr(namedArgs: {'name': wallet.name}),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Batal'),
+            child: Text('common.cancel'.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Hapus'),
+            child: Text('common.delete'.tr()),
           ),
         ],
       ),
@@ -404,7 +415,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         ref.invalidate(digitalRootWalletProvider);
         ref.invalidate(totalBalanceProvider);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Dompet ${wallet.name} dihapus')),
+          SnackBar(content: Text('wallets.deleted_snack'.tr(namedArgs: {'name': wallet.name}))),
         );
       },
       failure: (error) {
@@ -425,7 +436,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
 
     final sections = <Widget>[
       // 1. Dompet Fisik Section
-      Text('Dompet Fisik (Tunai)', style: theme.textTheme.titleMedium),
+      Text('wallets.physical_title'.tr(), style: theme.textTheme.titleMedium),
       const SizedBox(height: 10),
       physicalWalletAsync.when(
         data: (wallet) {
@@ -442,7 +453,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                 wallet.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: const Text('Uang tunai fisik / cash on hand'),
+              subtitle: Text('wallets.physical_desc'.tr()),
               trailing: Text(
                 RupiahFormatter.format(wallet.balance),
                 style: const TextStyle(
@@ -464,7 +475,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Dompet Digital Root',
+            'wallets.digital_root_title'.tr(),
             style: theme.textTheme.titleMedium,
           ),
           TextButton.icon(
@@ -474,7 +485,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
             },
             icon: Icon(Icons.add, size: 16, color: theme.colorScheme.primary),
             label: Text(
-              'Tambah',
+              'wallets.add_button'.tr(),
               style: TextStyle(color: theme.colorScheme.primary),
             ),
           ),
@@ -497,7 +508,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                 rootWallet.name,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: const Text('Dompet digital utama'),
+              subtitle: Text('wallets.digital_root_desc'.tr()),
               trailing: Text(
                 RupiahFormatter.format(rootWallet.balance),
                 style: const TextStyle(
@@ -519,7 +530,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            'Sub-Dompet',
+            'wallets.sub_wallets_title'.tr(),
             style: theme.textTheme.titleMedium,
           ),
           TextButton.icon(
@@ -529,7 +540,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
             },
             icon: Icon(Icons.add, size: 16, color: theme.colorScheme.primary),
             label: Text(
-              'Tambah',
+              'wallets.add_button'.tr(),
               style: TextStyle(color: theme.colorScheme.primary),
             ),
           ),
@@ -539,10 +550,10 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
       subWalletsAsync.when(
         data: (subWallets) {
           if (subWallets.isEmpty) {
-            return const Card(
+            return Card(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('Belum ada sub-dompet, tambah manual'),
+                padding: const EdgeInsets.all(16),
+                child: Text('wallets.no_sub_wallets'.tr()),
               ),
             );
           }
@@ -602,11 +613,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kelola Dompet & Saldo'),
+        title: Text('wallets.manage_title'.tr()),
         actions: [
           IconButton(
             icon: Icon(Icons.swap_horiz_rounded, color: theme.colorScheme.onSurface),
-            tooltip: 'Transfer Antar Dompet',
+            tooltip: 'wallets.transfer_title'.tr(),
             onPressed: () {
               final wallets = allWalletsAsync.asData?.value ?? [];
               _showTransferSheet(context, wallets);
@@ -626,7 +637,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
         },
         icon: Icon(Icons.swap_horiz_rounded, color: theme.colorScheme.onPrimary),
         label: Text(
-          'Transfer Saldo',
+          'wallets.transfer_title'.tr(),
           style: TextStyle(color: theme.colorScheme.onPrimary),
         ),
         backgroundColor: theme.colorScheme.primary,

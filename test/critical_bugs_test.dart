@@ -8,6 +8,7 @@ import 'package:sakuin_app/features/smart_rules/domain/smart_rule_model.dart';
 import 'package:sakuin_app/features/transactions/domain/transaction_model.dart';
 import 'package:sakuin_app/features/wallets/domain/wallet_model.dart';
 import 'package:sakuin_app/services/export/export_model.dart';
+import 'package:sakuin_app/services/export/import_service.dart';
 import 'package:sakuin_app/services/ml/smart_rule_learning_service.dart';
 import 'package:sakuin_app/services/subscription_detector_service.dart';
 
@@ -234,5 +235,69 @@ void main() {
               '50000 expense delta again would corrupt it (150000/50000)');
     });
 
+    test('walletDao.deleteWallet performs soft-delete without foreign key crash', () async {
+      final now = DateTime.now();
+      final rootId = await db.walletDao.insertWallet(
+        WalletsCompanion.insert(
+          name: 'Digital Root',
+          walletType: 'digital',
+          balance: const Value(500000),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+
+      final walletId = await db.walletDao.insertWallet(
+        WalletsCompanion.insert(
+          name: 'Dana Test',
+          walletType: 'digital',
+          provider: const Value('dana'),
+          parentId: Value(rootId),
+          balance: const Value(200000),
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+
+      // Create transaction linked to wallet
+      await db.transactionDao.insertTransaction(
+        TransactionsCompanion.insert(
+          walletId: walletId,
+          amount: 50000,
+          transactionType: 'expense',
+          title: 'Makan Siang',
+          createdAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+
+      // Soft delete wallet
+      final rowsAffected = await db.walletDao.deleteWallet(walletId);
+      expect(rowsAffected, 1);
+
+      // Verify it no longer appears in active wallets
+      final activeWallets = await db.walletDao.getAll();
+      expect(activeWallets.any((w) => w.id == walletId), isFalse);
+
+      // But still exists in DB as inactive
+      final rawWallet = await (db.select(db.wallets)..where((w) => w.id.equals(walletId))).getSingleOrNull();
+      expect(rawWallet, isNotNull);
+      expect(rawWallet!.isActive, isFalse);
+    });
+
+    test('ImportService.parseCsv parses CRLF Windows line endings and 14-column header', () async {
+      const importService = ImportService();
+      const csvData =
+          "id,walletId,categoryId,amount,type,title,date,description,merchant,sourceInput,rawInput,transferToWalletId,createdAt,updatedAt\r\n"
+          "1,1,,25000.0,expense,Kopi Kenangan,2026-10-04T10:00:00.000Z,Ngopi pagi,Kopi Kenangan,manual,,0,2026-10-04T10:00:00.000Z,2026-10-04T10:00:00.000Z\r\n";
+
+      final parseResult = await importService.parseCsv(csvData);
+      expect(parseResult.isSuccess, isTrue,
+          reason: 'CSV with CRLF failed: ${parseResult.errorOrNull?.message}');
+      final bundle = parseResult.valueOrNull!;
+      expect(bundle.transactions.length, 1);
+      expect(bundle.transactions.first.title, 'Kopi Kenangan');
+      expect(bundle.transactions.first.amount, 25000.0);
+    });
   });
 }

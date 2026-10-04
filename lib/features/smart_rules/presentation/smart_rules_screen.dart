@@ -21,6 +21,11 @@ class SmartRulesScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         actions: [
           IconButton(
+            icon: const Icon(Icons.auto_awesome_rounded),
+            onPressed: () => _autoGenerateRules(context, ref),
+            tooltip: 'smartRules.auto_generate'.tr(),
+          ),
+          IconButton(
             icon: const Icon(Icons.add_rounded),
             onPressed: () => _showRuleEditor(context, ref),
             tooltip: 'smartRules.add_rule'.tr(),
@@ -94,6 +99,16 @@ class SmartRulesScreen extends ConsumerWidget {
               label: Text('smartRules.create_first'.tr()),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => _autoGenerateRules(context, ref),
+              icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+              label: Text('smartRules.learn_from_history'.tr()),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
             ),
@@ -302,5 +317,38 @@ class SmartRulesScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _autoGenerateRules(BuildContext context, WidgetRef ref) async {
+    final learningService = ref.read(smartRuleLearningServiceProvider);
+    final generated = await learningService.generateFromHistory();
+    if (!context.mounted) return;
+
+    if (generated.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('smartRules.no_patterns_found'.tr())),
+      );
+      return;
+    }
+
+    final repo = ref.read(smartRuleRepositoryProvider);
+    int savedCount = 0;
+    for (final rule in generated) {
+      final res = await repo.save(rule);
+      if (res.isSuccess) savedCount++;
+    }
+
+    ref.invalidate(smartRulesProvider);
+    ref.invalidate(activeSmartRulesProvider);
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'smartRules.patterns_generated'.tr(namedArgs: {'count': savedCount.toString()}),
+          ),
+        ),
+      );
+    }
   }
 }
