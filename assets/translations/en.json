@@ -34,7 +34,14 @@
     "willBust": "Over budget",
     "safe": "On track",
     "topCategory": "Top category",
-    "adviceTemplate": "Highest spend is on {category} ({amount}). You could save {saved} by cutting back 20%."
+    "adviceTemplate": "Highest spend is on {category} ({amount}). You could save {saved} by cutting back 20%.",
+    "runway": "Balance Runway",
+    "runwayDays": "Lasts ~{days} days",
+    "runwayMonthEndSafe": "Balance projected safe through month end ({days} days)",
+    "runwayMonthEndDanger": "Balance projected depleted before month end (~{days} days)",
+    "healthScore": "Financial Score",
+    "healthGrade": "Grade {grade}",
+    "dailyPace": "Suggested: {amount}/day"
   },
   "input": {
     "placeholder": "Type: coffee 25k gopay...",

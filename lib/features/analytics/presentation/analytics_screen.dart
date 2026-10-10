@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/widgets/shimmer_skeleton.dart';
+import '../../home/providers/spending_forecast_provider.dart';
 import '../../transactions/domain/transaction_model.dart';
 import '../../transactions/providers/transaction_providers.dart';
 
@@ -228,6 +229,133 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                       ],
                     ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Predictive Runway & Health Card
+                  ref.watch(spendingForecastProvider).when(
+                    data: (forecast) => Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.insights_rounded,
+                                    size: 18,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'trend.healthScore'.tr(),
+                                    style: theme.textTheme.titleMedium,
+                                  ),
+                                ],
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: theme.colorScheme.primaryContainer,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'trend.healthGrade'.tr(namedArgs: {'grade': forecast.healthGrade}),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'trend.runway'.tr(),
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      forecast.runwayDays >= 999
+                                          ? '99+ Hari'
+                                          : '${forecast.runwayDays} Hari',
+                                      style: theme.textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: forecast.survivesUntilMonthEnd
+                                            ? Colors.green
+                                            : Colors.amber[800],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Indeks Kesehatan',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      '${forecast.healthScore} / 100',
+                                      style: theme.textTheme.headlineSmall?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.colorScheme.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: LinearProgressIndicator(
+                              value: (forecast.healthScore / 100).clamp(0.0, 1.0),
+                              minHeight: 8,
+                              backgroundColor: theme.colorScheme.outlineVariant,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                forecast.healthScore >= 70
+                                    ? Colors.green
+                                    : (forecast.healthScore >= 50 ? Colors.amber : theme.colorScheme.error),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            forecast.survivesUntilMonthEnd
+                                ? 'trend.runwayMonthEndSafe'.tr(namedArgs: {'days': '${forecast.runwayDays}'})
+                                : 'trend.runwayMonthEndDanger'.tr(namedArgs: {'days': '${forecast.runwayDays}'}),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                   ),
                   const SizedBox(height: 24),
 

@@ -34,7 +34,14 @@
     "willBust": "Akan Lewat Batas",
     "safe": "Masih Aman",
     "topCategory": "Kategori Teratas",
-    "adviceTemplate": "Pengeluaran terbesar ada pada {category} ({amount}). Kamu bisa berhemat {saved} jika memangkas 20% pengeluaran ini."
+    "adviceTemplate": "Pengeluaran terbesar ada pada {category} ({amount}). Kamu bisa berhemat {saved} jika memangkas 20% pengeluaran ini.",
+    "runway": "Ketahanan Saldo",
+    "runwayDays": "Bertahan ~{days} hari",
+    "runwayMonthEndSafe": "Saldo diprediksi aman hingga akhir bulan ({days} hari)",
+    "runwayMonthEndDanger": "Saldo diprediksi habis sebelum akhir bulan (~{days} hari)",
+    "healthScore": "Skor Finansial",
+    "healthGrade": "Grade {grade}",
+    "dailyPace": "Rekomendasi: {amount}/hari"
   },
   "input": {
     "placeholder": "Ketik: beli kopi 25rb gopay...",

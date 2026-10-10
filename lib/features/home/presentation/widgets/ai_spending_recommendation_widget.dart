@@ -176,6 +176,75 @@ class _ForecastContent extends StatelessWidget {
           ),
         ],
         const SizedBox(height: 12),
+        // Predictive Runway & Health Score Banner
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: (forecast.survivesUntilMonthEnd ? Colors.green : Colors.amber)
+                .withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: (forecast.survivesUntilMonthEnd ? Colors.green : Colors.amber)
+                  .withValues(alpha: 0.25),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    forecast.survivesUntilMonthEnd
+                        ? Icons.verified_user_rounded
+                        : Icons.warning_amber_rounded,
+                    size: 16,
+                    color: forecast.survivesUntilMonthEnd ? Colors.green : Colors.amber[800],
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      forecast.survivesUntilMonthEnd
+                          ? 'trend.runwayMonthEndSafe'.tr(namedArgs: {'days': '${forecast.runwayDays}'})
+                          : 'trend.runwayMonthEndDanger'.tr(namedArgs: {'days': '${forecast.runwayDays}'}),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: forecast.survivesUntilMonthEnd ? Colors.green[800] : Colors.amber[900],
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'trend.healthGrade'.tr(namedArgs: {'grade': forecast.healthGrade}),
+                      style: TextStyle(
+                        color: theme.colorScheme.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (!forecast.survivesUntilMonthEnd) ...[
+                const SizedBox(height: 6),
+                Text(
+                  'trend.dailyPace'.tr(
+                    namedArgs: {'amount': RupiahFormatter.format(forecast.suggestedDailyPace)},
+                  ),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
