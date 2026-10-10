@@ -87,7 +87,8 @@
     "send_transfer": "Send Transfer",
     "delete_title": "Delete Wallet?",
     "delete_message": "Are you sure you want to delete {name}? Its balance will be lost.",
-    "deleted_snack": "Wallet {name} deleted"
+    "deleted_snack": "Wallet {name} deleted",
+    "pick_color": "Pick Badge Color"
   },
   "categories": {
     "food": "Food & Drinks",
@@ -134,7 +135,9 @@
     "all_time": "All Time",
     "top_categories": "Top Categories",
     "top_merchants": "Top Merchants",
-    "trends": "Spending Trends"
+    "trends": "Spending Trends",
+    "per_day": "/day",
+    "empty_transactions": "No transaction data yet"
   },
   "smartRules": {
     "title": "Smart Rules",

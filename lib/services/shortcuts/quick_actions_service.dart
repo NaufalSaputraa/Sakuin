@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:quick_actions/quick_actions.dart';
 
 enum QuickActionType {
@@ -17,7 +19,11 @@ class QuickActionsService {
   final QuickActions _quickActions = const QuickActions();
 
   void init(Function(QuickActionType action) onActionTriggered) {
-    _quickActions.setShortcutItems([
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return;
+    }
+    try {
+      _quickActions.setShortcutItems([
       const ShortcutItem(
         type: 'action_quick_entry',
         localizedTitle: 'Catat Pengeluaran',
@@ -35,11 +41,14 @@ class QuickActionsService {
       ),
     ]);
 
-    _quickActions.initialize((shortcutType) {
-      final action = QuickActionType.fromTypeId(shortcutType);
-      if (action != null) {
-        onActionTriggered(action);
-      }
-    });
+      _quickActions.initialize((shortcutType) {
+        final action = QuickActionType.fromTypeId(shortcutType);
+        if (action != null) {
+          onActionTriggered(action);
+        }
+      });
+    } catch (_) {
+      // Graceful fallback on unsupported environments
+    }
   }
 }

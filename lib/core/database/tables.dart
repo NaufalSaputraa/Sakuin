@@ -33,6 +33,7 @@ class Categories extends Table {
 @DataClassName('TransactionEntry')
 class Transactions extends Table {
   IntColumn get id => integer().autoIncrement()();
+  @ReferenceName('walletTransactions')
   IntColumn get walletId => integer().references(Wallets, #id)();
   IntColumn get categoryId => integer().nullable().references(Categories, #id)();
   RealColumn get amount => real()();
@@ -42,6 +43,7 @@ class Transactions extends Table {
   TextColumn get merchant => text().nullable()();
   TextColumn get sourceInput => text().withDefault(const Constant('manual'))(); // 'manual' | 'text_parse' | 'ocr' | 'voice' | 'ai_chat'
   TextColumn get rawInput => text().nullable()();
+  @ReferenceName('transferredTransactions')
   IntColumn get transferToWalletId => integer().nullable().references(Wallets, #id)();
   // Multi-currency: transaction currency (defaults to IDR) + snapshot of equivalent value in IDR.
   TextColumn get currency => text().withDefault(const Constant('IDR'))();

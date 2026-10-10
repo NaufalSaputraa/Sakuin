@@ -51,7 +51,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (result != null && mounted) {
             await QuickEntrySheet.show(
               context,
-              initialText: '${result.title} ${result.amount != null ? result.amount!.toInt() : ""}',
+              initialParsed: result,
             );
           }
           break;
@@ -115,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     if (result != null && context.mounted) {
                       await QuickEntrySheet.show(
                         context,
-                        initialText: '${result.title} ${result.amount != null ? result.amount!.toInt() : ""}',
+                        initialParsed: result,
                       );
                     }
                   },
@@ -136,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     if (result != null && context.mounted) {
                       await QuickEntrySheet.show(
                         context,
-                        initialText: '${result.title} ${result.amount != null ? result.amount!.toInt() : ""}',
+                        initialParsed: result,
                       );
                     }
                   },

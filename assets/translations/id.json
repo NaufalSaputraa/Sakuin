@@ -87,7 +87,8 @@
     "send_transfer": "Kirim Transfer",
     "delete_title": "Hapus Dompet?",
     "delete_message": "Yakin ingin menghapus dompet {name}? Saldo akan hilang.",
-    "deleted_snack": "Dompet {name} dihapus"
+    "deleted_snack": "Dompet {name} dihapus",
+    "pick_color": "Pilih Warna Badge"
   },
   "categories": {
     "food": "Makanan & Minuman",
@@ -134,7 +135,9 @@
     "all_time": "Semua Waktu",
     "top_categories": "Kategori Teratas",
     "top_merchants": "Merchant Teratas",
-    "trends": "Tren Pengeluaran"
+    "trends": "Tren Pengeluaran",
+    "per_day": "/hari",
+    "empty_transactions": "Belum ada data transaksi"
   },
   "smartRules": {
     "title": "Aturan Pintar",

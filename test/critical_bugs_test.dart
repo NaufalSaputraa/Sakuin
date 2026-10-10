@@ -288,8 +288,8 @@ void main() {
     test('ImportService.parseCsv parses CRLF Windows line endings and 14-column header', () async {
       const importService = ImportService();
       const csvData =
-          "id,walletId,categoryId,amount,type,title,date,description,merchant,sourceInput,rawInput,transferToWalletId,createdAt,updatedAt\r\n"
-          "1,1,,25000.0,expense,Kopi Kenangan,2026-10-04T10:00:00.000Z,Ngopi pagi,Kopi Kenangan,manual,,0,2026-10-04T10:00:00.000Z,2026-10-04T10:00:00.000Z\r\n";
+          'id,walletId,categoryId,amount,type,title,date,description,merchant,sourceInput,rawInput,transferToWalletId,createdAt,updatedAt\r\n'
+          '1,1,,25000.0,expense,Kopi Kenangan,2026-10-04T10:00:00.000Z,Ngopi pagi,Kopi Kenangan,manual,,0,2026-10-04T10:00:00.000Z,2026-10-04T10:00:00.000Z\r\n';
 
       final parseResult = await importService.parseCsv(csvData);
       expect(parseResult.isSuccess, isTrue,

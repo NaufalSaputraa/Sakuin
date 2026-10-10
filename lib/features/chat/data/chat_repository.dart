@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import '../../../core/database/app_database.dart';
+import '../domain/chat_message_model.dart';
 import '../domain/chat_repository_interface.dart';
 
 class ChatRepository implements ChatRepositoryInterface {
@@ -7,14 +8,25 @@ class ChatRepository implements ChatRepositoryInterface {
 
   ChatRepository(this._db);
 
-  @override
-  Stream<List<ChatMessageEntry>> watchMessages() {
-    return _db.chatDao.watchAll();
+  ChatMessageModel _toDomain(ChatMessageEntry entry) {
+    return ChatMessageModel(
+      id: entry.id,
+      content: entry.content,
+      isUser: entry.isUser,
+      metadata: entry.metadata,
+      timestamp: entry.timestamp,
+    );
   }
 
   @override
-  Future<List<ChatMessageEntry>> getMessages() {
-    return _db.chatDao.getAll();
+  Stream<List<ChatMessageModel>> watchMessages() {
+    return _db.chatDao.watchAll().map((list) => list.map(_toDomain).toList());
+  }
+
+  @override
+  Future<List<ChatMessageModel>> getMessages() async {
+    final list = await _db.chatDao.getAll();
+    return list.map(_toDomain).toList();
   }
 
   @override

@@ -4950,6 +4950,45 @@ final class $$WalletsTableReferences
     );
   }
 
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionEntry>>
+  _walletTransactionsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: 'wallets__id__transactions__wallet_id',
+  );
+
+  $$TransactionsTableProcessedTableManager get walletTransactions {
+    final manager = $$TransactionsTableTableManager(
+      $_db,
+      $_db.transactions,
+    ).filter((f) => f.walletId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_walletTransactionsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionEntry>>
+  _transferredTransactionsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactions,
+        aliasName: 'wallets__id__transactions__transfer_to_wallet_id',
+      );
+
+  $$TransactionsTableProcessedTableManager get transferredTransactions {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+          (f) => f.transferToWalletId.id.sqlEquals($_itemColumn<int>('id')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _transferredTransactionsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
   static MultiTypedResultKey<$BudgetsTable, List<BudgetEntry>>
   _budgetsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
     db.budgets,
@@ -5054,6 +5093,56 @@ class $$WalletsTableFilterComposer
           ),
     );
     return composer;
+  }
+
+  Expression<bool> walletTransactions(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> transferredTransactions(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.transferToWalletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
   }
 
   Expression<bool> budgetsRefs(
@@ -5237,6 +5326,56 @@ class $$WalletsTableAnnotationComposer
     return composer;
   }
 
+  Expression<T> walletTransactions<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.walletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> transferredTransactions<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.transferToWalletId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
   Expression<T> budgetsRefs<T extends Object>(
     Expression<T> Function($$BudgetsTableAnnotationComposer a) f,
   ) {
@@ -5276,7 +5415,12 @@ class $$WalletsTableTableManager
           $$WalletsTableUpdateCompanionBuilder,
           (WalletEntry, $$WalletsTableReferences),
           WalletEntry,
-          PrefetchHooks Function({bool parentId, bool budgetsRefs})
+          PrefetchHooks Function({
+            bool parentId,
+            bool walletTransactions,
+            bool transferredTransactions,
+            bool budgetsRefs,
+          })
         > {
   $$WalletsTableTableManager(_$AppDatabase db, $WalletsTable table)
     : super(
@@ -5353,63 +5497,121 @@ class $$WalletsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({parentId = false, budgetsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (budgetsRefs) db.budgets],
-              addJoins:
-                  <
-                    T extends TableManagerState<
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic,
-                      dynamic
-                    >
-                  >(state) {
-                    if (parentId) {
-                      state =
-                          state.withJoin(
-                                currentTable: table,
-                                currentColumn: table.parentId,
-                                referencedTable: $$WalletsTableReferences
-                                    ._parentIdTable(db),
-                                referencedColumn: $$WalletsTableReferences
-                                    ._parentIdTable(db)
-                                    .id,
-                              )
-                              as T;
-                    }
+          prefetchHooksCallback:
+              ({
+                parentId = false,
+                walletTransactions = false,
+                transferredTransactions = false,
+                budgetsRefs = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (walletTransactions) db.transactions,
+                    if (transferredTransactions) db.transactions,
+                    if (budgetsRefs) db.budgets,
+                  ],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (parentId) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.parentId,
+                                    referencedTable: $$WalletsTableReferences
+                                        ._parentIdTable(db),
+                                    referencedColumn: $$WalletsTableReferences
+                                        ._parentIdTable(db)
+                                        .id,
+                                  )
+                                  as T;
+                        }
 
-                    return state;
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (walletTransactions)
+                        await $_getPrefetchedData<
+                          WalletEntry,
+                          $WalletsTable,
+                          TransactionEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._walletTransactionsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).walletTransactions,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (transferredTransactions)
+                        await $_getPrefetchedData<
+                          WalletEntry,
+                          $WalletsTable,
+                          TransactionEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._transferredTransactionsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).transferredTransactions,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.transferToWalletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (budgetsRefs)
+                        await $_getPrefetchedData<
+                          WalletEntry,
+                          $WalletsTable,
+                          BudgetEntry
+                        >(
+                          currentTable: table,
+                          referencedTable: $$WalletsTableReferences
+                              ._budgetsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$WalletsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).budgetsRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.walletId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
                   },
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (budgetsRefs)
-                    await $_getPrefetchedData<
-                      WalletEntry,
-                      $WalletsTable,
-                      BudgetEntry
-                    >(
-                      currentTable: table,
-                      referencedTable: $$WalletsTableReferences
-                          ._budgetsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$WalletsTableReferences(db, table, p0).budgetsRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.walletId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -5426,7 +5628,12 @@ typedef $$WalletsTableProcessedTableManager =
       $$WalletsTableUpdateCompanionBuilder,
       (WalletEntry, $$WalletsTableReferences),
       WalletEntry,
-      PrefetchHooks Function({bool parentId, bool budgetsRefs})
+      PrefetchHooks Function({
+        bool parentId,
+        bool walletTransactions,
+        bool transferredTransactions,
+        bool budgetsRefs,
+      })
     >;
 typedef $$CategoriesTableCreateCompanionBuilder =
     CategoriesCompanion Function({

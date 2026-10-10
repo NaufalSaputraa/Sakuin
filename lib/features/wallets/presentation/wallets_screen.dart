@@ -144,16 +144,9 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                         border: const OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Mata Uang Dompet',
-                      style: theme.textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    // Currency dropdown removed, locked to IDR
                     const SizedBox(height: 16),
                     Text(
-                      'Pilih Warna Badge',
+                      'wallets.pick_color'.tr(),
                       style: theme.textTheme.titleSmall,
                     ),
                     const SizedBox(height: 8),
@@ -193,9 +186,11 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
                       child: FilledButton(
                         onPressed: () async {
                           final name = nameController.text.trim();
-                          final bal =
-                              double.tryParse(balanceController.text.trim()) ??
-                              0.0;
+                          final cleaned = balanceController.text
+                              .trim()
+                              .replaceAll('.', '')
+                              .replaceAll(',', '.');
+                          final bal = double.tryParse(cleaned) ?? 0.0;
                           if (name.isEmpty) return;
 
                           final provider = name.toLowerCase().replaceAll(

@@ -80,14 +80,15 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
       final tx = await (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
       if (tx == null) return 0;
 
-      // Revert wallet balances (amountBase = IDR-equivalent amount)
+      // Revert wallet balances (use amountBase if set, else fallback to amount)
+      final baseAmount = (tx.amountBase > 0) ? tx.amountBase : tx.amount;
       if (tx.transactionType == 'expense') {
-        await db.walletDao.updateBalance(tx.walletId, tx.amountBase);
+        await db.walletDao.updateBalance(tx.walletId, baseAmount);
       } else if (tx.transactionType == 'income') {
-        await db.walletDao.updateBalance(tx.walletId, -tx.amountBase);
+        await db.walletDao.updateBalance(tx.walletId, -baseAmount);
       } else if (tx.transactionType == 'transfer' && tx.transferToWalletId != null) {
-        await db.walletDao.updateBalance(tx.walletId, tx.amountBase);
-        await db.walletDao.updateBalance(tx.transferToWalletId!, -tx.amountBase);
+        await db.walletDao.updateBalance(tx.walletId, baseAmount);
+        await db.walletDao.updateBalance(tx.transferToWalletId!, -baseAmount);
       }
 
       return (delete(transactions)..where((t) => t.id.equals(id))).go();
@@ -101,31 +102,34 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
       final old = await (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
       if (old == null) return 0;
 
-      // Revert old balance effect (amountBase = IDR-equivalent amount)
+      // Revert old balance effect
+      final oldBase = (old.amountBase > 0) ? old.amountBase : old.amount;
       if (old.transactionType == 'expense') {
-        await db.walletDao.updateBalance(old.walletId, old.amountBase);
+        await db.walletDao.updateBalance(old.walletId, oldBase);
       } else if (old.transactionType == 'income') {
-        await db.walletDao.updateBalance(old.walletId, -old.amountBase);
+        await db.walletDao.updateBalance(old.walletId, -oldBase);
       } else if (old.transactionType == 'transfer' && old.transferToWalletId != null) {
-        await db.walletDao.updateBalance(old.walletId, old.amountBase);
-        await db.walletDao.updateBalance(old.transferToWalletId!, -old.amountBase);
+        await db.walletDao.updateBalance(old.walletId, oldBase);
+        await db.walletDao.updateBalance(old.transferToWalletId!, -oldBase);
       }
 
       // Apply new balance effect
       final walletId = companion.walletId.present ? companion.walletId.value : old.walletId;
-      final amountBase = companion.amountBase.present ? companion.amountBase.value : old.amountBase;
+      final newAmount = (companion.amountBase.present && companion.amountBase.value > 0)
+          ? companion.amountBase.value
+          : (companion.amount.present ? companion.amount.value : oldBase);
       final type = companion.transactionType.present ? companion.transactionType.value : old.transactionType;
       final transferToWalletId = companion.transferToWalletId.present
           ? companion.transferToWalletId.value
           : old.transferToWalletId;
 
       if (type == 'expense') {
-        await db.walletDao.updateBalance(walletId, -amountBase);
+        await db.walletDao.updateBalance(walletId, -newAmount);
       } else if (type == 'income') {
-        await db.walletDao.updateBalance(walletId, amountBase);
+        await db.walletDao.updateBalance(walletId, newAmount);
       } else if (type == 'transfer' && transferToWalletId != null) {
-        await db.walletDao.updateBalance(walletId, -amountBase);
-        await db.walletDao.updateBalance(transferToWalletId, amountBase);
+        await db.walletDao.updateBalance(walletId, -newAmount);
+        await db.walletDao.updateBalance(transferToWalletId, newAmount);
       }
 
       return (update(transactions)..where((t) => t.id.equals(id))).write(companion);
@@ -142,7 +146,7 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
               t.transactionDate.isBiggerOrEqualValue(start) &
               t.transactionDate.isSmallerOrEqualValue(end)))
         .watch()
-        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amountBase));
+        .map((list) => list.fold(0.0, (sum, tx) => sum + ((tx.amountBase > 0) ? tx.amountBase : tx.amount)));
   }
 
   Stream<double> watchTotalExpenseForMonth(DateTime month) {
@@ -155,6 +159,6 @@ class TransactionDao extends DatabaseAccessor<AppDatabase> with _$TransactionDao
               t.transactionDate.isBiggerOrEqualValue(start) &
               t.transactionDate.isSmallerOrEqualValue(end)))
         .watch()
-        .map((list) => list.fold(0.0, (sum, tx) => sum + tx.amountBase));
+        .map((list) => list.fold(0.0, (sum, tx) => sum + ((tx.amountBase > 0) ? tx.amountBase : tx.amount)));
   }
 }

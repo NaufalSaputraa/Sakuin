@@ -26,12 +26,14 @@ class QuickEntrySheet extends ConsumerStatefulWidget {
   final String? initialText;
   final bool startInNumpadMode;
   final TransactionModel? transaction;
+  final ParsedTransaction? initialParsed;
 
   const QuickEntrySheet({
     super.key,
     this.initialText,
     this.startInNumpadMode = false,
     this.transaction,
+    this.initialParsed,
   }) : assert(initialText == null || transaction == null,
             'Cannot open the sheet in both parse and edit mode at once');
 
@@ -40,6 +42,7 @@ class QuickEntrySheet extends ConsumerStatefulWidget {
     String? initialText,
     bool startInNumpadMode = false,
     TransactionModel? transaction,
+    ParsedTransaction? initialParsed,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -49,6 +52,7 @@ class QuickEntrySheet extends ConsumerStatefulWidget {
         initialText: initialText,
         startInNumpadMode: startInNumpadMode,
         transaction: transaction,
+        initialParsed: initialParsed,
       ),
     );
   }
@@ -100,9 +104,13 @@ class _QuickEntrySheetState extends ConsumerState<QuickEntrySheet> {
       _transactionDate = existing.transactionDate;
     }
 
-    if (widget.initialText != null && widget.initialText!.isNotEmpty) {
+    if (widget.initialParsed != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _triggerParse(widget.initialText!);
+        if (mounted) _applyParsed(widget.initialParsed!);
+      });
+    } else if (widget.initialText != null && widget.initialText!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _triggerParse(widget.initialText!);
       });
     }
 

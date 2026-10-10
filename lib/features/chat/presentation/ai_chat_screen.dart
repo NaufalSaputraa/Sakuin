@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/database/app_database.dart';
+import '../domain/chat_message_model.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/widgets/shimmer_skeleton.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -438,7 +438,7 @@ Financial facts (absolute, do not contradict):
 }
 
 class _MessageBubble extends StatelessWidget {
-  final ChatMessageEntry message;
+  final ChatMessageModel message;
   final bool isDark;
   final VoidCallback onDelete;
 

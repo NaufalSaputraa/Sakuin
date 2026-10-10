@@ -91,7 +91,28 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
             final txnCount = expenses.length;
 
             final now = DateTime.now();
-            final daysCount = _selectedFilter == TimeFilter.thisMonth ? now.day : 30;
+            final int daysCount;
+            switch (_selectedFilter) {
+              case TimeFilter.thisMonth:
+                daysCount = now.day;
+                break;
+              case TimeFilter.lastMonth:
+                daysCount = DateTime(now.year, now.month, 0).day;
+                break;
+              case TimeFilter.thisYear:
+                daysCount = now.difference(DateTime(now.year, 1, 1)).inDays + 1;
+                break;
+              case TimeFilter.allTime:
+                if (expenses.isNotEmpty) {
+                  final earliest = expenses
+                      .map((t) => t.transactionDate)
+                      .reduce((a, b) => a.isBefore(b) ? a : b);
+                  daysCount = now.difference(earliest).inDays + 1;
+                } else {
+                  daysCount = 1;
+                }
+                break;
+            }
             final dailyAvg = daysCount > 0 ? totalSpent / daysCount : 0.0;
 
             // Group by category with distinct fallback color palette
@@ -202,7 +223,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          '${'analytics.daily_avg'.tr()}: ${RupiahFormatter.format(dailyAvg)}/hari',
+                          '${'analytics.daily_avg'.tr()}: ${RupiahFormatter.format(dailyAvg)}${'analytics.per_day'.tr()}',
                           style: theme.textTheme.bodySmall,
                         ),
                       ],
@@ -227,7 +248,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen> {
                       ),
                       child: Center(
                         child: Text(
-                          'Belum ada data transaksi',
+                          'analytics.empty_transactions'.tr(),
                           style: theme.textTheme.bodySmall,
                         ),
                       ),

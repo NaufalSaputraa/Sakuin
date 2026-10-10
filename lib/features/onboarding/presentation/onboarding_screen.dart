@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/thousands_separator_formatter.dart';
@@ -96,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final wallets = walletsResult.valueOrNull ?? [];
     if (wallets.isEmpty) {
       await walletRepo.createWallet(
-        name: 'Dompet Fisik',
+        name: 'wallets.physical'.tr(),
         walletType: 'physical',
         initialBalance: cashAmount,
         currency: 'IDR',
@@ -104,7 +105,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         color: '#2ECC71',
       );
       await walletRepo.createWallet(
-        name: 'Dompet Digital',
+        name: 'wallets.digital'.tr(),
         walletType: 'digital',
         initialBalance: digitalAmount,
         currency: 'IDR',
@@ -129,7 +130,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_monthlyBudget > 0) {
       final budgetRepo = ref.read(budgetRepositoryProvider);
       await budgetRepo.createBudget(
-        name: 'Anggaran Bulanan',
+        name: 'settings.monthly_budget_name'.tr(),
         budgetType: BudgetType.limit,
         amount: _monthlyBudget,
         period: 'monthly',

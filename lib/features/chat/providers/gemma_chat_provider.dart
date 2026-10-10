@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/database/app_database.dart';
 import '../../../services/llm/model_repository.dart';
 import '../../../services/llm/gemma_llm_service.dart';
+import '../../categories/providers/category_providers.dart';
 import '../../transactions/domain/transaction_model.dart';
 import '../../transactions/providers/transaction_providers.dart';
+import '../../wallets/providers/wallet_providers.dart';
 
 /// A single turn in the on-device conversation (for context/history tracking).
 class ChatTurn {
@@ -134,17 +135,18 @@ class GemmaChatNotifier extends Notifier<GemmaChatState> {
             if (tool == 'addBatchTransactions' && args != null) {
               final txs = (args['transactions'] as List).cast<Map<String, dynamic>>();
               final repo = ref.read(transactionRepositoryProvider);
-              final db = ref.read(databaseProvider);
-              // Use first wallet as target (or let repository pick default)
-              final wallets = await db.walletDao.getAll();
+              final walletRepo = ref.read(walletRepositoryProvider);
+              final categoryRepo = ref.read(categoryRepositoryProvider);
+              final walletsResult = await walletRepo.getAll();
+              final wallets = walletsResult.valueOrNull ?? [];
               final targetWalletId = wallets.isNotEmpty ? wallets.first.id : 1;
               int added = 0;
               for (final tx in txs) {
                 final amount = (tx['amount'] as num).toDouble();
                 final category = tx['category'] as String? ?? 'other_expense';
                 final title = tx['title'] as String? ?? 'Transaksi';
-                // Resolve category id
-                final cat = await db.categoryDao.getByKey(category);
+                final catResult = await categoryRepo.getByKey(category);
+                final cat = catResult.valueOrNull;
                 await repo.createTransaction(
                   walletId: targetWalletId,
                   categoryId: cat?.id,
@@ -166,13 +168,16 @@ class GemmaChatNotifier extends Notifier<GemmaChatState> {
               return friendly;
             } else if (tool == 'addTransaction' && args != null) {
               final repo = ref.read(transactionRepositoryProvider);
-              final db = ref.read(databaseProvider);
-              final wallets = await db.walletDao.getAll();
+              final walletRepo = ref.read(walletRepositoryProvider);
+              final categoryRepo = ref.read(categoryRepositoryProvider);
+              final walletsResult = await walletRepo.getAll();
+              final wallets = walletsResult.valueOrNull ?? [];
               final targetWalletId = wallets.isNotEmpty ? wallets.first.id : 1;
               final amount = (args['amount'] as num).toDouble();
               final category = args['category'] as String? ?? 'other_expense';
               final title = args['title'] as String? ?? 'Transaksi';
-              final cat = await db.categoryDao.getByKey(category);
+              final catResult = await categoryRepo.getByKey(category);
+              final cat = catResult.valueOrNull;
               await repo.createTransaction(
                 walletId: targetWalletId,
                 categoryId: cat?.id,
