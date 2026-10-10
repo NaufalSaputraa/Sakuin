@@ -40,4 +40,26 @@ class HomeWidgetService {
       // Graceful fallback on unsupported platforms
     }
   }
+
+  /// Listens to widget clicks (both cold start and warm foreground transitions)
+  /// and triggers [onActionTriggered] with the target deep link Uri.
+  static Future<void> registerInteractivityCallback(
+    void Function(Uri uri) onActionTriggered,
+  ) async {
+    try {
+      // Check if launched directly from home widget tap on cold start
+      final initialUri = await HomeWidget.initiallyLaunchedFromHomeWidget();
+      if (initialUri != null) {
+        onActionTriggered(initialUri);
+      }
+      // Listen to future widget clicks while app is in foreground/background
+      HomeWidget.widgetClicked.listen((uri) {
+        if (uri != null) {
+          onActionTriggered(uri);
+        }
+      });
+    } catch (_) {
+      // Graceful fallback on unsupported platforms
+    }
+  }
 }

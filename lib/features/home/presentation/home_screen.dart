@@ -31,10 +31,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _initQuickActions();
+    _initHomeWidgetInteractivity();
     // Initial home-widget sync after first frame (providers may still be
     // loading). Subsequent syncs are driven by ref.listen below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _syncWidgetData();
+    });
+  }
+
+  void _initHomeWidgetInteractivity() {
+    HomeWidgetService.registerInteractivityCallback((uri) async {
+      if (!mounted) return;
+
+      final action = uri.host.isNotEmpty ? uri.host : uri.path.replaceAll('/', '');
+      switch (action) {
+        case 'quick_entry':
+          await QuickEntrySheet.show(context);
+          break;
+        case 'voice':
+          final parsed = await VoiceInputSheet.show(context);
+          if (parsed != null && mounted) {
+            await QuickEntrySheet.show(
+              context,
+              initialParsed: parsed,
+            );
+          }
+          break;
+        case 'scan':
+          _showScanOptions(context, ref);
+          break;
+        case 'home':
+        default:
+          break;
+      }
     });
   }
 
