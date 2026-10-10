@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/utils/currency_formatter.dart';
 import '../../../transactions/presentation/quick_entry_sheet.dart';
 import '../../../share/providers/share_import_provider.dart';
+import '../../../../services/notifications/mutation_notification_listener_service.dart';
 
 class MainScaffold extends ConsumerStatefulWidget {
   final Widget child;
@@ -21,11 +23,12 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
   @override
   void initState() {
     super.initState();
-    // Share Import: if a shared text is already pending when the scaffold
-    // first appears (e.g. cold start), open the entry sheet for it.
+    // Share Import & Mutation Detector:
+    // Check pending intents when scaffold first appears.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _openSharedEntry(ref.read(shareImportProvider));
+      ref.read(mutationDetectorProvider.notifier).init();
     });
   }
 
@@ -39,6 +42,67 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       ),
     );
     QuickEntrySheet.show(context, initialText: shareState.sharedText);
+  }
+
+  void _showMutationPrompt(IncomingMutationNotification mutation) {
+    final parsed = mutation.parsedTransaction;
+    final amountText = (parsed != null && parsed.hasAmount)
+        ? RupiahFormatter.format(parsed.amount!)
+        : '';
+    final sourceName =
+        mutation.title.isNotEmpty ? mutation.title : mutation.packageName;
+    final detailText = (parsed != null && parsed.title.isNotEmpty)
+        ? '${parsed.title} ($amountText)'
+        : (amountText.isNotEmpty ? amountText : mutation.text);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: const Duration(seconds: 8),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.notifications_active_rounded,
+                    size: 18, color: Colors.amber),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'settings.mutation_detected_title'.tr(),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'settings.mutation_detected_body'.tr(namedArgs: {
+                'source': sourceName,
+                'detail': detailText,
+              }),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+        action: SnackBarAction(
+          label: 'settings.mutation_record_now'.tr(),
+          onPressed: () {
+            ref.read(mutationDetectorProvider.notifier).dismissPending();
+            QuickEntrySheet.show(
+              context,
+              initialParsed: parsed,
+              initialText: (parsed == null || !parsed.hasAmount)
+                  ? mutation.text
+                  : null,
+            );
+          },
+        ),
+      ),
+    );
   }
 
   int _calculateSelectedIndex(BuildContext context) {
@@ -74,6 +138,14 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     ref.listen<ShareImportState>(shareImportProvider, (prev, next) {
       if (next.hasPending && next.sharedText != prev?.sharedText) {
         _openSharedEntry(next);
+      }
+    });
+
+    // Auto-detect mutation: notify user when incoming banking/e-wallet notification is intercepted
+    ref.listen<MutationDetectorState>(mutationDetectorProvider, (prev, next) {
+      final mutation = next.pendingMutation;
+      if (mutation != null && mutation != prev?.pendingMutation) {
+        _showMutationPrompt(mutation);
       }
     });
 

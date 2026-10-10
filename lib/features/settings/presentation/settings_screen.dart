@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../services/notifications/mutation_notification_listener_service.dart';
 import '../../../services/notifications/notification_service.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -340,6 +341,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           } else {
             await ref.read(notificationServiceProvider).cancelNotification(NotificationService.dailyReviewNotificationId);
           }
+        },
+      ),
+      const SizedBox(height: 4),
+
+      Consumer(
+        builder: (context, ref, _) {
+          final mutationState = ref.watch(mutationDetectorProvider);
+          final isGranted = mutationState.isPermissionGranted;
+
+          return ListTile(
+            leading: Icon(
+              isGranted
+                  ? Icons.mark_email_read_rounded
+                  : Icons.notification_important_rounded,
+              color: isGranted ? Colors.green : theme.colorScheme.primary,
+            ),
+            title: Text('settings.auto_detect_mutation'.tr()),
+            subtitle: Text(
+              isGranted
+                  ? 'settings.permission_active'.tr()
+                  : 'settings.permission_needed'.tr(),
+              style: TextStyle(
+                color: isGranted ? Colors.green[700] : theme.colorScheme.primary,
+                fontWeight: isGranted ? FontWeight.w500 : FontWeight.w600,
+              ),
+            ),
+            trailing: isGranted
+                ? const Icon(Icons.check_circle_rounded, color: Colors.green)
+                : const Icon(Icons.chevron_right_rounded),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onTap: () async {
+              await ref
+                  .read(mutationNotificationServiceProvider)
+                  .openPermissionSettings();
+              // Check again when returning
+              await ref.read(mutationDetectorProvider.notifier).checkPermission();
+            },
+          );
         },
       ),
       const SizedBox(height: 24),
