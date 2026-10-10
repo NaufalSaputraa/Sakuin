@@ -1,4 +1,5 @@
-import '../../features/transactions/domain/transaction_model.dart';
+import '../core/utils/billing_cycle_helper.dart';
+import '../features/transactions/domain/transaction_model.dart';
 
 class DetectedSubscription {
   final String merchant;
@@ -29,8 +30,8 @@ class DetectedSubscription {
 class SubscriptionDetectorService {
   static const double _amountTolerance = 0.05; // ±5%
   static const int _minOccurrences = 2;
-  static const int _expectedIntervalDays = 30;
-  static const int _intervalToleranceDays = 5;
+  static const int _minMonthlyIntervalDays = 27;
+  static const int _maxMonthlyIntervalDays = 33;
 
   List<DetectedSubscription> detect(List<TransactionModel> transactions) {
     // Filter expense transactions with merchant (fall back to title for
@@ -70,7 +71,7 @@ class SubscriptionDetectorService {
 
       if (!allWithinTolerance) continue;
 
-      // Check interval regularity (~30 days ±5)
+      // Check interval regularity (27 to 33 days to handle 28-31 day months + weekend delays)
       final intervals = <int>[];
       for (int i = 1; i < txs.length; i++) {
         final diff = txs[i].transactionDate.difference(txs[i - 1].transactionDate).inDays;
@@ -80,7 +81,7 @@ class SubscriptionDetectorService {
       if (intervals.isEmpty) continue;
 
       final medianInterval = _median(intervals);
-      final isRegular = (medianInterval - _expectedIntervalDays).abs() <= _intervalToleranceDays;
+      final isRegular = medianInterval >= _minMonthlyIntervalDays && medianInterval <= _maxMonthlyIntervalDays;
 
       if (!isRegular) continue;
 
@@ -90,8 +91,11 @@ class SubscriptionDetectorService {
       // Get most common category
       final categoryId = _getMostCommonCategoryId(txs);
 
-      // Next charge estimate
-      final nextCharge = txs.last.transactionDate.add(const Duration(days: _expectedIntervalDays));
+      // Next charge estimate respecting calendar month lengths and original billing day
+      final nextCharge = BillingCycleHelper.calculateNextBillingDate(
+        txs.last.transactionDate,
+        originalBillingDay: txs.first.transactionDate.day,
+      );
 
       detected.add(DetectedSubscription(
         merchant: txs.first.merchant ?? txs.first.title,
@@ -129,10 +133,18 @@ class SubscriptionDetectorService {
   }
 
   double _calculateConfidence(List<int> intervals, int count, double avgAmount, List<double> amounts) {
-    // Regularity score (0-1): how close intervals are to 30 days
+    // Regularity score (0-1): real calendar intervals (28 to 31 days) have 0 diff.
+    // Intervals slightly off (27 or 32-33 due to weekends) receive minor penalty.
     final regularityScores = intervals.map((interval) {
-      final diff = (interval - _expectedIntervalDays).abs();
-      return 1.0 - (diff / _expectedIntervalDays).clamp(0.0, 1.0);
+      final int diff;
+      if (interval >= 28 && interval <= 31) {
+        diff = 0;
+      } else if (interval < 28) {
+        diff = 28 - interval;
+      } else {
+        diff = interval - 31;
+      }
+      return 1.0 - (diff / 7.0).clamp(0.0, 1.0);
     }).toList();
     final avgRegularity = regularityScores.reduce((a, b) => a + b) / regularityScores.length;
 

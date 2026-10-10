@@ -9,6 +9,7 @@ import 'widgets/wallet_list_section.dart';
 import 'widgets/ai_spending_recommendation_widget.dart';
 import 'widgets/smart_input_bar.dart';
 import '../../transactions/presentation/quick_entry_sheet.dart';
+import '../../transactions/presentation/voice_input_sheet.dart';
 import '../../transactions/providers/transaction_providers.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../../budget/providers/budget_providers.dart';
@@ -297,6 +298,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                     onCameraTap: () {
                       _showScanOptions(context, ref);
+                    },
+                    onMicTap: () async {
+                      final parsed = await VoiceInputSheet.show(context);
+                      if (parsed != null && context.mounted) {
+                        await QuickEntrySheet.show(
+                          context,
+                          initialParsed: parsed,
+                        );
+                      }
                     },
                     useBlur: true,
                   ),

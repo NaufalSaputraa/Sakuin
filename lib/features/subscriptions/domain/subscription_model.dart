@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import '../../../core/utils/billing_cycle_helper.dart';
 
 part 'subscription_model.g.dart';
 
@@ -38,7 +39,10 @@ class SubscriptionModel {
 
   Map<String, dynamic> toJson() => _$SubscriptionModelToJson(this);
 
-  DateTime get nextChargeEstimate => lastSeen.add(const Duration(days: 30));
+  DateTime get nextChargeEstimate => BillingCycleHelper.calculateNextBillingDate(
+        lastSeen,
+        originalBillingDay: firstSeen.day,
+      );
 
   SubscriptionModel copyWith({
     int? id,
