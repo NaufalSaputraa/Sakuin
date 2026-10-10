@@ -1,6 +1,18 @@
 {
   "app_name": "Sakuin",
   "app_tagline": "Pencatat Keuangan Pribadi",
+  "common": {
+    "cancel": "Batal",
+    "save": "Simpan",
+    "update": "Perbarui",
+    "delete": "Hapus",
+    "remove": "Hapus",
+    "dismiss": "Tutup",
+    "retry": "Coba Lagi",
+    "error_occurred": "Terjadi kesalahan",
+    "load_failed": "Gagal memuat data",
+    "success": "Berhasil"
+  },
   "nav": {
     "home": "Beranda",
     "analytics": "Analisis",
@@ -368,5 +380,36 @@
     "load_error": "Gagal memuat kurs mata uang",
     "edit_rate": "Ubah Kurs {code}",
     "rate_to_idr": "Kurs ke IDR (1 {code} = ? IDR)"
+  },
+  "goals": {
+    "title": "Target Tabungan",
+    "subtitle": "Menabung terencana untuk impianmu",
+    "add_goal": "Target Baru",
+    "edit_goal": "Edit Target",
+    "goal_name": "Nama Target",
+    "target_amount": "Nominal Target",
+    "current_amount": "Tabungan Awal",
+    "target_date": "Target Tanggal",
+    "no_target_date": "Tanpa Batas Waktu",
+    "select_date": "Pilih Tanggal Target",
+    "icon": "Ikon",
+    "color": "Warna",
+    "empty_title": "Belum Ada Target Tabungan",
+    "empty_desc": "Mulai buat impian pertamamu seperti gadget impian, dana darurat, atau liburan!",
+    "add_funds": "Tambah Tabungan",
+    "withdraw_funds": "Tarik Saldo",
+    "amount_to_add": "Nominal yang ditabung",
+    "amount_to_withdraw": "Nominal yang ditarik",
+    "days_left": "Sisa {days} hari",
+    "days_passed": "Lewat {days} hari",
+    "today_deadline": "Jatuh tempo hari ini",
+    "completed": "Target Tercapai! 🎉",
+    "pace_advice": "Nabung ~{amount}/hari untuk capai tepat waktu",
+    "delete_confirm": "Yakin ingin menghapus target ini?",
+    "saved_snack": "Target tabungan berhasil disimpan",
+    "deleted_snack": "Target tabungan dihapus",
+    "funds_added": "Berhasil menambah tabungan",
+    "funds_withdrawn": "Berhasil menarik tabungan",
+    "view_all": "Lihat Semua"
   }
 }

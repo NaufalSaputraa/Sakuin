@@ -1,6 +1,18 @@
 {
   "app_name": "Sakuin",
   "app_tagline": "Personal Finance Tracker",
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save",
+    "update": "Update",
+    "delete": "Delete",
+    "remove": "Remove",
+    "dismiss": "Dismiss",
+    "retry": "Retry",
+    "error_occurred": "An error occurred",
+    "load_failed": "Failed to load data",
+    "success": "Success"
+  },
   "nav": {
     "home": "Home",
     "analytics": "Analytics",
@@ -368,5 +380,36 @@
     "load_error": "Failed to load currency rates",
     "edit_rate": "Edit Rate for {code}",
     "rate_to_idr": "Rate to IDR (1 {code} = ? IDR)"
+  },
+  "goals": {
+    "title": "Saving Goals",
+    "subtitle": "Save with purpose & track target dates",
+    "add_goal": "New Goal",
+    "edit_goal": "Edit Goal",
+    "goal_name": "Goal Name",
+    "target_amount": "Target Amount",
+    "current_amount": "Initial Saved Amount",
+    "target_date": "Target Date",
+    "no_target_date": "No Deadline",
+    "select_date": "Select Target Date",
+    "icon": "Icon",
+    "color": "Color",
+    "empty_title": "No Saving Goals Yet",
+    "empty_desc": "Create your first goal like a dream gadget, emergency fund, or vacation!",
+    "add_funds": "Add Savings",
+    "withdraw_funds": "Withdraw",
+    "amount_to_add": "Amount to add",
+    "amount_to_withdraw": "Amount to withdraw",
+    "days_left": "{days} days left",
+    "days_passed": "Overdue by {days} days",
+    "today_deadline": "Due today",
+    "completed": "Goal Achieved! 🎉",
+    "pace_advice": "Save ~{amount}/day to reach goal on time",
+    "delete_confirm": "Are you sure you want to delete this goal?",
+    "saved_snack": "Goal saved successfully",
+    "deleted_snack": "Goal deleted",
+    "funds_added": "Savings added",
+    "funds_withdrawn": "Funds withdrawn",
+    "view_all": "View All"
   }
 }

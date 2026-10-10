@@ -233,6 +233,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       const SizedBox(height: 4),
 
       ListTile(
+        leading: const Icon(Icons.savings_outlined),
+        title: Text('goals.title'.tr()),
+        subtitle: Text('goals.subtitle'.tr()),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onTap: () => context.push('/goals'),
+      ),
+      const SizedBox(height: 4),
+
+      ListTile(
         leading: const Icon(Icons.track_changes_outlined),
         title: Text('settings.monthly_budget_limit'.tr()),
         subtitle: Text(

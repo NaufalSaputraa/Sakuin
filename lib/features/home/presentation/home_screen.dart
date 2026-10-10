@@ -6,6 +6,7 @@ import 'widgets/balance_hero_card.dart';
 import 'widgets/budget_progress_widget.dart';
 import 'widgets/recent_transactions_section.dart';
 import 'widgets/wallet_list_section.dart';
+import 'widgets/goals_section.dart';
 import 'widgets/ai_spending_recommendation_widget.dart';
 import 'widgets/smart_input_bar.dart';
 import '../../transactions/presentation/quick_entry_sheet.dart';
@@ -303,6 +304,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                         // Wallets Carousel
                         const RepaintBoundary(child: WalletListSection()),
+                        const SizedBox(height: 24),
+
+                        // Saving Goals & Sinking Funds Section
+                        const RepaintBoundary(child: GoalsSection()),
                         const SizedBox(height: 24),
 
                         // AI Spending Recommendation

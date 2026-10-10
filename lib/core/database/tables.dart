@@ -116,3 +116,18 @@ class Subscriptions extends Table {
   BoolColumn get isConfirmed => boolean().withDefault(const Constant(false))();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
+
+@DataClassName('SavingGoalEntry')
+class SavingGoals extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get name => text()();
+  RealColumn get targetAmount => real()();
+  RealColumn get currentAmount => real().withDefault(const Constant(0.0))();
+  DateTimeColumn get targetDate => dateTime().nullable()();
+  IntColumn get walletId => integer().nullable().references(Wallets, #id)();
+  TextColumn get icon => text().withDefault(const Constant('🎯'))();
+  TextColumn get color => text().nullable()();
+  BoolColumn get isCompleted => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
+}

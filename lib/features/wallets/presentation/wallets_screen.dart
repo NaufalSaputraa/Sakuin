@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../core/utils/currency_formatter.dart';
 import '../../../core/utils/thousands_separator_formatter.dart';
 import '../../../core/theme/color_schemes.dart';
+import '../../../core/widgets/error_state_card.dart';
 import '../../transactions/domain/transaction_model.dart';
 import '../../transactions/providers/transaction_providers.dart';
 import '../domain/wallet_model.dart';
@@ -461,7 +462,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Text('Error: $e'),
+        error: (e, _) => const ErrorStateCard(),
       ),
       const SizedBox(height: 24),
 
@@ -516,7 +517,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Text('Error: $e'),
+        error: (e, _) => const ErrorStateCard(),
       ),
       const SizedBox(height: 24),
 
@@ -602,7 +603,7 @@ class _WalletsScreenState extends ConsumerState<WalletsScreen> {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Text('Error: $e'),
+        error: (e, _) => const ErrorStateCard(),
       ),
     ];
 

@@ -10,19 +10,20 @@ import 'daos/chat_dao.dart';
 import 'daos/smart_rule_dao.dart';
 import 'daos/subscription_dao.dart';
 import 'daos/currency_rates_dao.dart';
+import 'daos/goal_dao.dart';
 import '../constants/category_defaults.dart';
 
 part 'app_database.g.dart';
 
 @DriftDatabase(
-  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules, Subscriptions, CurrencyRates],
-  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao, SmartRuleDao, SubscriptionDao, CurrencyRatesDao],
+  tables: [Wallets, Categories, Transactions, Budgets, ChatMessages, SmartRules, Subscriptions, CurrencyRates, SavingGoals],
+  daos: [WalletDao, CategoryDao, TransactionDao, BudgetDao, ChatDao, SmartRuleDao, SubscriptionDao, CurrencyRatesDao, GoalDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -46,6 +47,10 @@ class AppDatabase extends _$AppDatabase {
           await m.addColumn(transactions, transactions.currency);
           await m.addColumn(transactions, transactions.amountBase);
           await _seedCurrencyRates();
+        }
+        // v3 -> v4: add saving_goals table.
+        if (from < 4) {
+          await m.createTable(savingGoals);
         }
       },
     );

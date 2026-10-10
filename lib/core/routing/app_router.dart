@@ -12,6 +12,7 @@ import '../../features/categories/presentation/categories_screen.dart';
 import '../../features/wallets/presentation/wallets_screen.dart';
 import '../../features/smart_rules/presentation/smart_rules_screen.dart';
 import '../../features/subscriptions/presentation/subscriptions_screen.dart';
+import '../../features/goals/presentation/goals_screen.dart';
 
 class AppRoutes {
   static const String home = '/';
@@ -23,6 +24,7 @@ class AppRoutes {
   static const String wallets = '/wallets';
   static const String smartRules = '/smart-rules';
   static const String subscriptions = '/subscriptions';
+  static const String goals = '/goals';
 }
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,6 +99,11 @@ final appRouter = GoRouter(
       path: AppRoutes.subscriptions,
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const SubscriptionsScreen(),
+    ),
+    GoRoute(
+      path: AppRoutes.goals,
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const GoalsScreen(),
     ),
   ],
 );

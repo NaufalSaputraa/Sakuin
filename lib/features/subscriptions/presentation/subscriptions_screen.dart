@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../core/widgets/error_state_card.dart';
 import '../domain/subscription_model.dart';
 import '../providers/subscription_providers.dart';
 
@@ -66,11 +67,21 @@ class SubscriptionsScreen extends ConsumerWidget {
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (e, s) => Center(child: Text('Error: $e')),
+            error: (e, s) => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: ErrorStateCard(),
+              ),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+        error: (e, s) => const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: ErrorStateCard(),
+          ),
+        ),
       ),
     );
   }
