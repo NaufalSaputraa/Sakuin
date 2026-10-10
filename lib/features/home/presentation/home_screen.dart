@@ -13,9 +13,11 @@ import '../../transactions/presentation/voice_input_sheet.dart';
 import '../../transactions/providers/transaction_providers.dart';
 import '../../wallets/providers/wallet_providers.dart';
 import '../../budget/providers/budget_providers.dart';
+import '../../../services/notifications/notification_service.dart';
 import '../../../services/ocr/receipt_scanner_service.dart';
 import '../../../services/shortcuts/quick_actions_service.dart';
 import '../../../services/widgets/home_widget_service.dart';
+import '../../subscriptions/providers/subscription_providers.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +34,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     _initQuickActions();
     _initHomeWidgetInteractivity();
+    ref.read(notificationServiceProvider).init();
+    ref.read(notificationServiceProvider).scheduleDailyReview();
     // Initial home-widget sync after first frame (providers may still be
     // loading). Subsequent syncs are driven by ref.listen below.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -211,6 +215,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen(currentMonthExpenseProvider, (_, _) => _syncWidgetData());
     ref.listen(primaryBudgetProvider, (_, _) => _syncWidgetData());
     ref.listen(recentTransactionsProvider, (_, _) => _syncWidgetData());
+    ref.listen(watchActiveSubscriptionsProvider, (_, next) {
+      final subs = next.asData?.value;
+      if (subs != null) {
+        ref.read(notificationServiceProvider).scheduleSubscriptionReminders(subs);
+      }
+    });
 
     return Scaffold(
       body: SafeArea(

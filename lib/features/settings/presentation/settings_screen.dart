@@ -8,9 +8,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/currency_formatter.dart';
+import '../../../services/notifications/notification_service.dart';
 import '../../budget/domain/budget_model.dart';
 import '../../budget/providers/budget_providers.dart';
 import '../../chat/providers/chat_providers.dart';
+import '../../subscriptions/providers/subscription_providers.dart';
 import 'ai_model_section.dart';
 import '../providers/export_import_provider.dart';
 
@@ -24,12 +26,25 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _userName = 'settings.default_user_name'.tr();
   String _appVersion = '';
+  bool _billRemindersEnabled = true;
+  bool _dailyReviewEnabled = true;
 
   @override
   void initState() {
     super.initState();
     _loadUserName();
     _loadAppVersion();
+    _loadNotificationPreferences();
+  }
+
+  Future<void> _loadNotificationPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _billRemindersEnabled = prefs.getBool('pref_bill_reminders') ?? true;
+        _dailyReviewEnabled = prefs.getBool('pref_daily_review') ?? true;
+      });
+    }
   }
 
   Future<void> _loadUserName() async {
@@ -286,7 +301,50 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ),
       const SizedBox(height: 24),
 
-      // 4. Language & System
+      // 4. Notifications & Reminders
+      Text('settings.section_notifications'.tr(), style: theme.textTheme.titleSmall),
+      const SizedBox(height: 8),
+
+      SwitchListTile(
+        secondary: const Icon(Icons.notifications_active_outlined),
+        title: Text('settings.bill_reminders'.tr()),
+        subtitle: Text('settings.bill_reminders_desc'.tr()),
+        value: _billRemindersEnabled,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onChanged: (val) async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('pref_bill_reminders', val);
+          setState(() => _billRemindersEnabled = val);
+          if (val) {
+            final subs = ref.read(watchActiveSubscriptionsProvider).asData?.value ?? [];
+            await ref.read(notificationServiceProvider).scheduleSubscriptionReminders(subs);
+          } else {
+            // Canceled by notification service
+          }
+        },
+      ),
+      const SizedBox(height: 4),
+
+      SwitchListTile(
+        secondary: const Icon(Icons.alarm_on_rounded),
+        title: Text('settings.daily_review'.tr()),
+        subtitle: Text('settings.daily_review_desc'.tr()),
+        value: _dailyReviewEnabled,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        onChanged: (val) async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('pref_daily_review', val);
+          setState(() => _dailyReviewEnabled = val);
+          if (val) {
+            await ref.read(notificationServiceProvider).scheduleDailyReview();
+          } else {
+            await ref.read(notificationServiceProvider).cancelNotification(NotificationService.dailyReviewNotificationId);
+          }
+        },
+      ),
+      const SizedBox(height: 24),
+
+      // 5. Language & System
       Text('settings.section_language'.tr(), style: theme.textTheme.titleSmall),
       const SizedBox(height: 8),
 
